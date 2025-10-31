@@ -1,5 +1,5 @@
--- Customer
-INSERT INTO "Customer" ("User_Id", "Name", "Email", "Password") VALUES
+-- User
+INSERT INTO "User" ("User_Id", "Name", "Email", "Password") VALUES
 ('USR0001', 'Alice Smith', 'alice@example.com', 'password123'),
 ('USR0002', 'Bob Johnson', 'bob@example.com', 'securepass'),
 ('USR0003', 'Charlie Brown', 'charlie@example.com', 'charliepass');

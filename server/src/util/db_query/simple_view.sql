@@ -5,7 +5,7 @@ SELECT
   c."Email",
   COUNT(o."Order_Id") AS total_orders,
   COALESCE(SUM(o."Amount"), 0) AS total_spent
-FROM "Customer" c
+FROM "User" c
 LEFT JOIN "Order" o ON c."User_Id" = o."User_Id"
 GROUP BY c."User_Id", c."Name", c."Email";
 
@@ -22,7 +22,7 @@ SELECT
 FROM "Order" o
 JOIN "Order_Item" oi ON o."Order_Id" = oi."Order_Id"
 JOIN "Product" p ON oi."Product_Id" = p."Product_Id"
-JOIN "Customer" c ON o."User_Id" = c."User_Id";
+JOIN "User" c ON o."User_Id" = c."User_Id";
 
 CREATE OR REPLACE VIEW product_stock_view AS
 SELECT
@@ -45,7 +45,7 @@ SELECT
   ci."Quantity",
   (ci."Quantity" * p."Price") AS total_price
 FROM "Cart" ca
-JOIN "Customer" cu ON ca."User_Id" = cu."User_Id"
+JOIN "User" cu ON ca."User_Id" = cu."User_Id"
 JOIN "CartItem" ci ON ca."Cart_Id" = ci."Cart_Id"
 JOIN "Product" p ON ci."Product_Id" = p."Product_Id";
 
