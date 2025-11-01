@@ -25,7 +25,7 @@ const generateUserId = async (User) => {
         nextNumber = lastNumber + 1;
     }
 
-    return `USR${String(nextNumber).padStart(4, '0')}`;
+    return `U${String(nextNumber).padStart(7, '0')}`;
 };
 
 const create_user = async (req, res) => {

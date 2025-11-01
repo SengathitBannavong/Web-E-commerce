@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from 'express';
 import { connectDB } from "./config/database.js";
+import { order_router } from "./routes/order_route.js";
 import { user_router } from "./routes/user_route.js";
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/users", user_router);
+app.use("/orders", order_router);
 
 connectDB(URL).then(async() => {
     app.listen(PORT, () => console.log(`server running on port ${PORT}`));
