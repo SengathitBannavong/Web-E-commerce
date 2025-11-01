@@ -1,14 +1,7 @@
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./header.css";
 
 export default function Header() {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-  };
-
   return (
     <header className="site-header">
       <div className="container">
@@ -19,20 +12,6 @@ export default function Header() {
           </h1>
         </div>
 
-        {/* Center: Search bar */}
-        <div className="header-center">
-          <form className="search-form" onSubmit={handleSearch}>
-            <input
-              type="search"
-              name="search"
-              placeholder="Search for books, authors..."
-              aria-label="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button type="submit">Search</button>
-          </form>
-        </div>
 
         {/* Right: Navigation */}
         <div className="header-right">
