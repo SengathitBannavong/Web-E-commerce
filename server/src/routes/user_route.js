@@ -1,5 +1,10 @@
 import express from "express";
-import { create_user, delete_user, get_all_users, get_user_by_id } from "../controllers/user_controller.js";
+import {
+  create_user,
+  delete_user,
+  get_all_users,
+  get_user_by_id
+} from "../controllers/user_controller.js";
 
 const user_router = express.Router();
 

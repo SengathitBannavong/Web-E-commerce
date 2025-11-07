@@ -3,10 +3,10 @@ import { DataTypes } from "sequelize";
 export const User = (sequelize) => {
   return sequelize.define("User", {
     Index: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        field: "Index",
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      field: "Index",
     },
     User_Id: {
       type: DataTypes.STRING(8),
@@ -35,7 +35,7 @@ export const User = (sequelize) => {
       defaultValue: DataTypes.NOW,
       field: "created_at",
     },
-  },{
+  }, {
     tableName: "User",
     timestamps: false
   });

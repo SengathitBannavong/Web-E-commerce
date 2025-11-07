@@ -1,6 +1,73 @@
 import { getDB } from "../config/database.js";
+import { OrderItem as OrderItemModel } from "../models/order_item_model.js";
 import { Order as OrderModel } from "../models/order_model.js";
-import { create_order_items_helper, delete_order_items_by_order_id_helper } from "./order_item_controller.js";
+
+const get_all_order_items = (req, res) => {
+    const db = getDB();
+    const OrderItem = OrderItemModel(db);
+    OrderItem.findAll()
+    .then(orderItems => {
+        res.json(orderItems);
+    })
+    .catch(err => {
+        console.error("Error fetching order items:", err);
+        res.status(500).json({ error: "Internal server error" });
+    });
+};
+
+
+// Helper function to create order items
+const create_order_items_helper = async (items) => {
+    const db = getDB();
+    const OrderItem = OrderItemModel(db);
+    
+    try {
+        // check validity of items array
+        for (let i = 0; i < items.length; i++) {
+            if (!items[i].Product_Id || !items[i].Quantity || !items[i].Amount) {
+                throw new Error(`Item at index ${i} is missing required fields`);
+            }
+        }
+
+        const newOrderItems = await OrderItem.bulkCreate(items);
+        return newOrderItems;
+    } catch (err) {
+        console.error("Error creating multiple order items:", err);
+        throw err;
+    }
+};
+
+// Helper function to delete order items by user ID
+const delete_order_items_by_user_id_helper = async (userId) => {
+    const db = getDB();
+    const OrderItem = OrderItemModel(db);
+    
+    try {
+        const deletedCount = await OrderItem.destroy({
+            where: { User_Id: userId }
+        });
+        return deletedCount;
+    } catch (err) {
+        console.error("Error deleting order items by user ID:", err);
+        throw err;
+    }
+};
+
+// Helper function to delete order items by order ID
+const delete_order_items_by_order_id_helper = async (orderId) => {
+    const db = getDB();
+    const OrderItem = OrderItemModel(db);
+    
+    try {
+        const deletedCount = await OrderItem.destroy({
+            where: { Order_Id: orderId }
+        });
+        return deletedCount;
+    } catch (err) {
+        console.error("Error deleting order items by order ID:", err);
+        throw err;
+    }
+};
 
 const get_all_orders = (req, res) => {
     const db = getDB();
@@ -156,5 +223,5 @@ const get_order_by_user_id = (req, res) => {
     });
 };
 
-export { create_order, delete_order_by_id, get_all_orders, get_order_by_id, get_order_by_user_id };
+export { create_order, delete_order_by_id, get_all_order_items, get_all_orders, get_order_by_id, get_order_by_user_id };
 
