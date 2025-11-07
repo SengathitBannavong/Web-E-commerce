@@ -1,3 +1,26 @@
+CREATE OR REPLACE VIEW get_all_details_cart_by_user AS
+SELECT
+  c."Cart_Id",
+  c."User_Id",
+  c."Status",
+  c."created_at",
+  ci."Cart_Item_Id",
+  ci."Product_Id",
+  ci."Quantity",
+  p."Index",
+  p."Name",
+  p."Description",
+  p."Price",
+  p."Photo_Id"
+FROM "Cart" AS c
+LEFT JOIN "CartItem" AS ci 
+ON c."Cart_Id" = ci."Cart_Id"
+LEFT JOIN "Product" AS p
+ON ci."Product_Id" = p."Product_Id"
+WHERE c."User_Id" = 'U0000001' AND c."Status" = 'active'
+ORDER BY c."Cart_Id", ci."Cart_Item_Id";
+
+
 CREATE OR REPLACE VIEW customer_order_summary AS
 SELECT 
   c."User_Id",

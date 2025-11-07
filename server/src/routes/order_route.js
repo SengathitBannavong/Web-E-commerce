@@ -4,11 +4,9 @@ import {
     delete_order_by_id,
     get_all_orders,
     get_order_by_id,
-    get_order_by_user_id
-} from "../controllers/order_controller.js";
-import {
+    get_order_by_user_id,
     get_all_order_items
-} from "../controllers/order_item_controller.js";
+} from "../controllers/order_controller.js";
 
 const order_router = express.Router();
 // Order routes
