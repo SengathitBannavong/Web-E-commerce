@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom";
 import "./header.css";
+// 1. IMPORT component SearchBox
+import SearchBox from "./search_box";
 
 export default function Header() {
   return (
@@ -12,13 +14,17 @@ export default function Header() {
           </h1>
         </div>
 
+        {/* Center: Search Box */}
+        <div className="header-center"> {/* <--- Vùng đã được định nghĩa trong CSS */}
+          <SearchBox /> {/* <--- THÊM SEARCHBOX VÀO ĐÂY */}
+        </div>
 
         {/* Right: Navigation */}
         <div className="header-right">
           <nav>
-            <NavLink to="/#">Books</NavLink>
-            <NavLink to="/#">Cart</NavLink>
+            <NavLink end to="/">Home</NavLink>
             <NavLink to="/login">Login</NavLink>
+            <NavLink to="/register">Register</NavLink>
           </nav>
         </div>
       </div>
