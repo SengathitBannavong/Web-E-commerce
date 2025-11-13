@@ -1,0 +1,42 @@
+export const BESTSELLERS = [
+  {
+    id: "sapiens",
+    title: "Sapiens: A Brief History of Humankind",
+    author: "Yuval Noah Harari",
+    price: "350.000đ",
+    cover: "/images/books/1.jpg",
+    badge: "Bán chạy",
+  },
+  {
+    id: "the-alchemist",
+    title: "The Alchemist",
+    author: "Paulo Coelho",
+    price: "180.000đ",
+    badge: "Bán chạy",
+    cover: "/images/books/2.jpg",
+  },
+  {
+    id: "atomic-habits-seller",
+    title: "Atomic Habits",
+    author: "James Clear",
+    price: "240.000đ",
+    cover: "/images/books/3.jpg",
+    badge: "Bán chạy",
+  },
+  {
+    id: "deep-work-seller",
+    title: "Deep Work",
+    author: "Cal Newport",
+    price: "210.000đ",
+    badge: "Bán chạy",
+    cover: "/images/books/4.jpg",
+  },
+  {
+    id: "design-patterns",
+    title: "Design Patterns",
+    author: "Erich Gamma",
+    price: "350.000đ",
+    cover: "/images/books/7.jpg",
+    badge: "Bán chạy",
+  },
+];
