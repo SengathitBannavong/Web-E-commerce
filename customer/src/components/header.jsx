@@ -26,6 +26,7 @@ export default function Header() {
             </NavLink>
             <NavLink to="/login">Login</NavLink>
             <NavLink to="/register">Register</NavLink>
+            <NavLink to="/cart">Your Cart</NavLink>
           </nav>
         </div>
       </div>
