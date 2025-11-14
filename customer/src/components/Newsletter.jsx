@@ -3,7 +3,6 @@ import "./Newsletter.css";
 export default function Newsletter() {
   const handleSubmit = (e) => {
     e.preventDefault();
-    // UI-only logic
     alert("Cảm ơn bạn đã đăng ký!");
     e.target.reset();
   };

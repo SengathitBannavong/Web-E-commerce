@@ -29,7 +29,7 @@ export const BESTSELLERS = [
     author: "Cal Newport",
     price: "210.000đ",
     badge: "Bán chạy",
-    cover: "/images/books/4.jpg",
+    cover: "/images/books/4.jpg", 
   },
   {
     id: "design-patterns",

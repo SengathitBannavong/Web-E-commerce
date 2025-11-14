@@ -40,7 +40,6 @@ export default function Register() {
       return;
     }
 
-    // UI-only: no API call here
     console.log("register (UI only)", form);
   };
 
