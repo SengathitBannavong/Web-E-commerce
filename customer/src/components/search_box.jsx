@@ -6,7 +6,6 @@ export default function SearchBox() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // TODO: Implement search functionality
     console.log("Searching for:", searchTerm);
   };
 
