@@ -85,10 +85,14 @@ const create_user = async (req, res) => {
     }
 };
 
-const get_user_by_id = (req, res) => {
+const get_user = (req, res) => {
     const id = req.query.id || req.params.id;
     
     if (!id) {
+        var isAdmin = true; // TODO: replace with real admin check
+        if(isAdmin){
+            return get_all_users(req, res);
+        }
         return res.status(400).json({ error: "User ID is required" });
     }
 
@@ -113,6 +117,7 @@ const delete_user = (req, res) => {
     const auth = req.params.auth || req.query.auth;
 
     // temporary simple auth check
+    // TODO: replace with real authentication and authorization
     if(auth !== "admin123") {
         console.error("Unauthorized delete attempt:", { id, auth });
         return res.status(403).json({ error: "Unauthorized action" });
@@ -137,5 +142,5 @@ const delete_user = (req, res) => {
     });
 };
 
-export { create_user, delete_user, get_all_users, get_user_by_id };
+export { create_user, delete_user, get_user };
 
