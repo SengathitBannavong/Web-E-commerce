@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AppLayout from "./components/AppLayout";
 import "./App.css";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="cart" element={<Cart/>} />
         </Route>
         <Route
           path="*"

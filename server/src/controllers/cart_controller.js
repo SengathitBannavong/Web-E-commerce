@@ -2,7 +2,7 @@ import { getDB } from "../config/database.js";
 import { CartItem as CartItemModel } from "../models/cart_item_model.js";
 import { Cart as CartModel } from "../models/cart_model.js";
 
-const get_all_carts = (req, res) => {
+const get_all_carts = (res) => {
   const db = getDB();
   const Cart = CartModel(db);
   Cart.findAll()
@@ -15,7 +15,7 @@ const get_all_carts = (req, res) => {
   });
 };
 
-const get_all_cart_items = (req, res) => {
+const get_all_cart_items = (res) => {
   const db = getDB();
   const CartItem = CartItemModel(db);
   CartItem.findAll()
@@ -28,10 +28,10 @@ const get_all_cart_items = (req, res) => {
   });
 };
 
-const get_cart_by_id = (req, res) => {
+const get_cart_by_id = (id, res) => {
   const db = getDB();
   const Cart = CartModel(db);
-  const cartId = req.params.id || req.query.id;
+  const cartId = id;
 
   Cart.findByPk(cartId)
   .then(cart => {
@@ -47,10 +47,9 @@ const get_cart_by_id = (req, res) => {
   });
 };
 
-const get_cart_by_user_id = (req, res) => {
+const get_cart_by_user_id = (userId, res) => {
   const db = getDB();
   const Cart = CartModel(db);
-  const userId = req.params.userId || req.query.userId;
 
   Cart.findAll({ where: { User_Id: userId } })
   .then(carts => {
@@ -61,6 +60,70 @@ const get_cart_by_user_id = (req, res) => {
       res.status(500).json({ error: "Internal server error" });
   });
 };
+
+const get_all_details_cart_by_user_id = async (userId, res) => {
+  try {
+    /*
+      Source SQL to get cart details by user ID:
+      SELECT
+        c."Cart_Id",
+        c."User_Id",
+        c."Status",
+        c."created_at",
+        ci."Cart_Item_Id",
+        ci."Product_Id",
+        ci."Quantity",
+        p."Index",
+        p."Name",
+        p."Description",
+        p."Price",
+        p."Photo_Id"
+      FROM "Cart" AS c
+      LEFT JOIN "CartItem" AS ci 
+      ON c."Cart_Id" = ci."Cart_Id"
+      LEFT JOIN "Product" AS p
+      ON ci."Product_Id" = p."Product_Id"
+      WHERE c."User_Id" = 'U0000001' AND c."Status" = 'active'
+      ORDER BY c."Cart_Id", ci."Cart_Item_Id";
+
+      TODO: Implement the above SQL query using Sequelize ORM
+    */
+
+    res.status(200).json({
+      message: "Not implemented yet",
+    });
+  } catch (err) {
+    console.error("Error fetching cart details:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const get_carts = (req, res) => {
+  const id = req.params.id || req.query.id;
+  const userId = req.params.userId || req.query.userId;
+  const type = req.params.type || req.query.type;
+
+  if(type === 'items') {
+    // TODO: Implement proper authentication and authorization
+    return get_all_cart_items(res);
+  }
+
+  if (userId && type === 'details') {
+    return get_all_details_cart_by_user_id(userId, res);
+  } 
+  
+  if (id) {
+    return get_cart_by_id(id, res);
+  } else if (userId) {
+    return get_cart_by_user_id(userId, res);
+  } else {
+    var isAdmin = true; // TODO: Replace with real admin check
+    if (isAdmin) {
+      return get_all_carts(res);
+    }
+  }
+  return res.status(400).json({ error: "Invalid request parameters" });
+}
 
 const create_cart_item = async (items, Cart_Id) => {
   const db = getDB();
@@ -212,51 +275,11 @@ const delete_cart = async (req, res) => {
   }
 };
 
-const get_all_details_cart_by_user_id = async (req, res) => {
-  try {
-    /*
-      Source SQL to get cart details by user ID:
-      SELECT
-        c."Cart_Id",
-        c."User_Id",
-        c."Status",
-        c."created_at",
-        ci."Cart_Item_Id",
-        ci."Product_Id",
-        ci."Quantity",
-        p."Index",
-        p."Name",
-        p."Description",
-        p."Price",
-        p."Photo_Id"
-      FROM "Cart" AS c
-      LEFT JOIN "CartItem" AS ci 
-      ON c."Cart_Id" = ci."Cart_Id"
-      LEFT JOIN "Product" AS p
-      ON ci."Product_Id" = p."Product_Id"
-      WHERE c."User_Id" = 'U0000001' AND c."Status" = 'active'
-      ORDER BY c."Cart_Id", ci."Cart_Item_Id";
-
-      TODO: Implement the above SQL query using Sequelize ORM
-    */
-
-    res.status(200).json({
-      message: "Not implemented yet",
-    });
-  } catch (err) {
-    console.error("Error fetching cart details:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
 
 export {
   create_cart,
   delete_cart,
-  get_all_cart_items,
-  get_all_carts,
-  get_all_details_cart_by_user_id,
-  get_cart_by_id,
-  get_cart_by_user_id,
+  get_carts,
   update_cart
 };
 

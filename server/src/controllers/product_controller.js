@@ -2,7 +2,7 @@ import { getDB } from "../config/database.js";
 import { Product as ProdcutModel } from '../models/product_model.js';
 
 
-const get_all_products = (req, res) => {
+const get_all_products = (res) => {
   const db = getDB();
   const Product = ProdcutModel(db);
 
@@ -16,10 +16,10 @@ const get_all_products = (req, res) => {
   });
 };
 
-const get_product_by_index = (req, res) => {
+const get_product_by_index = (index,res) => {
   const db = getDB();
   const Product = ProdcutModel(db);
-  const productIndex = req.params.index || req.query.index;
+  const productIndex = index;
   
   if (!productIndex) {
     return res.status(400).json({ error: "Product Index is required" });
@@ -38,10 +38,10 @@ const get_product_by_index = (req, res) => {
     });
 };
 
-const get_product_by_id = (req, res) => {
+const get_product_by_id = (id,res) => {
   const db = getDB();
   const Product = ProdcutModel(db);
-  const productId = req.params.id || req.query.id;
+  const productId = id;
 
   if (!productId) {
     return res.status(400).json({ error: "Product ID is required" });
@@ -58,6 +58,24 @@ const get_product_by_id = (req, res) => {
       console.error("Error fetching product:", err);
       res.status(500).json({ error: "Internal server error" });
     });
+};
+
+const get_products = (req, res) => {
+  const id = req.params.id || req.query.id;
+  const index = req.params.index || req.query.index;
+
+  if (id) {
+    return get_product_by_id(id,res);
+  } else if (index) {
+    return get_product_by_index(index,res);
+  } else {
+    var isAdmin = true; // TODO: replace with real admin check
+    if(isAdmin){
+      return get_all_products(res);
+    }
+  }
+
+  return res.status(400).json({ error: "Product ID or Index is required" });
 };
 
 const update_product = (req, res) => {
@@ -152,5 +170,5 @@ const delete_product = (req, res) => {
 };
 
 
-export { create_product, delete_product, get_all_products, get_product_by_id, get_product_by_index, update_product };
+export { create_product, delete_product, get_products, update_product };
 

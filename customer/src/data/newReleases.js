@@ -1,0 +1,42 @@
+export const NEW_RELEASES = [
+  {
+    id: "the-pragmatic-programmer",
+    title: "The Pragmatic Programmer",
+    author: "David Thomas, Andrew Hunt",
+    price: "320.000đ",
+    cover: "/images/books/5.jpg",
+    badge: "Mới",
+  },
+  {
+    id: "clean-code",
+    title: "Clean Code",
+    author: "Robert C. Martin",
+    price: "290.000đ",
+    cover: "/images/books/6.jpg",
+    badge: "Mới",
+  },
+  {
+    id: "design-patterns",
+    title: "Design Patterns",
+    author: "Erich Gamma",
+    price: "350.000đ",
+    cover: "/images/books/7.jpg",
+    badge: "Mới",
+  },
+  {
+    id: "sapiens",
+    title: "Sapiens: A Brief History of Humankind",
+    author: "Yuval Noah Harari",
+    price: "350.000đ",
+    cover: "/images/books/1.jpg",
+    badge: "Mới",
+  },
+  {
+    id: "the-alchemist",
+    title: "The Alchemist",
+    author: "Paulo Coelho",
+    price: "180.000đ",
+    cover: "/images/books/2.jpg",
+    badge: "Mới",
+  },
+];

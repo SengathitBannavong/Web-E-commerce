@@ -1,0 +1,30 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.home-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .home-page {
+    padding: 130px 1.25rem 3.5rem;
+  }
+  .home-main-content {
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-page {
+    padding: 120px 1rem 3rem;
+    gap: 3rem;
+  }
+  .home-main-content {
+    gap: 2.5rem;
+  }
+}
