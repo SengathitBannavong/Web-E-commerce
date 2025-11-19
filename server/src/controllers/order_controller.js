@@ -16,6 +16,83 @@ const get_all_order_items = (req, res) => {
 };
 
 
+const get_all_orders = (res) => {
+    const db = getDB();
+    const Order = OrderModel(db);
+    Order.findAll()
+    .then(orders => {
+        res.json(orders);
+    })
+    .catch(err => {
+        console.error("Error fetching orders:", err);
+        res.status(500).json({ error: "Internal server error" });
+    });
+};
+
+const get_order_by_id = (id, res) => {
+    if (!id) {
+        return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const db = getDB();
+    const Order = OrderModel(db);
+    
+    Order.findOne({ where: { Order_Id: id } })
+    .then(order => {
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        res.json(order);
+    })
+    .catch(err => {
+        console.error("Error fetching order:", err);
+        res.status(500).json({ error: "Internal server error" });
+    });
+};
+
+const get_order_by_user_id = (userId, res) => {
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const db = getDB();
+    const Order = OrderModel(db);
+    
+    Order.findAll({ where: { User_Id: userId } })
+    .then(orders => {
+        res.json(orders);
+    })
+    .catch(err => {
+        console.error("Error fetching orders for user:", err);
+        res.status(500).json({ error: "Internal server error" });
+    });
+};
+
+const get_orders = (req, res) => {
+    const id = req.params.id || req.query.id;
+    const userId = req.params.userId || req.query.userId;
+    const type = req.params.type || req.query.type;
+
+    if(type === "items"){
+        return get_all_order_items(req, res);
+    }
+
+    if (id) {
+        return get_order_by_id(id, res);
+    } else if (userId) {
+        return get_order_by_user_id(userId, res);
+    } else {
+        // TODO: Implement admin check here
+        var isAdmin = true;
+        if(isAdmin){
+            return get_all_orders(res);
+        }
+    }
+
+    return res.status(400).json({ error: "Invalid request parameters" });
+};
+
+
 // Helper function to create order items
 const create_order_items_helper = async (items) => {
     const db = getDB();
@@ -69,18 +146,6 @@ const delete_order_items_by_order_id_helper = async (orderId) => {
     }
 };
 
-const get_all_orders = (req, res) => {
-    const db = getDB();
-    const Order = OrderModel(db);
-    Order.findAll()
-    .then(orders => {
-        res.json(orders);
-    })
-    .catch(err => {
-        console.error("Error fetching orders:", err);
-        res.status(500).json({ error: "Internal server error" });
-    });
-};
 
 const create_order = async (req, res) => {
     const db = getDB();
@@ -180,48 +245,6 @@ const delete_order_by_id = async (req, res) => {
     }
 };
 
-const get_order_by_id = (req, res) => {
-    const id = req.query.id || req.params.id;
-    
-    if (!id) {
-        return res.status(400).json({ error: "Order ID is required" });
-    }
 
-    const db = getDB();
-    const Order = OrderModel(db);
-    
-    Order.findOne({ where: { Order_Id: id } })
-    .then(order => {
-        if (!order) {
-            return res.status(404).json({ error: "Order not found" });
-        }
-        res.json(order);
-    })
-    .catch(err => {
-        console.error("Error fetching order:", err);
-        res.status(500).json({ error: "Internal server error" });
-    });
-};
-
-const get_order_by_user_id = (req, res) => {
-    const userId = req.query.userId || req.params.userId;
-    
-    if (!userId) {
-        return res.status(400).json({ error: "User ID is required" });
-    }
-
-    const db = getDB();
-    const Order = OrderModel(db);
-    
-    Order.findAll({ where: { User_Id: userId } })
-    .then(orders => {
-        res.json(orders);
-    })
-    .catch(err => {
-        console.error("Error fetching orders for user:", err);
-        res.status(500).json({ error: "Internal server error" });
-    });
-};
-
-export { create_order, delete_order_by_id, get_all_order_items, get_all_orders, get_order_by_id, get_order_by_user_id };
+export { create_order, delete_order_by_id, get_all_order_items, get_orders };
 
