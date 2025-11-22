@@ -28,13 +28,6 @@
   text-align: left;
 }
 
-.register-form .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #343a40;
-}
-
 .register-form .form-group input {
   width: 100%;
   padding: 0.8rem 1rem;

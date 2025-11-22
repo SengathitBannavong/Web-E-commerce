@@ -50,35 +50,37 @@ export default function Register() {
           <h2>Create an Account</h2>
           <form onSubmit={onSubmit} className="register-form" noValidate>
             <div className="form-group">
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name"></label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={form.name}
                 onChange={onChange}
-                placeholder="Your name"
+                placeholder="Enter your name"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email"></label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={form.email}
                 onChange={onChange}
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 required
                 className={errors.email ? "input-error" : ""}
               />
-              {errors.email && <span className="error-text">{errors.email}</span>}
+              {errors.email && (
+                <span className="error-text">{errors.email}</span>
+              )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password"></label>
               <input
                 type="password"
                 id="password"
@@ -89,11 +91,13 @@ export default function Register() {
                 required
                 className={errors.password ? "input-error" : ""}
               />
-              {errors.password && <span className="error-text">{errors.password}</span>}
+              {errors.password && (
+                <span className="error-text">{errors.password}</span>
+              )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword"></label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -109,7 +113,9 @@ export default function Register() {
               )}
             </div>
 
-            <button type="submit" className="btn">Create account</button>
+            <button type="submit" className="btn">
+              Create account
+            </button>
           </form>
 
           <p className="signin-link">
