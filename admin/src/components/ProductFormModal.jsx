@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { HiXMark } from 'react-icons/hi2';
+import { useEffect, useState } from 'react';
+import { HiTrash, HiXMark } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
+import ConfirmDialog from './ConfirmDialog.jsx';
 
-function ProductFormModal({ isOpen, onClose, onSubmit }) {
+function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode = 'add' }) {
   const [formData, setFormData] = useState({
     Name: '',
     Description: '',
@@ -10,6 +11,36 @@ function ProductFormModal({ isOpen, onClose, onSubmit }) {
     Photo_Id: '',
     Category_Id: '',
   });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    if (mode === 'edit' && product) {
+      setFormData({
+        Name: product.Name || '',
+        Description: product.Description || '',
+        Price: product.Price || '',
+        Photo_Id: product.Photo_Id || '',
+        Category_Id: product.Category_Id || '',
+      });
+    } else {
+      setFormData({
+        Name: '',
+        Description: '',
+        Price: '',
+        Photo_Id: '',
+        Category_Id: '',
+      });
+    }
+  }, [mode, product, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+  }, [isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +63,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit }) {
       Photo_Id: formData.Photo_Id || null,
       Description: formData.Description || null,
     };
-    onSubmit(cleanedData);
+    
+    if (mode === 'edit' && product) {
+      onSubmit({ ...cleanedData, Product_Id: product.Product_Id, Index: product.Index });
+    } else {
+      onSubmit(cleanedData);
+    }
+    
     setFormData({
       Name: '',
       Description: '',
@@ -42,13 +79,22 @@ function ProductFormModal({ isOpen, onClose, onSubmit }) {
     });
   };
 
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(product);
+    setShowDeleteConfirm(false);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       
@@ -56,7 +102,9 @@ function ProductFormModal({ isOpen, onClose, onSubmit }) {
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Add New Product</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {mode === 'edit' ? 'Edit Product' : 'Add New Product'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -144,21 +192,42 @@ function ProductFormModal({ isOpen, onClose, onSubmit }) {
             {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
+              type="submit"
+              className="flex-1 px-2 py-2 bg-[#FEE2AD] text-black font-semibold rounded-lg hover:bg-[#FED876] transition-colors"
+            >
+              {mode === 'edit' ? 'Update' : 'Add'}
+            </button>
+            <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-2 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 bg-[#FEE2AD] text-black font-semibold rounded-lg hover:bg-[#FED876] transition-colors"
-            >
-              Add Product
-            </button>
+            {mode === 'edit' && onDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <HiTrash className="text-lg" />
+                Delete
+              </button>
+            )}
           </div>
         </form>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${product?.Name || 'this product'}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

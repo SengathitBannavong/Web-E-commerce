@@ -1,4 +1,5 @@
-function GridView({ data }) {
+
+function GridView({ data, onEdit }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {data.map((product, index) => (
@@ -29,6 +30,16 @@ function GridView({ data }) {
                 <span>{product.Category_Id}</span>
               </div>
             </div>
+            {onEdit && (
+              <div className="mt-3 pt-3 border-t">
+                <button
+                  onClick={() => onEdit(product)}
+                  className="w-100% bg-black flex items-center justify-center gap-2 px-3 py-2 text-sm text-white hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}

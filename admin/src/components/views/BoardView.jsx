@@ -1,4 +1,5 @@
-function BoardView({ data }) {
+
+function BoardView({ data, onEdit }) {
   return (
     <div className="flex flex-col space-y-3">
       {data.map((product, index) => (
@@ -45,6 +46,16 @@ function BoardView({ data }) {
                 )}
               </div>
             </div>
+            {onEdit && (
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() => onEdit(product)}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}

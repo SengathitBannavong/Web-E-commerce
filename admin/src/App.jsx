@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
 import Payments from './pages/Payments.jsx';
 import Products from './pages/Products.jsx';
+import './toast-custom.css';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -33,7 +34,7 @@ function App() {
         </div>
       </div>
       <ToastContainer 
-        position="top-right"
+        position="top-center"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
