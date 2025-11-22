@@ -19,7 +19,7 @@ function TableView({ data, columns }) {
             >
               {columns.map((column) => (
                 <td key={column.key} className="px-4 py-3 text-sm text-gray-700">
-                  {item[column.key]}
+                  {column.key === 'create_at' ? item[column.key] ? item[column.key].split('T')[0] : '' : item[column.key]}
                 </td>
               ))}
             </tr>
