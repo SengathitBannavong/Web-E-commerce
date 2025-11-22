@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   HiOutlineCube,
   HiOutlineCurrencyDollar,
@@ -11,7 +10,6 @@ import Nav_items from './Navbar_items.jsx';
 import User_profile from './User_profile.jsx';
 
 function Sidebar({isOpen, onClose}) {
-  const [activeItem, setActiveItem] = useState('dashboard');
   const nav_items = [
     { id: 'dashboard', label: 'Dashboard', icon: HiSquares2X2 },
     { id: 'Orders',    label: 'Orders',    icon: HiOutlineShoppingCart },
@@ -30,14 +28,12 @@ function Sidebar({isOpen, onClose}) {
         />
       )}
 
-      <aside className={`fixed top-0 left-0 h-screen w-64 bg-[#FEE2AD]/75 text-black flex flex-col z-40 md:static md:translate-x-0 ${
+      <aside className={`fixed top-0 left-0 h-screen w-64 bg-[#FEE2AD] md:bg-[#FEE2AD]/75 text-black flex flex-col z-40 md:static md:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <Logo />
         <Nav_items 
           items={nav_items} 
-          activeItem={activeItem} 
-          onItemClick={(id) => setActiveItem(id)} 
           CloseSidebar={onClose}
         />
         <User_profile />
