@@ -1,3 +1,4 @@
+import cors from 'cors';
 import dotenv from "dotenv";
 import express from 'express';
 import { connectDB } from "./config/database.js";
@@ -11,6 +12,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const URL = process.env.DATABASE_URL;
+
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+}));
 
 app.use(express.json());
 app.get('/', (req, res) => {
