@@ -3,8 +3,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AppLayout from "./components/AppLayout";
-import "./App.css";
 import Cart from "./pages/Cart";
+import Account from "./pages/Account";
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="cart" element={<Cart/>} />
+          <Route path="profile" element={<Account />} />
         </Route>
         <Route
           path="*"

@@ -1,0 +1,75 @@
+.account-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background-color: #FFFFFF;
+  border-right: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-user-info {
+  padding: 24px;
+  text-align: center;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.sidebar-user-info__avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.sidebar-user-info__name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #111827;
+  margin: 0;
+}
+
+.sidebar-user-info__email {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 4px 0 0;
+}
+
+.sidebar-nav {
+  padding: 16px 0;
+}
+
+.sidebar-nav__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav__link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  font-size: 15px;
+  color: #374151;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-nav__link:hover {
+  background-color: #F3F4F6;
+}
+
+.sidebar-nav__icon {
+  font-size: 20px;
+  width: 20px;
+  margin-right: 12px;
+  display: inline-block;
+  text-align: center;
+}
+
+.sidebar-nav__item--active .sidebar-nav__link {
+  background-color: #EEF2FF;
+  color: #4338CA;
+  font-weight: 600;
+  border-left: 3px solid #4338CA;
+  padding-left: 17px;
+}
