@@ -1,12 +1,12 @@
 import {
-  HiOutlineCube,
-  HiOutlineCurrencyDollar,
-  HiOutlineShoppingCart,
-  HiOutlineUsers,
-  HiSquares2X2
+    HiOutlineCube,
+    HiOutlineCurrencyDollar,
+    HiOutlineShoppingCart,
+    HiOutlineUsers,
+    HiSquares2X2
 } from "react-icons/hi2";
 import Logo from './Logo.jsx';
-import Nav_items from './Navbar_items.jsx';
+import Nav_items from './NavbarItems.jsx';
 import User_profile from './User_profile.jsx';
 
 function Sidebar({isOpen, onClose}) {
@@ -28,7 +28,7 @@ function Sidebar({isOpen, onClose}) {
         />
       )}
 
-      <aside className={`fixed top-0 left-0 h-screen w-64 bg-[#FEE2AD] md:bg-[#FEE2AD]/75 text-black flex flex-col z-40 md:static md:translate-x-0 ${
+      <aside className={`fixed top-0 left-0 h-screen w-64 bg-white border-r border-slate-200 backdrop-blur-xl shadow-xl flex flex-col z-40 md:static md:translate-x-0 transition-transform duration-300 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <Logo />

@@ -4,6 +4,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
+import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
@@ -15,7 +17,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
     <Router>
-      <div className='flex h-screen bg-[#FFFCEC]'>
+      <div className='flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div
           id='main-content'
@@ -24,9 +26,17 @@ function App() {
           <Header onMenuClick={() => setSidebarOpen(true)} />
           <div className='flex-1 overflow-auto'>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={
+                <DashboardContextProvider>
+                  <Dashboard />
+                </DashboardContextProvider> 
+              } />
               <Route path="/orders" element={<Orders />} />
-              <Route path="/products" element={<Products />} />
+              <Route path="/products" element={
+                <ProductContextProvider>
+                  <Products />
+                </ProductContextProvider>
+              } />
               <Route path="/customers" element={<Customers />} />
               <Route path="/payments" element={<Payments />} />
             </Routes>
