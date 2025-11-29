@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
@@ -26,7 +27,11 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/orders" element={<Orders />} />
-              <Route path="/products" element={<Products />} />
+              <Route path="/products" element={
+                <ProductContextProvider>
+                  <Products />
+                </ProductContextProvider>
+              } />
               <Route path="/customers" element={<Customers />} />
               <Route path="/payments" element={<Payments />} />
             </Routes>
