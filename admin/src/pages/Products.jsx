@@ -2,10 +2,9 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { HiListBullet, HiSquares2X2, HiViewColumns } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
+import ProductBody from '../components/Product/ProductBody';
+import ProductHeader from '../components/Product/ProductHeader';
 import ProductFormModal from '../components/ProductFormModal.jsx';
-import BoardView from '../components/views/BoardView.jsx';
-import GridView from '../components/views/GridView.jsx';
-import TableView from '../components/views/TableView.jsx';
 
 function Products() {
   const [viewMode, setViewMode] = useState('grid'); // 'table', 'grid', or 'board'
@@ -181,46 +180,20 @@ function Products() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Products</h1>
-          <p className="text-gray-600">Manage products here</p>
-        </div>
-        
-        <div className="flex gap-2 bg-white rounded-lg shadow-sm p-1">
-          {viewButtons.map(({ mode, icon: Icon, label }) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                viewMode === mode
-                  ? 'bg-[#FEE2AD] text-black'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              title={label}
-            >
-              <Icon className="text-xl" />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+    <div Name="main-container" className="p-6">
+      <ProductHeader 
+        viewMode={viewMode}
+        viewButtons={viewButtons}
+        setViewMode={setViewMode}
+        openAddModal={openAddModal}
+      />
 
-      <div>
-        <button 
-          onClick={openAddModal}
-          className='bg-black text-white px-4 py-1 rounded-md hover:bg-gray-800 transition-colors'
-        >
-          Add Product
-        </button>
-      </div>
-
-      <div className="mt-6">
-        {viewMode === 'table' && <TableView data={products} columns={columns} onEdit={openEditModal} />}
-        {viewMode === 'grid' && <GridView data={products} onEdit={openEditModal} />}
-        {viewMode === 'board' && <BoardView data={products} onEdit={openEditModal} />}
-      </div>
+      <ProductBody 
+        viewMode={viewMode}
+        products={products}
+        columns={columns}
+        openEditModal={openEditModal}
+      />
 
       <ProductFormModal 
         isOpen={isModalOpen}

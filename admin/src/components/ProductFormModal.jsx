@@ -101,13 +101,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             {mode === 'edit' ? 'Edit Product' : 'Add New Product'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg p-1 transition-all"
           >
             <HiXMark className="text-2xl" />
           </button>
@@ -115,7 +115,7 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
         {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Product Name
               </label>
               <input
@@ -123,14 +123,14 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 name="Name"
                 value={formData.Name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEE2AD] focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="Enter product name"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Description
               </label>
               <textarea
@@ -138,13 +138,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 value={formData.Description}
                 onChange={handleChange}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEE2AD] focus:border-transparent outline-none resize-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all"
                 placeholder="Enter product description"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Price
               </label>
               <input
@@ -154,14 +154,14 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 onChange={handleChange}
                 step="0.01"
                 min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEE2AD] focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="0.00"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Photo ID
               </label>
               <input
@@ -169,13 +169,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 name="Photo_Id"
                 value={formData.Photo_Id}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEE2AD] focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="photo_example"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Category ID
               </label>
               <input
@@ -184,7 +184,7 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 value={formData.Category_Id}
                 onChange={handleChange}
                 min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEE2AD] focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="0"
               />
             </div>
@@ -193,14 +193,14 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              className="flex-1 px-2 py-2 bg-[#FEE2AD] text-black font-semibold rounded-lg hover:bg-[#FED876] transition-colors"
+              className="flex-1 px-2 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-md hover:shadow-indigo-500/30 transition-all"
             >
               {mode === 'edit' ? 'Update' : 'Add'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-2 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-2 py-2 border-2 border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all font-medium"
             >
               Cancel
             </button>
@@ -208,7 +208,7 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                className="px-2 py-2 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-lg hover:shadow-md hover:shadow-rose-500/30 transition-all flex items-center gap-2 font-medium"
               >
                 <HiTrash className="text-lg" />
                 Delete

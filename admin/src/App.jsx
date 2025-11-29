@@ -15,7 +15,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
     <Router>
-      <div className='flex h-screen bg-[#FFFCEC]'>
+      <div className='flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div
           id='main-content'
