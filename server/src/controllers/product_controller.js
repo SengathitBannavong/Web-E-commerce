@@ -1,10 +1,5 @@
-import { getDB } from "../config/database.js";
-import { Product as ProdcutModel } from '../models/product_model.js';
-
-
 const get_all_products = (res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
 
   Product.findAll()
   .then(products => {
@@ -17,8 +12,7 @@ const get_all_products = (res) => {
 };
 
 const get_product_by_index = (index,res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
   const productIndex = index;
   
   if (!productIndex) {
@@ -39,8 +33,7 @@ const get_product_by_index = (index,res) => {
 };
 
 const get_product_by_id = (id,res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
   const productId = id;
 
   if (!productId) {
@@ -79,8 +72,7 @@ const get_products = (req, res) => {
 };
 
 const update_product = (req, res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
   const productId = req.params.id || req.query.id;
 
   if (!productId) {
@@ -117,8 +109,7 @@ const generateProductId = async (Product) => {
 };
 
 const create_product = async (req, res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
 
   const newProduct = req.body;
 
@@ -142,8 +133,7 @@ const create_product = async (req, res) => {
 };
 
 const delete_product = (req, res) => {
-  const db = getDB();
-  const Product = ProdcutModel(db);
+  const { Product } = getModel();
   const productId = req.params.id || req.query.id;
   const auth = req.params.auth || req.query.auth;
 
@@ -171,4 +161,3 @@ const delete_product = (req, res) => {
 
 
 export { create_product, delete_product, get_products, update_product };
-

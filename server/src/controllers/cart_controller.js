@@ -1,10 +1,7 @@
-import { getDB } from "../config/database.js";
-import { CartItem as CartItemModel } from "../models/cart_item_model.js";
-import { Cart as CartModel } from "../models/cart_model.js";
+import { getModel } from "../config/database.js";
 
 const get_all_carts = (res) => {
-  const db = getDB();
-  const Cart = CartModel(db);
+  const { Cart } = getModel();
   Cart.findAll()
   .then(carts => {
       res.json(carts);
@@ -16,8 +13,7 @@ const get_all_carts = (res) => {
 };
 
 const get_all_cart_items = (res) => {
-  const db = getDB();
-  const CartItem = CartItemModel(db);
+  const { CartItem } = getModel();
   CartItem.findAll()
   .then(cartItems => {
       res.json(cartItems);
@@ -29,8 +25,7 @@ const get_all_cart_items = (res) => {
 };
 
 const get_cart_by_id = (id, res) => {
-  const db = getDB();
-  const Cart = CartModel(db);
+  const { Cart } = getModel();
   const cartId = id;
 
   Cart.findByPk(cartId)
@@ -48,8 +43,7 @@ const get_cart_by_id = (id, res) => {
 };
 
 const get_cart_by_user_id = (userId, res) => {
-  const db = getDB();
-  const Cart = CartModel(db);
+  const { Cart } = getModel();
 
   Cart.findAll({ where: { User_Id: userId } })
   .then(carts => {
@@ -126,8 +120,7 @@ const get_carts = (req, res) => {
 }
 
 const create_cart_item = async (items, Cart_Id) => {
-  const db = getDB();
-  const CartItem = CartItemModel(db);
+  const { CartItem } = getModel();
 
   try {
     // Validate all items first
@@ -155,8 +148,7 @@ const create_cart_item = async (items, Cart_Id) => {
 
 const create_cart = async (req, res) => {
   try {
-    const db = getDB();
-    const Cart = CartModel(db);
+    const { Cart } = getModel();
     const newCart = req.body;
 
     // Validate User_Id
@@ -209,8 +201,7 @@ const create_cart = async (req, res) => {
 };
 
 const update_cart = (req, res) => {
-  const db = getDB();
-  const Cart = CartModel(db);
+  const { Cart } = getModel();
   const cartId = req.params.id || req.query.id;
   const updatedData = req.body;
 
@@ -238,9 +229,7 @@ const update_cart = (req, res) => {
 
 const delete_cart = async (req, res) => {
   try {
-    const db = getDB();
-    const Cart = CartModel(db);
-    const CartItem = CartItemModel(db);
+    const { Cart, CartItem } = getModel();
     const cartId = req.params.id || req.query.id;
     const auth = req.params.auth || req.query.auth;
     

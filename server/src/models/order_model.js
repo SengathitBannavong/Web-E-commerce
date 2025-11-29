@@ -22,6 +22,7 @@ export const Order = (sequelize) => {
       allowNull: false,
       field: "Status",
       defaultValue: "pending"
+      // Values: "pending", "cancelled", "paid"
     },
     Amount: {
       type: DataTypes.DECIMAL(10, 2),

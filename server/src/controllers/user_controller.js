@@ -1,9 +1,5 @@
-import { getDB } from "../config/database.js";
-import { User as UserModel } from "../models/user_model.js";
-
 const get_all_users = (req, res) => {
-    const db = getDB();
-    const User = UserModel(db);
+    const { User } = getModel();
     User.findAll()
     .then(users => {
         res.json(users);
@@ -55,8 +51,7 @@ const create_user = async (req, res) => {
     }
 
     try {
-        const db = getDB();
-        const User = UserModel(db);
+        const { User } = getModel();
         
         // Auto-generate User_Id
         const User_Id = await generateUserId(User);
@@ -96,8 +91,7 @@ const get_user = (req, res) => {
         return res.status(400).json({ error: "User ID is required" });
     }
 
-    const db = getDB();
-    const User = UserModel(db);
+    const { User } = getModel();
     
     User.findOne({ where: { User_Id: id } })
     .then(user => {
@@ -126,8 +120,7 @@ const delete_user = (req, res) => {
     if (!id) {
         return res.status(400).json({ error: "User ID is required" });
     }
-    const db = getDB();
-    const User = UserModel(db);
+    const { User } = getModel();
     
     User.destroy({ where: { User_Id: id } })
     .then(deletedCount => {
