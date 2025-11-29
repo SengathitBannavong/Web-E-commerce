@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
 import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -25,7 +26,11 @@ function App() {
           <Header onMenuClick={() => setSidebarOpen(true)} />
           <div className='flex-1 overflow-auto'>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={
+                <DashboardContextProvider>
+                  <Dashboard />
+                </DashboardContextProvider> 
+              } />
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={
                 <ProductContextProvider>

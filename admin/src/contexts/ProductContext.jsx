@@ -195,5 +195,3 @@ export const useProductContext = () => {
   }
   return context;
 };
-
-export default ProductContext;
