@@ -1,1 +1,121 @@
-// TODO: Implement associations between models and export them to initialize in database.js
+export const setupAssociations = (models) => {
+  const { User, Product, Category, Order, OrderItem, Cart, CartItem } = models;
+
+  // User ↔ Order (One-to-Many)
+  // One user can have many orders
+  User.hasMany(Order, {
+    foreignKey: 'User_Id',
+    sourceKey: 'User_Id',
+    as: 'orders'
+  });
+  Order.belongsTo(User, {
+    foreignKey: 'User_Id',
+    targetKey: 'User_Id',
+    as: 'user'
+  });
+
+  // User ↔ Cart (One-to-Many)
+  // One user can have many carts (active, archived, etc.)
+  User.hasMany(Cart, {
+    foreignKey: 'User_Id',
+    sourceKey: 'User_Id',
+    as: 'carts'
+  });
+  Cart.belongsTo(User, {
+    foreignKey: 'User_Id',
+    targetKey: 'User_Id',
+    as: 'user'
+  });
+
+  // Order ↔ OrderItem (One-to-Many)
+  // One order contains many order items
+  Order.hasMany(OrderItem, {
+    foreignKey: 'Order_Id',
+    as: 'items'
+  });
+  OrderItem.belongsTo(Order, {
+    foreignKey: 'Order_Id',
+    as: 'order'
+  });
+
+  // Product ↔ OrderItem (One-to-Many)
+  // One product can appear in many order items
+  Product.hasMany(OrderItem, {
+    foreignKey: 'Product_Id',
+    sourceKey: 'Product_Id',
+    as: 'orderItems'
+  });
+  OrderItem.belongsTo(Product, {
+    foreignKey: 'Product_Id',
+    targetKey: 'Product_Id',
+    as: 'product'
+  });
+
+  // Order ↔ Product (Many-to-Many through OrderItem)
+  // Orders can have many products, products can be in many orders
+  Order.belongsToMany(Product, {
+    through: OrderItem,
+    foreignKey: 'Order_Id',
+    otherKey: 'Product_Id',
+    as: 'products'
+  });
+  Product.belongsToMany(Order, {
+    through: OrderItem,
+    foreignKey: 'Product_Id',
+    otherKey: 'Order_Id',
+    as: 'orders'
+  });
+
+  // Cart ↔ CartItem (One-to-Many)
+  // One cart contains many cart items
+  Cart.hasMany(CartItem, {
+    foreignKey: 'Cart_Id',
+    as: 'items'
+  });
+  CartItem.belongsTo(Cart, {
+    foreignKey: 'Cart_Id',
+    as: 'cart'
+  });
+
+  // Product ↔ CartItem (One-to-Many)
+  // One product can appear in many cart items
+  Product.hasMany(CartItem, {
+    foreignKey: 'Product_Id',
+    sourceKey: 'Product_Id',
+    as: 'cartItems'
+  });
+  CartItem.belongsTo(Product, {
+    foreignKey: 'Product_Id',
+    targetKey: 'Product_Id',
+    as: 'product'
+  });
+
+  // Cart ↔ Product (Many-to-Many through CartItem)
+  // Carts can have many products, products can be in many carts
+  Cart.belongsToMany(Product, {
+    through: CartItem,
+    foreignKey: 'Cart_Id',
+    otherKey: 'Product_Id',
+    as: 'products'
+  });
+  Product.belongsToMany(Cart, {
+    through: CartItem,
+    foreignKey: 'Product_Id',
+    otherKey: 'Cart_Id',
+    as: 'carts'
+  });
+
+
+  // Category ↔ Product (One-to-Many)
+  // One category can have many products
+  Category.hasMany(Product, {
+    foreignKey: 'Category_Id',
+    as: 'products'
+  });
+  Product.belongsTo(Category, {
+    foreignKey: 'Category_Id',
+    as: 'category'
+  });
+
+  console.log('[INFO] Database associations have been set up successfully');
+};
