@@ -1,0 +1,217 @@
+import { getModel } from "../config/database.js";
+
+const get_all_payments = async (res) => {
+  try {
+    const { Payment } = getModel();
+    const payments = await Payment.findAll();
+    res.json(payments);
+  } catch (err) {
+    console.error("Error fetching payments:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const get_payment_by_id = async (id, res) => {
+  try {
+    if (!id) {
+      return res.status(400).json({ error: "Payment ID is required" });
+    }
+
+    const { Payment } = getModel();
+    const payment = await Payment.findByPk(id);
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    res.json(payment);
+  } catch (err) {
+    console.error("Error fetching payment:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const get_payments_by_order_id = async (orderId, res) => {
+  try {
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const { Payment } = getModel();
+    const payments = await Payment.findAll({ where: { Order_Id: orderId } });
+    res.json(payments);
+  } catch (err) {
+    console.error("Error fetching payments by order ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const get_payments_by_user_id = async (userId, res) => {
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const { Payment } = getModel();
+    const payments = await Payment.findAll({ where: { User_Id: userId } });
+    res.json(payments);
+  } catch (err) {
+    console.error("Error fetching payments by user ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const get_payments = async (req, res) => {
+  const id = req.params.id || req.query.id;
+  const orderId = req.params.orderId || req.query.orderId;
+  const userId = req.params.userId || req.query.userId;
+
+  if (id) {
+    return await get_payment_by_id(id, res);
+  } else if (orderId) {
+    return await get_payments_by_order_id(orderId, res);
+  } else if (userId) {
+    return await get_payments_by_user_id(userId, res);
+  } else {
+    // TODO: Implement proper authentication and authorization
+    const isAdmin = true;
+    if (isAdmin) {
+      return await get_all_payments(res);
+    }
+  }
+
+  return res.status(400).json({ error: "Payment ID or Order ID or User ID is required" });
+};
+
+const create_payment = async (req, res) => {
+  try {
+    const { Payment } = getModel();
+    const { orderId, userId , type, amount, status } = req.body;
+
+    // Validate required fields
+    if (!orderId || !userId || !type || !amount) {
+      return res.status(400).json({ 
+        error: "Order_Id, User_Id, Type, and Amount are required",
+        required: ["orderId", "userId", "type", "amount"]
+      });
+    }
+
+    // Validate Order_Id and User_Id as integers/strings
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Order_Id must be a valid integer" });
+    }
+    if (typeof userId !== 'string' || userId.length === 0) {
+      return res.status(400).json({ error: "User_Id must be a valid non-empty string" });
+    }
+
+    // Validate payment type
+    const validTypes = ["credit_card", "paypal", "bank_transfer"];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
+    }
+
+    // Validate amount
+    if (isNaN(amount) || Number(amount) <= 0) {
+      return res.status(400).json({ error: "Amount must be a positive number" });
+    }
+
+    const newPayment = await Payment.create({
+      Order_Id: orderId,
+      User_Id: userId,
+      Type: type,
+      Amount: amount,
+      Status: status || 'pending'
+    });
+
+    res.status(201).json({
+      message: "Payment created successfully",
+      payment: newPayment
+    });
+  } catch (err) {
+    console.error("Error creating payment:", err);
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(404).json({ error: "Referenced Order or User does not exist" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const update_payment = async (req, res) => {
+  try {
+    const { Payment } = getModel();
+    const id = req.params.id || req.query.id;
+    const { type, amount, status } = req.body;
+
+    // Validate payment type
+    const validTypes = ["credit_card", "paypal", "bank_transfer"];
+    if (type && !validTypes.includes(type)) {
+      return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
+    }
+
+    // Validate amount
+    if (amount && (isNaN(amount) || Number(amount) <= 0)) {
+      return res.status(400).json({ error: "Amount must be a positive number" });
+    }
+
+    // Validate payment status
+    const validStatuses = ["pending", "completed", "failed"];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ error: `Invalid payment status. Valid statuses are: ${validStatuses.join(", ")}` });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "Payment ID is required" });
+    }
+
+    const payment = await Payment.findByPk(id);
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    // Update only provided fields
+    if (type !== undefined) payment.Type = type;
+    if (amount !== undefined) payment.Amount = amount;
+    if (status !== undefined) payment.Status = status;
+
+    await payment.save();
+
+    res.json({
+      message: "Payment updated successfully",
+      payment
+    });
+  } catch (err) {
+    console.error("Error updating payment:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const delete_payment = async (req, res) => {
+  try {
+    const { Payment } = getModel();
+    const id = req.params.id || req.query.id;
+    const auth = req.params.auth || req.query.auth;
+
+    // TODO: Implement proper authentication and authorization
+    if (auth !== "admin-secret") {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "Payment ID is required" });
+    }
+
+    const deletedRows = await Payment.destroy({ where: { Payment_Id: id } });
+
+    if (deletedRows === 0) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    res.json({ message: "Payment deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting payment:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { create_payment, delete_payment, get_payments, update_payment };

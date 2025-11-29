@@ -5,6 +5,7 @@ import { connectDB } from "./config/database.js";
 import { cart_router } from "./routes/cart_route.js";
 import { category_router } from './routes/category_route.js';
 import { order_router } from "./routes/order_route.js";
+import { payment_router } from './routes/payment_route.js';
 import { product_router } from "./routes/product_route.js";
 import { user_router } from "./routes/user_route.js";
 
@@ -29,6 +30,7 @@ app.use("/orders", order_router);
 app.use("/products", product_router);
 app.use("/carts", cart_router);
 app.use("/categories", category_router);
+app.use("/payments", payment_router);
 
 connectDB(URL).then(async() => {
     app.listen(PORT, () => console.log(`[INFO] Server running on port ${PORT}`));

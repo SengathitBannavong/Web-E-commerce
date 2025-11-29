@@ -1,5 +1,5 @@
 export const setupAssociations = (models) => {
-  const { User, Product, Category, Order, OrderItem, Cart, CartItem } = models;
+  const { User, Product, Category, Order, OrderItem, Cart, CartItem, Payment } = models;
 
   // User ↔ Order (One-to-Many)
   // One user can have many orders
@@ -115,6 +115,30 @@ export const setupAssociations = (models) => {
   Product.belongsTo(Category, {
     foreignKey: 'Category_Id',
     as: 'category'
+  });
+
+  // Payment ↔ Order (Many-to-One)
+  // Many payments can belong to one order
+  Order.hasMany(Payment, {
+    foreignKey: 'Order_Id',
+    as: 'payments'
+  });
+  Payment.belongsTo(Order, {
+    foreignKey: 'Order_Id',
+    as: 'order'
+  });
+
+  // Payment ↔ User (Many-to-One)
+  // Many payments can belong to one user
+  User.hasMany(Payment, {
+    foreignKey: 'User_Id',
+    sourceKey: 'User_Id',
+    as: 'payments'
+  });
+  Payment.belongsTo(User, {
+    foreignKey: 'User_Id',
+    targetKey: 'User_Id',
+    as: 'user'
   });
 
   console.log('[INFO] Database associations have been set up successfully');

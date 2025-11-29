@@ -4,6 +4,7 @@ import { Cart } from "../models/cart_model.js";
 import { Category } from "../models/category_model.js";
 import { OrderItem } from "../models/order_item_model.js";
 import { Order } from "../models/order_model.js";
+import { Payment } from "../models/payment_model.js";
 import { Product } from "../models/product_model.js";
 import { User } from "../models/user_model.js";
 import { setupAssociations } from "./associations.js";
@@ -33,6 +34,7 @@ export const connectDB = async (dbUrl) => {
       OrderItem: OrderItem(sequelize),
       Cart: Cart(sequelize),
       CartItem: CartItem(sequelize),
+      Payment: Payment(sequelize),
     };
 
     // Setup associations
