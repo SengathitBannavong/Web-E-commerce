@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { FaShoppingCart, FaUser } from "react-icons/fa";
 import "./header.css";
 import SearchBox from "./search_box";
 
@@ -21,12 +22,20 @@ export default function Header() {
         {/* Right: Navigation */}
         <div className="header-right">
           <nav>
-            <NavLink end to="/">
-              Home
+            <NavLink to="/cart" className="icon-text-link">
+              <FaShoppingCart />
+              <span>Cart</span>
             </NavLink>
-            <NavLink to="/login">Login</NavLink>
-            <NavLink to="/register">Register</NavLink>
-            <NavLink to="/cart">Your Cart</NavLink>
+            <div className="account-dropdown">
+              <NavLink to="/profile" className="icon-text-link">
+                <FaUser />
+                <span>Account</span>
+              </NavLink>
+              <div className="dropdown-content">
+                <NavLink to="/login">Login</NavLink>
+                <NavLink to="/register">Register</NavLink>
+              </div>
+            </div>
           </nav>
         </div>
       </div>
