@@ -1,3 +1,5 @@
+import { getModel } from "../config/database.js";
+
 // ----------------- Order Items Controller -----------------
 const get_all_order_items = (req, res) => {
     const { OrderItem } = getModel();
