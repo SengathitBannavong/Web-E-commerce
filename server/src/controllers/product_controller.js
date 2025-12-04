@@ -1,3 +1,5 @@
+import { getModel } from "../config/database.js";
+
 const get_all_products = (res) => {
   const { Product } = getModel();
 
