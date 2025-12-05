@@ -10,23 +10,23 @@ export const OrderItem = (sequelize) => {
     },
     Order_Id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       field: "Order_Id",
-      nonNull: true
     },
     Product_Id: {
       type: DataTypes.STRING(8),
+      allowNull: false,
       field: "Product_Id",
-      nonNull: true
     },
     Quantity: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       field: "Quantity",
-      nonNull: true
     },
     Amount: {
       type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
       field: "Amount",
-      nonNull: true
     },
   }, {
     tableName: "Order_Item",

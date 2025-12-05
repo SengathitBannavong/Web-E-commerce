@@ -19,15 +19,15 @@ export function Payment(sequelize) {
       },
       Type: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       Amount: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
+        allowNull: false,
       },
       Status: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
         defaultValue: "Pending",
         // Values: "Pending", "Completed", "Failed"
       },

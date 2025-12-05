@@ -30,6 +30,21 @@ export const User = (sequelize) => {
       allowNull: false,
       field: "Password",
     },
+    Address: {
+      type: DataTypes.STRING(256),
+      allowNull: false,
+      field: "Address",
+    },
+    PhoneNumber: {
+      type: DataTypes.STRING(256),
+      allowNull: false,
+      field: "PhoneNumber",
+    },
+    Gender: {
+      type: DataTypes.STRING(32),
+      allowNull: false,
+      field: "Gender",
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

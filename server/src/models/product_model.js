@@ -15,29 +15,31 @@ export const Product = (sequelize) => {
       field: "Product_Id",
     },
     Name: {
-      type: DataTypes.STRING(64),
+      type: DataTypes.STRING,
       allowNull: false,
       field: "Name",
     },
     Description: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
       field: "Description",
     },
     Price: {
       type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
       field: "Price",
-      nonNull: true
     },
     Photo_Id: {
-      type: DataTypes.STRING(8),
-      field: "Photo_Id"
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "Photo_Id",
     },
     Category_Id: {
       type: DataTypes.INTEGER,
-      field: "Category_Id"
+      allowNull: true,
+      field: "Category_Id",
     },
-    create_at: {
+    created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       field: "created_at",
