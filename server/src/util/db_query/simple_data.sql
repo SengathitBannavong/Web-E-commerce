@@ -1,8 +1,8 @@
 -- User
-INSERT INTO "User" ("User_Id", "Name", "Email", "Password") VALUES
-('U0000001', 'Alice Smith', 'alice@example.com', 'password123'),
-('U0000002', 'Bob Johnson', 'bob@example.com', 'securepass'),
-('U0000003', 'Charlie Brown', 'charlie@example.com', 'charliepass');
+INSERT INTO "User" ("User_Id", "Name", "Email", "Password", "Address", "PhoneNumber", "Gender") VALUES
+('U0000001', 'Alice Smith', 'alice@example.com', 'password123', '123 Main St, New York, NY 10001', '+1-555-0101', 'Female'),
+('U0000002', 'Bob Johnson', 'bob@example.com', 'securepass', '456 Oak Ave, Los Angeles, CA 90001', '+1-555-0102', 'Male'),
+('U0000003', 'Charlie Brown', 'charlie@example.com', 'charliepass', '789 Pine Rd, Chicago, IL 60601', '+1-555-0103', 'Male');
 
 -- Category
 INSERT INTO "Category" ("Name", "Description", "Photo_Id") VALUES
@@ -17,15 +17,15 @@ INSERT INTO "Product" ("Product_Id", "Name", "Description", "Price", "Photo_Id",
 ('P0000003', 'Learning JavaScript', 'Programming guide for JS beginners', 29.99, 'photo_js', 3);
 
 -- Stock
-INSERT INTO "Stock" ("Product_Id", "Quantity") VALUES
-('P0000001', 50),
-('P0000002', 30),
-('P0000003', 20);
+INSERT INTO "Stock" ("Product_Id", "Quantity", "Last_Updated") VALUES
+('P0000001', 50, NOW()),
+('P0000002', 30, NOW()),
+('P0000003', 20, NOW());
 
 -- Cart
-INSERT INTO "Cart" ("User_Id", "Status") VALUES
-('U0000001', 'active'),
-('U0000002', 'active');
+INSERT INTO "Cart" ("User_Id", "Status", "created_at") VALUES
+('U0000001', 'active', NOW()),
+('U0000002', 'active', NOW());
 
 -- CartItem
 INSERT INTO "CartItem" ("Cart_Id", "Product_Id", "Quantity") VALUES
@@ -34,9 +34,9 @@ INSERT INTO "CartItem" ("Cart_Id", "Product_Id", "Quantity") VALUES
 (2, 'P0000002', 1);
 
 -- Order
-INSERT INTO "Order" ("User_Id", "Status", "Amount") VALUES
-('U0000001', 'paid', 49.97),
-('U0000002', 'pending', 14.50);
+INSERT INTO "Order" ("User_Id", "Date", "Status", "Amount") VALUES
+('U0000001', NOW(), 'paid', 49.97),
+('U0000002', NOW(), 'pending', 14.50);
 
 -- Order_Item
 INSERT INTO "Order_Item" ("Order_Id", "Product_Id", "Quantity", "Amount") VALUES
