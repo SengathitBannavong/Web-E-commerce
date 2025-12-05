@@ -1,38 +1,87 @@
+import { Op } from "sequelize";
 import { getModel } from "../config/database.js";
 
-const get_all_products = (res) => {
-  const { Product } = getModel();
+// Validation helper function
+const validateProductFields = (fields, isUpdate = false) => {
+  const { Name, Description, Price, Photo_Id, Category_Id } = fields;
+  const errors = [];
 
-  Product.findAll()
-  .then(products => {
-    res.json(products);
-  })
-  .catch(err => {
-    console.error("Error fetching products:", err);
-    res.status(500).json({ error: "Internal server error"});
-  });
-};
-
-const get_product_by_index = (index,res) => {
-  const { Product } = getModel();
-  const productIndex = index;
-  
-  if (!productIndex) {
-    return res.status(400).json({ error: "Product Index is required" });
+  // Check required fields (only for create, not update)
+  if (!isUpdate) {
+    if (!Name) errors.push("Name is required");
+    if (Price === undefined || Price === null) errors.push("Price is required");
   }
 
-  Product.findByPk(productIndex)
-    .then(product => {
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-      res.json(product);
-    })
-    .catch(err => {
-      console.error("Error fetching product:", err);
-      res.status(500).json({ error: "Internal server error" });
-    });
+  // Check if at least one field is provided for update
+  if (isUpdate && !Name && !Description && Price === undefined && !Photo_Id && Category_Id === undefined) {
+    errors.push("At least one field is required to update");
+  }
+
+  // Validate Price if provided
+  if (Price !== undefined && Price !== null) {
+    if (isNaN(Price) || parseFloat(Price) < 0) {
+      errors.push("Price must be a valid positive number");
+    }
+  }
+
+  // Validate Category_Id if provided (must be integer or null)
+  if (Category_Id !== undefined && Category_Id !== null) {
+    if (!Number.isInteger(Category_Id) && !Number.isInteger(parseInt(Category_Id))) {
+      errors.push("Category_Id must be a valid integer");
+    }
+  }
+
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
+
+const get_product_normal = async (req, res) => {
+  const { Product } = getModel();
+  
+  // Get pagination parameters from query
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || '';
+  const offset = (page - 1) * limit;
+
+  // TODO: authentication and authorization for admin to see all products including inactive ones
+  const auth = req.headers.authorization;
+  if (search === '' && auth !== 'admin-secret') {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  // Build where clause for search
+  const whereClause = search ? {
+    Name: { [Op.iLike]: `%${search}%` }
+  } : {};
+  
+  try {
+    // Execute count and findAll in parallel
+    const [total, products] = await Promise.all([
+      Product.count({ where: whereClause }),
+      Product.findAll({
+        where: whereClause,
+        limit: limit,
+        offset: offset
+      })
+    ]);
+    
+    const totalPage = Math.ceil(total / limit);
+    
+    res.json({
+      totalPage,
+      total,
+      data: products
+    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    res.status(500).json({ error: "Internal server error"});
+  }
+};
+
 
 const get_product_by_id = (id,res) => {
   const { Product } = getModel();
@@ -56,44 +105,64 @@ const get_product_by_id = (id,res) => {
 };
 
 const get_products = (req, res) => {
-  const id = req.params.id || req.query.id;
-  const index = req.params.index || req.query.index;
+  const id = req.params.id;
 
   if (id) {
     return get_product_by_id(id,res);
-  } else if (index) {
-    return get_product_by_index(index,res);
-  } else {
-    var isAdmin = true; // TODO: replace with real admin check
-    if(isAdmin){
-      return get_all_products(res);
-    }
   }
-
-  return res.status(400).json({ error: "Product ID or Index is required" });
+  
+  return get_product_normal(req, res);
 };
 
-const update_product = (req, res) => {
+const update_product = async (req, res) => {
   const { Product } = getModel();
-  const productId = req.params.id || req.query.id;
+  const productId = req.params.id;
 
   if (!productId) {
     return res.status(400).json({ error: "Product ID is required" });
   }
 
-  const updateData = req.body;
+  const { Name, Description, Price, Photo_Id, Category_Id } = req.body;
 
-  Product.update(updateData, { where: { Product_Id: productId } })
-    .then(([updatedRows]) => {
-      if (updatedRows === 0) {
-        return res.status(404).json({ error: "Product not found or no changes made" });
-      }
-      res.json({ message: "Product updated successfully" });
-    })
-    .catch(err => {
-      console.error("Error updating product:", err);
-      res.status(500).json({ error: "Internal server error" });
+  // Validate fields using helper function (isUpdate = true)
+  const validation = validateProductFields(req.body, true);
+  if (!validation.isValid) {
+    return res.status(400).json({ 
+      error: "Validation failed",
+      details: validation.errors,
+      allowedFields: ["Name", "Description", "Price", "Photo_Id", "Category_Id"]
     });
+  }
+
+  try {
+    // Check if product exists
+    const product = await Product.findOne({ where: { Product_Id: productId } });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Build update object with only provided fields
+    const updateData = {};
+    if (Name !== undefined) updateData.Name = Name;
+    if (Description !== undefined) updateData.Description = Description;
+    if (Price !== undefined) updateData.Price = Price;
+    if (Photo_Id !== undefined) updateData.Photo_Id = Photo_Id;
+    if (Category_Id !== undefined) updateData.Category_Id = Category_Id;
+
+    // Update product and return updated data
+    const [affectedCount, affectedRows] = await Product.update(updateData, { 
+      where: { Product_Id: productId },
+      returning: true
+    });
+
+    res.json({
+      message: "Product updated successfully",
+      data: affectedRows[0]
+    });
+  } catch (err) {
+    console.error("Error updating product:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 const generateProductId = async (Product) => {
@@ -112,32 +181,43 @@ const generateProductId = async (Product) => {
 
 const create_product = async (req, res) => {
   const { Product } = getModel();
+  const { Name, Description, Price, Photo_Id, Category_Id } = req.body;
 
-  const newProduct = req.body;
-
-  // check required fields
-  if (!newProduct.Name || !newProduct.Price) {
-    return res.status(400).json({ error: "Name, and Price are required" });
+  // Validate fields using helper function
+  const validation = validateProductFields(req.body, false);
+  if (!validation.isValid) {
+    return res.status(400).json({ 
+      error: "Validation failed",
+      details: validation.errors,
+      required: ["Name", "Price"]
+    });
   }
 
-  // auto generate Product_Id
-  newProduct.Product_Id = await generateProductId(Product);
-  newProduct.create_at = new Date();
+  try {
+    // Auto generate Product_Id
+    const Product_Id = await generateProductId(Product);
 
-  Product.create(newProduct)
-    .then(product => {
-      res.status(201).json(product);
-    })
-    .catch(err => {
-      console.error("Error creating product:", err);
-      res.status(500).json({ error: "Internal server error" });
+    const product = await Product.create({
+      Product_Id,
+      Name,
+      Description,
+      Price,
+      Photo_Id,
+      Category_Id,
+      created_at: new Date()
     });
+
+    res.status(201).json(product);
+  } catch (err) {
+    console.error("Error creating product:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 const delete_product = (req, res) => {
   const { Product } = getModel();
-  const productId = req.params.id || req.query.id;
-  const auth = req.params.auth || req.query.auth;
+  const productId = req.params.id;
+  const auth = req.headers.authorization;
 
   // TODO: implement proper authentication and authorization
   if (auth !== "admin-secret") {
