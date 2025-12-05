@@ -1,89 +1,89 @@
 import { getModel } from "../config/database.js";
 
-const get_all_users = (req, res) => {
-    const { User } = getModel();
-    User.findAll()
-    .then(users => {
-        res.json(users);
-    })
-    .catch(err => {
-        console.error("Error fetching users:", err);
-        res.status(500).json({ error: "Internal server error" });
-    });
-};
+// Validation helper function
+const validateUserFields = (fields, isUpdate = false) => {
+    const { Name, Email, Password, Address, PhoneNumber, Gender } = fields;
+    const errors = [];
 
-const generateUserId = async (User) => {
-    const lastUser = await User.findOne({
-        order: [['Index', 'DESC']]
-    });
-
-    let nextNumber = 1;
-    if (lastUser && lastUser.User_Id) {
-        const lastNumber = parseInt(lastUser.User_Id.replace(/\D/g, ''));
-        nextNumber = lastNumber + 1;
+    // Check required fields (only for create, not update)
+    if (!isUpdate) {
+        if (!Name) errors.push("Name is required");
+        if (!Email) errors.push("Email is required");
+        if (!Password) errors.push("Password is required");
+        if (!Address) errors.push("Address is required");
+        if (!PhoneNumber) errors.push("PhoneNumber is required");
+        if (!Gender) errors.push("Gender is required");
     }
 
-    return `U${String(nextNumber).padStart(7, '0')}`;
-};
-
-const create_user = async (req, res) => {
-    const { Name, Email, Password } = req.body;
-    
-    // Validate required fields (User_Id is now auto-generated)
-    if (!Name || !Email || !Password) {
-        return res.status(400).json({ 
-            error: "Missing required fields",
-            required: ["Name", "Email", "Password"]
-        });
+    // Check if at least one field is provided for update
+    if (isUpdate && !Name && !Email && !Password && !Address && !PhoneNumber && !Gender) {
+        errors.push("At least one field is required to update");
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(Email)) {
-        return res.status(400).json({ 
-            error: "Invalid email format" 
-        });
-    }
-
-    // Validate Name length (max 64 characters)
-    if (Name.length > 64) {
-        return res.status(400).json({ 
-            error: "Name must be 64 characters or less" 
-        });
-    }
-
-    try {
-        const { User } = getModel();
-        
-        // Auto-generate User_Id
-        const User_Id = await generateUserId(User);
-        
-        // Create user with generated User_Id
-        const user = await User.create({
-            User_Id,
-            Name,
-            Email,
-            Password
-        });
-        
-        res.status(201).json(user);
-    } catch (err) {
-        console.error("Error creating user:", err);
-        
-        // Handle unique constraint violations
-        // 409 error for Duplicate Resource Creation
-        if (err.name === 'SequelizeUniqueConstraintError') {
-            return res.status(409).json({ 
-                error: "User with this email already exists" 
-            });
+    // Validate email format if provided
+    if (Email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(Email)) {
+            errors.push("Invalid email format");
         }
+    }
+
+    // Validate field lengths if provided
+    if (Name && Name.length > 64) {
+        errors.push("Name must be 64 characters or less");
+    }
+
+    if (Address && Address.length > 256) {
+        errors.push("Address must be 256 characters or less");
+    }
+
+    if (PhoneNumber && PhoneNumber.length > 256) {
+        errors.push("PhoneNumber must be 256 characters or less");
+    }
+
+    if (Gender && Gender.length > 32) {
+        errors.push("Gender must be 32 characters or less");
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+};
+
+const get_all_users = async (req, res) => {
+    const { User } = getModel();
+    
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    try {
+        // Execute count and findAll in parallel
+        const [total, users] = await Promise.all([
+            User.count(),
+            User.findAll({
+                limit: limit,
+                offset: offset
+            })
+        ]);
         
+        const totalPage = Math.ceil(total / limit);
+        
+        res.json({
+            totalPage,
+            total,
+            data: users
+        });
+    } catch (err) {
+        console.error("Error fetching users:", err);
         res.status(500).json({ error: "Internal server error" });
     }
 };
 
 const get_user = (req, res) => {
-    const id = req.query.id || req.params.id;
+    const id = req.params.id;
     
     if (!id) {
         var isAdmin = true; // TODO: replace with real admin check
@@ -108,9 +108,82 @@ const get_user = (req, res) => {
     });
 };
 
+const generateUserId = async (User) => {
+    const lastUser = await User.findOne({
+        order: [['Index', 'DESC']]
+    });
+
+    let nextNumber = 1;
+    if (lastUser && lastUser.User_Id) {
+        const lastNumber = parseInt(lastUser.User_Id.replace(/\D/g, ''));
+        nextNumber = lastNumber + 1;
+    }
+
+    return `U${String(nextNumber).padStart(7, '0')}`;
+};
+
+const create_user = async (req, res) => {
+    const { Name, Email, Password, Address, PhoneNumber, Gender } = req.body;
+    
+    // Validate fields using helper function
+    const validation = validateUserFields(req.body, false);
+    if (!validation.isValid) {
+        return res.status(400).json({ 
+            error: "Validation failed",
+            details: validation.errors,
+            required: ["Name", "Email", "Password", "Address", "PhoneNumber", "Gender"]
+        });
+    }
+
+    try {
+      const { User } = getModel();
+      
+      // Check for existing email and generate User_Id in parallel
+      const [existingUser, User_Id] = await Promise.all([
+        User.findOne({ where: { Email } }),
+        generateUserId(User)
+      ]);
+      
+      // Handle duplicate email
+      if (existingUser) {
+        return res.status(409).json({ 
+          error: "User with this email already exists" 
+        });
+      }
+      
+      // Create user with generated User_Id
+      const user = await User.create({
+        User_Id,
+        Name,
+        Email,
+        Password,
+        Address,
+        PhoneNumber,
+        Gender
+      });
+      
+      res.status(201).json(user);
+    } catch (err) {
+      console.error("Error creating user:", err);
+      
+      // 409 error for Duplicate Resource Creation
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ 
+          error: "User with this email already exists" 
+        });
+      }
+  
+      res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
 const delete_user = (req, res) => {
-    const id = req.params.id || req.query.id;
-    const auth = req.params.auth || req.query.auth;
+    const id = req.params.id;
+    /* Example Head:
+      Header: { authorization: "admin123" }
+    */
+    const auth = req.headers.authorization;
 
     // temporary simple auth check
     // TODO: replace with real authentication and authorization
@@ -137,5 +210,71 @@ const delete_user = (req, res) => {
     });
 };
 
-export { create_user, delete_user, get_user };
+const update_user = async (req, res) => {
+    const id = req.params.id;
+    
+    if (!id) {
+        return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const { Name, Email, Password, Address, PhoneNumber, Gender } = req.body;
+
+    // Validate fields using helper function (isUpdate = true)
+    const validation = validateUserFields(req.body, true);
+    if (!validation.isValid) {
+        return res.status(400).json({ 
+            error: "Validation failed",
+            details: validation.errors,
+            allowedFields: ["Name", "Email", "Password", "Address", "PhoneNumber", "Gender"]
+        });
+    }
+
+    try {
+        const { User } = getModel();
+
+        // Check if user exists
+        const user = await User.findOne({ where: { User_Id: id } });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Check if email is already taken by another user
+        if (Email && Email !== user.Email) {
+            const existingUser = await User.findOne({ where: { Email } });
+            if (existingUser) {
+                return res.status(409).json({ error: "Email already in use by another user" });
+            }
+        }
+
+        // Build update object with only provided fields
+        const updateData = {};
+        if (Name) updateData.Name = Name;
+        if (Email) updateData.Email = Email;
+        if (Password) updateData.Password = Password;
+        if (Address) updateData.Address = Address;
+        if (PhoneNumber) updateData.PhoneNumber = PhoneNumber;
+        if (Gender) updateData.Gender = Gender;
+
+        // Update user
+        await User.update(updateData, { where: { User_Id: id } });
+
+        // Fetch updated user
+        const updatedUser = await User.findOne({ where: { User_Id: id } });
+
+        res.json({
+            message: "User updated successfully",
+            data: updatedUser
+        });
+    } catch (err) {
+        console.error("Error updating user:", err);
+
+        if (err.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({ error: "Email already in use" });
+        }
+
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+export { create_user, delete_user, get_user, update_user };
 
