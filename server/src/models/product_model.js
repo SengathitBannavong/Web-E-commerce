@@ -19,6 +19,11 @@ export const Product = (sequelize) => {
       allowNull: false,
       field: "Name",
     },
+    Author: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+      field: "Author",
+    },
     Description: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -29,9 +34,10 @@ export const Product = (sequelize) => {
       field: "Price",
       nonNull: true
     },
-    Photo_Id: {
-      type: DataTypes.STRING(8),
-      field: "Photo_Id"
+    Cover_Url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "Cover_Url"
     },
     Category_Id: {
       type: DataTypes.INTEGER,

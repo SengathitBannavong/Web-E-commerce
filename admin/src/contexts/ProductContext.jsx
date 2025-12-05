@@ -20,9 +20,10 @@ export const ProductContextProvider = (props) => {
     { key: 'Index', label: 'Index' },
     { key: 'Product_Id', label: 'Product ID' },
     { key: 'Name', label: 'Name' },
+    { key: 'Author', label: 'Author' },
     { key: 'Description', label: 'Description' },
     { key: 'Price', label: 'Price' },
-    { key: 'Photo_Id', label: 'Photo ID' },
+    { key: 'Cover_Url', label: 'Cover URL' },
     { key: 'Category_Id', label: 'Category' },
     { key: 'create_at', label: 'Created At' },
   ];
@@ -43,7 +44,13 @@ export const ProductContextProvider = (props) => {
     };
     try {
       const response = await axios.request(config);
-      setProducts(response.data);
+      // Adjust to handle paginated response
+      if (response.data && Array.isArray(response.data.products)) {
+        setProducts(response.data.products);
+      } else {
+        // Fallback for old API structure if needed, though likely not necessary
+        setProducts(response.data);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -69,9 +76,10 @@ export const ProductContextProvider = (props) => {
     try {
       const productData = {
         Name: formData.Name,
+        Author: formData.Author,
         Description: formData.Description,
         Price: Number(formData.Price),
-        Photo_Id: formData.Photo_Id,
+        Cover_Url: formData.Cover_Url,
         Category_Id: formData.Category_Id,
       };
       
@@ -101,9 +109,10 @@ export const ProductContextProvider = (props) => {
     try {
       const productData = {
         Name: formData.Name,
+        Author: formData.Author,
         Description: formData.Description,
         Price: Number(formData.Price),
-        Photo_Id: formData.Photo_Id,
+        Cover_Url: formData.Cover_Url,
         Category_Id: formData.Category_Id,
       };
       

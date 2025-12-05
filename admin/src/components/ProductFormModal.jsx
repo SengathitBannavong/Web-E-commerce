@@ -6,9 +6,10 @@ import ConfirmDialog from './ConfirmDialog.jsx';
 function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode = 'add' }) {
   const [formData, setFormData] = useState({
     Name: '',
+    Author: '',
     Description: '',
     Price: '',
-    Photo_Id: '',
+    Cover_Url: '',
     Category_Id: '',
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -17,17 +18,19 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     if (mode === 'edit' && product) {
       setFormData({
         Name: product.Name || '',
+        Author: product.Author || '',
         Description: product.Description || '',
         Price: product.Price || '',
-        Photo_Id: product.Photo_Id || '',
+        Cover_Url: product.Cover_Url || '',
         Category_Id: product.Category_Id || '',
       });
     } else {
       setFormData({
         Name: '',
+        Author: '',
         Description: '',
         Price: '',
-        Photo_Id: '',
+        Cover_Url: '',
         Category_Id: '',
       });
     }
@@ -52,15 +55,15 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.Name || !formData.Price) {
-      toast.error("Please fill in all required fields.");
+    if (!formData.Name || !formData.Price || !formData.Author) {
+      toast.error("Please fill in all required fields (Name, Author, Price).");
       return;
     }
     const cleanedData = {
       ...formData,
       Category_Id: formData.Category_Id === '' ? null : parseInt(formData.Category_Id),
       Price: parseFloat(formData.Price),
-      Photo_Id: formData.Photo_Id || null,
+      Cover_Url: formData.Cover_Url || null,
       Description: formData.Description || null,
     };
     
@@ -72,9 +75,10 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     
     setFormData({
       Name: '',
+      Author: '',
       Description: '',
       Price: '',
-      Photo_Id: '',
+      Cover_Url: '',
       Category_Id: '',
     });
   };
@@ -131,6 +135,21 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
+                Author
+              </label>
+              <input
+                type="text"
+                name="Author"
+                value={formData.Author}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                placeholder="Enter author name"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Description
               </label>
               <textarea
@@ -162,30 +181,15 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Photo ID
+                Cover URL
               </label>
               <input
                 type="text"
-                name="Photo_Id"
-                value={formData.Photo_Id}
+                name="Cover_Url"
+                value={formData.Cover_Url}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                placeholder="photo_example"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Category ID
-              </label>
-              <input
-                type="number"
-                name="Category_Id"
-                value={formData.Category_Id}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                placeholder="0"
+                placeholder="https://example.com/image.jpg"
               />
             </div>
 

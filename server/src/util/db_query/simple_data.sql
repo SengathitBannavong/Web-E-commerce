@@ -11,10 +11,10 @@ INSERT INTO "Category" ("Name", "Description", "Photo_Id") VALUES
 ('Technology', 'Books about tech and programming', 'photo3');
 
 -- Product
-INSERT INTO "Product" ("Product_Id", "Name", "Description", "Price", "Photo_Id", "Category_Id") VALUES
-('P0000001', 'The Great Gatsby', 'Classic novel by F. Scott Fitzgerald', 9.99, 'photo_gatsby', 1),
-('P0000002', 'A Brief History of Time', 'Science book by Stephen Hawking', 14.50, 'photo_time', 2),
-('P0000003', 'Learning JavaScript', 'Programming guide for JS beginners', 29.99, 'photo_js', 3);
+INSERT INTO "Product" ("Product_Id", "Name", "Author", "Description", "Price", "Cover_Url", "Category_Id") VALUES
+('P0000001', 'The Great Gatsby', 'F. Scott Fitzgerald', 'Classic novel by F. Scott Fitzgerald', 9.99, '/images/books/gatsby.jpg', 1),
+('P0000002', 'A Brief History of Time', 'Stephen Hawking', 'Science book by Stephen Hawking', 14.50, '/images/books/time.jpg', 2),
+('P0000003', 'Learning JavaScript', 'Ethan Brown', 'Programming guide for JS beginners', 29.99, '/images/books/js.jpg', 3);
 
 -- Stock
 INSERT INTO "Stock" ("Product_Id", "Quantity") VALUES
