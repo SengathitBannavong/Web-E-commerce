@@ -19,6 +19,11 @@ export const Product = (sequelize) => {
       allowNull: false,
       field: "Name",
     },
+    Author: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+      field: "Author",
+    },
     Description: {
       type: DataTypes.TEXT,
       allowNull: true,

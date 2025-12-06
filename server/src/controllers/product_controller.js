@@ -167,16 +167,16 @@ const update_product = async (req, res) => {
 
 const generateProductId = async (Product) => {
   const lastProduct = await Product.findOne({
-    order: [['Index', 'DESC']]
+    order: [["Index", "DESC"]],
   });
-  
+
   let newIdNumber = 1;
   if (lastProduct && lastProduct.Product_Id) {
     const lastId = lastProduct.Product_Id;
-    const lastIdNumber = parseInt(lastId.replace(/\D/g, ''), 10);
+    const lastIdNumber = parseInt(lastId.replace(/\D/g, ""), 10);
     newIdNumber = lastIdNumber + 1;
   }
-  return `P${String(newIdNumber).padStart(7, '0')}`;
+  return `P${String(newIdNumber).padStart(7, "0")}`;
 };
 
 const create_product = async (req, res) => {
@@ -229,17 +229,16 @@ const delete_product = (req, res) => {
   }
 
   Product.destroy({ where: { Product_Id: productId } })
-    .then(deletedRows => {
+    .then((deletedRows) => {
       if (deletedRows === 0) {
         return res.status(404).json({ error: "Product not found" });
       }
       res.json({ message: "Product deleted successfully" });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error deleting product:", err);
       res.status(500).json({ error: "Internal server error" });
     });
 };
-
 
 export { create_product, delete_product, get_products, update_product };
