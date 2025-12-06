@@ -65,13 +65,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 1.5rem; /* Icon size */
-  line-height: 1; /* Adjust line height for better vertical spacing */
+  font-size: 1.5rem;
+  line-height: 1; 
 }
 
 .header-right .icon-text-link span {
-  font-size: 0.7rem; /* Text size */
-  margin-top: 0.2rem; /* Space between icon and text */
+  font-size: 0.7rem; 
+  margin-top: 0.2rem; 
   font-weight: normal;
 }
 

@@ -1,8 +1,9 @@
 function BoardItemMeta({ product }) {
   const metaItems = [
     { label: 'ID', value: product.Product_Id, mono: true },
+    { label: 'Author', value: product.Author || 'N/A' },
     { label: 'Category', value: product.Category_Id || 'N/A' },
-    { label: 'Photo', value: product.Photo_Id || 'N/A' },
+    { label: 'Cover URL', value: product.Cover_Url || 'N/A' },
   ];
 
   if (product.create_at) {
