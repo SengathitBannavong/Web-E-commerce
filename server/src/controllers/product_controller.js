@@ -3,17 +3,18 @@ import { getModel } from "../config/database.js";
 
 // Validation helper function
 const validateProductFields = (fields, isUpdate = false) => {
-  const { Name, Description, Price, Photo_Id, Category_Id } = fields;
+  const { Name, Author, Description, Price, Photo_Id, Category_Id } = fields;
   const errors = [];
 
   // Check required fields (only for create, not update)
   if (!isUpdate) {
     if (!Name) errors.push("Name is required");
+    if (!Author) errors.push("Author is required");
     if (Price === undefined || Price === null) errors.push("Price is required");
   }
 
   // Check if at least one field is provided for update
-  if (isUpdate && !Name && !Description && Price === undefined && !Photo_Id && Category_Id === undefined) {
+  if (isUpdate && !Name && !Author && !Description && Price === undefined && !Photo_Id && Category_Id === undefined) {
     errors.push("At least one field is required to update");
   }
 
@@ -122,7 +123,7 @@ const update_product = async (req, res) => {
     return res.status(400).json({ error: "Product ID is required" });
   }
 
-  const { Name, Description, Price, Photo_Id, Category_Id } = req.body;
+  const { Name, Author, Description, Price, Photo_Id, Category_Id } = req.body;
 
   // Validate fields using helper function (isUpdate = true)
   const validation = validateProductFields(req.body, true);
@@ -130,7 +131,7 @@ const update_product = async (req, res) => {
     return res.status(400).json({ 
       error: "Validation failed",
       details: validation.errors,
-      allowedFields: ["Name", "Description", "Price", "Photo_Id", "Category_Id"]
+      allowedFields: ["Name", "Author", "Description", "Price", "Photo_Id", "Category_Id"]
     });
   }
 
@@ -144,6 +145,7 @@ const update_product = async (req, res) => {
     // Build update object with only provided fields
     const updateData = {};
     if (Name !== undefined) updateData.Name = Name;
+    if (Author !== undefined) updateData.Author = Author;
     if (Description !== undefined) updateData.Description = Description;
     if (Price !== undefined) updateData.Price = Price;
     if (Photo_Id !== undefined) updateData.Photo_Id = Photo_Id;
@@ -181,7 +183,7 @@ const generateProductId = async (Product) => {
 
 const create_product = async (req, res) => {
   const { Product } = getModel();
-  const { Name, Description, Price, Photo_Id, Category_Id } = req.body;
+  const { Name, Author, Description, Price, Photo_Id, Category_Id } = req.body;
 
   // Validate fields using helper function
   const validation = validateProductFields(req.body, false);
@@ -189,7 +191,7 @@ const create_product = async (req, res) => {
     return res.status(400).json({ 
       error: "Validation failed",
       details: validation.errors,
-      required: ["Name", "Price"]
+      required: ["Name", "Author", "Price"]
     });
   }
 
@@ -200,6 +202,7 @@ const create_product = async (req, res) => {
     const product = await Product.create({
       Product_Id,
       Name,
+      Author,
       Description,
       Price,
       Photo_Id,
