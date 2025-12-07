@@ -1,4 +1,8 @@
+import bcrypt from "bcryptjs";
 import { getModel } from "../config/database.js";
+import { generateToken } from "../middleware/auth.js";
+
+const SALT_ROUNDS = 10;
 
 // Validation helper function
 const validateUserFields = (fields, isUpdate = false) => {
@@ -85,12 +89,9 @@ const get_all_users = async (req, res) => {
 const get_user = (req, res) => {
     const id = req.params.id;
     
+    // If no ID provided, return all users (admin access verified by middleware)
     if (!id) {
-        var isAdmin = true; // TODO: replace with real admin check
-        if(isAdmin){
-            return get_all_users(req, res);
-        }
-        return res.status(400).json({ error: "User ID is required" });
+        return get_all_users(req, res);
     }
 
     const { User } = getModel();
@@ -139,9 +140,10 @@ const create_user = async (req, res) => {
       const { User } = getModel();
       
       // Check for existing email and generate User_Id in parallel
-      const [existingUser, User_Id] = await Promise.all([
+      const [existingUser, User_Id, hashedPassword] = await Promise.all([
         User.findOne({ where: { Email } }),
-        generateUserId(User)
+        generateUserId(User),
+        bcrypt.hash(Password, SALT_ROUNDS)
       ]);
       
       // Handle duplicate email
@@ -151,18 +153,29 @@ const create_user = async (req, res) => {
         });
       }
       
-      // Create user with generated User_Id
+      // Create user with generated User_Id and hashed password
       const user = await User.create({
         User_Id,
         Name,
         Email,
-        Password,
+        Password: hashedPassword,
         Address,
         PhoneNumber,
         Gender
       });
+
+      // Generate JWT token
+      const token = generateToken(user);
       
-      res.status(201).json(user);
+      // Return user data without password
+      const userData = user.toJSON();
+      delete userData.Password;
+      
+      res.status(201).json({
+        message: "User registered successfully",
+        user: userData,
+        token
+      });
     } catch (err) {
       console.error("Error creating user:", err);
       
@@ -180,18 +193,8 @@ const create_user = async (req, res) => {
 
 const delete_user = (req, res) => {
     const id = req.params.id;
-    /* Example Head:
-      Header: { authorization: "admin123" }
-    */
-    const auth = req.headers.authorization;
-
-    // temporary simple auth check
-    // TODO: replace with real authentication and authorization
-    if(auth !== "admin123") {
-        console.error("Unauthorized delete attempt:", { id, auth });
-        return res.status(403).json({ error: "Unauthorized action" });
-    }
-
+    
+    // Authentication and authorization handled by middleware
     if (!id) {
         return res.status(400).json({ error: "User ID is required" });
     }
@@ -211,7 +214,7 @@ const delete_user = (req, res) => {
 };
 
 const update_user = async (req, res) => {
-    const id = req.params.id;
+    const id = req.userId;
     
     if (!id) {
         return res.status(400).json({ error: "User ID is required" });
@@ -255,15 +258,24 @@ const update_user = async (req, res) => {
         if (PhoneNumber) updateData.PhoneNumber = PhoneNumber;
         if (Gender) updateData.Gender = Gender;
 
+        // Hash password if provided
+        if (Password) {
+            updateData.Password = await bcrypt.hash(Password, SALT_ROUNDS);
+        }
+
         // Update user
         await User.update(updateData, { where: { User_Id: id } });
 
         // Fetch updated user
         const updatedUser = await User.findOne({ where: { User_Id: id } });
 
+        // Remove password from response
+        const userData = updatedUser.toJSON();
+        delete userData.Password;
+
         res.json({
             message: "User updated successfully",
-            data: updatedUser
+            data: userData
         });
     } catch (err) {
         console.error("Error updating user:", err);
@@ -276,5 +288,83 @@ const update_user = async (req, res) => {
     }
 };
 
-export { create_user, delete_user, get_user, update_user };
+/**
+ * Login user with email and password
+ */
+const login_user = async (req, res) => {
+    const { Email, Password } = req.body;
 
+    // Validate required fields
+    if (!Email || !Password) {
+        return res.status(400).json({
+            error: "Validation failed",
+            details: ["Email and Password are required"]
+        });
+    }
+
+    try {
+        const { User } = getModel();
+
+        // Find user by email
+        const user = await User.findOne({ where: { Email } });
+
+        if (!user) {
+            return res.status(401).json({
+                error: "Invalid email or password"
+            });
+        }
+
+        // Compare password
+        const isPasswordValid = await bcrypt.compare(Password, user.Password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                error: "Invalid email or password"
+            });
+        }
+
+        // Generate JWT token
+        const token = generateToken(user);
+
+        // Return user data without password
+        const userData = user.toJSON();
+        delete userData.Password;
+
+        res.json({
+            message: "Login successful",
+            user: userData,
+            token
+        });
+    } catch (err) {
+        console.error("Error during login:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+/**
+ * Get current user profile (requires authentication)
+ */
+const get_current_user = async (req, res) => {
+    try {
+        const { User } = getModel();
+
+        // userId comes from auth middleware
+        const user = await User.findOne({ where: { User_Id: req.userId } });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Return user data without password
+        const userData = user.toJSON();
+        delete userData.Password;
+
+        res.json(userData);
+    } catch (err) {
+        console.error("Error fetching current user:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+export { create_user, delete_user, get_current_user, get_user, login_user, update_user };

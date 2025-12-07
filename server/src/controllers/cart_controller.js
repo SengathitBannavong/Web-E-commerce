@@ -421,7 +421,6 @@ const delete_all_cart = async (req, res) => {
   try {
     const { Cart, CartItem } = getModel();
     const userId = req.params.userId;
-    const auth = req.headers.authorization;
     let status = req.query.status;
     let res_message = [];
     
@@ -429,10 +428,7 @@ const delete_all_cart = async (req, res) => {
       return res.status(400).json({ error: "User ID is required" });
     }
     
-    // TODO: Implement proper authentication and authorization
-    if (!auth || auth !== "admin-secret") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    // Authentication and authorization handled by middleware
 
     if(!status) {
       status = 'active';
@@ -469,16 +465,12 @@ const delete_all_cart = async (req, res) => {
 const delete_cart = async (req, res) => {
   const { Cart, CartItem } = getModel();
   const cartId = req.params.id;
-  const auth = req.headers.authorization;
 
   if (!cartId) {
     return res.status(400).json({ error: "Cart ID is required" });
   }
 
-  // TODO: Implement proper authentication and authorization
-  if (!auth || auth !== "admin-secret") {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  // Authentication and authorization handled by middleware
 
   try {
     // Check if cart exists
@@ -505,10 +497,10 @@ const delete_cart = async (req, res) => {
 
 
 export {
-  // Cart functions
-  create_cart,
-  // Cart Item functions
-  create_cart_item, delete_all_cart, delete_cart, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
-  get_cart_items_by_cart_id, update_cart, update_cart_item
+    // Cart functions
+    create_cart,
+    // Cart Item functions
+    create_cart_item, delete_all_cart, delete_cart, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
+    get_cart_items_by_cart_id, update_cart, update_cart_item
 };
 

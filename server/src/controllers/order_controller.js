@@ -31,6 +31,60 @@ const validateOrderFields = (fields, isUpdate = false) => {
   };
 };
 
+// Validate delete order by user fields
+const validateDeleteOrderByUser = (fields) => {
+  const errors = [];
+  const allowedDeleteStatuses = ['pending', 'cancelled'];
+
+  if (!fields.userId) {
+    errors.push("User ID is required");
+  }
+
+  if (!fields.orderId) {
+    errors.push("Order ID is required");
+  } else if (isNaN(fields.orderId)) {
+    errors.push("Invalid orderId provided, must be a number");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    allowedDeleteStatuses
+  };
+};
+
+// Validate update order by user fields
+const validateUpdateOrderByUser = (fields) => {
+  const errors = [];
+  // User can only toggle between pending and cancelled
+  const allowedTransitions = {
+    'pending': ['cancelled'],
+    'cancelled': ['pending']
+  };
+
+  if (!fields.userId) {
+    errors.push("User ID is required");
+  }
+
+  if (!fields.orderId) {
+    errors.push("Order ID is required");
+  } else if (isNaN(fields.orderId)) {
+    errors.push("Invalid orderId provided, must be a number");
+  }
+
+  if (!fields.newStatus) {
+    errors.push("New status is required");
+  } else if (!['pending', 'cancelled'].includes(fields.newStatus)) {
+    errors.push("User can only set status to 'pending' or 'cancelled'");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    allowedTransitions
+  };
+};
+
 // ==================== ORDER ITEM VALIDATION ====================
 const validateOrderItemFields = (fields, isUpdate = false) => {
   const errors = [];
@@ -64,7 +118,7 @@ const validateOrderItemFields = (fields, isUpdate = false) => {
 // ==================== ORDER GET ====================
 const get_all_details_order_by_user_id = async (req, res) => {
   const userId = req.params.userId;
-  const status = req.query.status || 'paid';
+  const status = req.query.status || 'pending';
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required" });
@@ -647,16 +701,11 @@ const update_order = async (req, res) => {
 const delete_order = async (req, res) => {
   const { Order, OrderItem } = getModel();
   const orderId = req.params.id;
-  const auth = req.headers.authorization;
 
   if (!orderId) {
     return res.status(400).json({ error: "Order ID is required" });
   }
 
-  // TODO: Implement proper authentication and authorization
-  if (!auth || auth !== "admin-secret") {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
 
   try {
     // Check if order exists
@@ -681,61 +730,375 @@ const delete_order = async (req, res) => {
   }
 };
 
-const delete_all_orders_by_user = async (req, res) => {
+// Update order by user - only pending <-> cancelled transitions allowed
+const update_order_by_user = async (req, res) => {
   try {
-    const { Order, OrderItem } = getModel();
-    const userId = req.params.userId;
-    const auth = req.headers.authorization;
-    let status = req.query.status;
-    let res_message = [];
+    const { Order } = getModel();
+    const userId = req.userId;
+    const orderId = req.params.orderId;
+    const newStatus = req.body.status;
 
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
+    // Validate using validation function
+    const validation = validateUpdateOrderByUser({ userId, orderId, newStatus });
+    if (!validation.isValid) {
+      return res.status(400).json({ errors: validation.errors });
     }
 
-    // TODO: Implement proper authentication and authorization
-    if (!auth || auth !== "admin-secret") {
-      return res.status(401).json({ error: "Unauthorized" });
+    // Check if order exists and belongs to user
+    const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
+    if (!order) {
+      return res.status(404).json({ error: "Order not found for this user" });
     }
 
-    let whereClause = { User_Id: userId };
-    if (status) {
-      whereClause.Status = status;
-    } else {
-      res_message.push("No status provided, deleting all orders for user");
+    // Check if transition is allowed
+    const currentStatus = order.Status;
+    const allowedTransitions = validation.allowedTransitions;
+
+    if (!allowedTransitions[currentStatus]) {
+      return res.status(400).json({ 
+        error: `Cannot update order with status '${currentStatus}'. Only 'pending' or 'cancelled' orders can be updated by user.`
+      });
     }
 
-    // Check if orders exist
-    const orders = await Order.findAll({ where: whereClause });
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({ error: "No orders found" });
+    if (!allowedTransitions[currentStatus].includes(newStatus)) {
+      return res.status(400).json({ 
+        error: `Cannot change status from '${currentStatus}' to '${newStatus}'. Allowed: ${allowedTransitions[currentStatus].join(', ')}`
+      });
     }
 
-    // Get all order IDs
-    const orderIds = orders.map(order => order.Order_Id);
+    // Update the order status
+    await order.update({ Status: newStatus });
 
-    // Delete all order items associated with these orders
-    await OrderItem.destroy({ where: { Order_Id: orderIds } });
-
-    // Delete the orders themselves
-    await Order.destroy({ where: whereClause });
-
-    res.json({
-      message: "Orders and associated items deleted successfully",
-      deletedUserId: userId,
-      deletedOrderCount: orders.length,
-      info: res_message.length > 0 ? res_message : undefined
+    return res.status(200).json({
+      message: "Order status updated successfully",
+      data: order
     });
   } catch (err) {
-    console.error("Error deleting orders:", err);
+    console.error("Error updating order:", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Delete order by user - only pending or cancelled status allowed
+const delete_order_by_user = async (req, res) => {
+  try {
+    const { Order, OrderItem } = getModel();
+    const userId = req.userId;
+    const orderId = req.params.orderId;
+
+    // Validate using validation function
+    const validation = validateDeleteOrderByUser({ userId, orderId });
+    if (!validation.isValid) {
+      return res.status(400).json({ errors: validation.errors });
+    }
+
+    // Check if order exists and belongs to user
+    const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
+    if (!order) {
+      return res.status(404).json({ error: "Order not found for this user" });
+    }
+
+    // Check if order status allows deletion
+    if (!validation.allowedDeleteStatuses.includes(order.Status)) {
+      return res.status(400).json({ 
+        error: `Cannot delete order with status '${order.Status}'. Only 'pending' or 'cancelled' orders can be deleted.`
+      });
+    }
+
+    // Delete all order items associated with this order
+    await OrderItem.destroy({ where: { Order_Id: order.Order_Id } });
+
+    // Delete the order itself
+    await Order.destroy({ where: { Order_Id: order.Order_Id } });
+
+    return res.status(200).json({
+      message: "Order and associated items deleted successfully",
+      deletedOrderId: order.Order_Id
+    });
+  } catch (err) {
+    console.error("Error deleting order:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// ==================== USER ORDER ITEM CRUD (with ownership check) ====================
+// Create order item by user - must own the order and order must be pending
+const create_order_item_by_user = async (req, res) => {
+  const { OrderItem, Order, Product } = getModel();
+  const userId = req.userId;
+  const orderId = req.params.orderId;
+  const items = Array.isArray(req.body) ? req.body : [req.body];
+
+  if (!orderId) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
+
+  try {
+    // Check if order exists and belongs to user
+    const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
+    if (!order) {
+      return res.status(404).json({ error: "Order not found or you don't have permission" });
+    }
+
+    // Only allow adding items to pending orders
+    if (order.Status !== 'pending') {
+      return res.status(400).json({ error: "Can only add items to orders with 'pending' status" });
+    }
+
+    // Validate all items
+    const validationErrors = [];
+    items.forEach((item, index) => {
+      const itemWithOrderId = { ...item, Order_Id: orderId };
+      const validation = validateOrderItemFields(itemWithOrderId, false);
+      if (!validation.isValid) {
+        validationErrors.push({ index, errors: validation.errors });
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
+    // Get all Product_Ids from request
+    const productIds = items.map(item => item.Product_Id);
+
+    // Fetch all products to get their prices
+    const products = await Product.findAll({
+      where: { Product_Id: productIds },
+      attributes: ['Product_Id', 'Price']
+    });
+
+    // Verify all products exist
+    if (products.length !== new Set(productIds).size) {
+      const existingProductIds = products.map(p => p.Product_Id);
+      const missingProductIds = [...new Set(productIds)].filter(id => !existingProductIds.includes(id));
+      return res.status(400).json({
+        error: "Some products not found",
+        missingProductIds
+      });
+    }
+
+    // Create a price map for quick lookup
+    const priceMap = new Map(
+      products.map(p => [p.Product_Id, parseFloat(p.Price)])
+    );
+
+    // Find existing items in ONE query
+    const existingItems = await OrderItem.findAll({
+      where: { Order_Id: orderId, Product_Id: productIds }
+    });
+
+    // Create a map for quick lookup
+    const existingMap = new Map(
+      existingItems.map(item => [item.Product_Id, item])
+    );
+
+    // Separate items into toCreate and toUpdate
+    const toCreate = [];
+    const toUpdate = [];
+
+    for (const item of items) {
+      const productPrice = priceMap.get(item.Product_Id);
+      const itemAmount = item.Quantity * productPrice;
+      const existing = existingMap.get(item.Product_Id);
+      
+      if (existing) {
+        const newQuantity = existing.Quantity + item.Quantity;
+        const newAmount = newQuantity * productPrice;
+        toUpdate.push({
+          item: existing,
+          newQuantity,
+          newAmount
+        });
+      } else {
+        toCreate.push({
+          Product_Id: item.Product_Id,
+          Quantity: item.Quantity,
+          Amount: itemAmount,
+          Order_Id: orderId
+        });
+      }
+    }
+
+    const results = {
+      created: [],
+      updated: []
+    };
+
+    // Bulk create new items
+    if (toCreate.length > 0) {
+      results.created = await OrderItem.bulkCreate(toCreate);
+    }
+
+    // Bulk update existing items using Promise.all
+    if (toUpdate.length > 0) {
+      await Promise.all(
+        toUpdate.map(({ item, newQuantity, newAmount }) =>
+          item.update({ Quantity: newQuantity, Amount: newAmount })
+        )
+      );
+      results.updated = toUpdate.map(({ item }) => item);
+    }
+
+    // Update order total amount
+    const allOrderItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    await order.update({ Amount: totalAmount });
+
+    return res.status(201).json({
+      message: "Order items processed successfully",
+      data: results,
+      orderTotal: totalAmount
+    });
+  } catch (err) {
+    console.error("Error creating order items:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Update order item by user - must own the order and order must be pending
+const update_order_item_by_user = async (req, res) => {
+  const { OrderItem, Order, Product } = getModel();
+  const userId = req.userId;
+  const orderItemId = req.params.orderItemId;
+  const updatedData = req.body;
+
+  if (!orderItemId) {
+    return res.status(400).json({ error: "Order Item ID is required" });
+  }
+
+  if (!updatedData || Object.keys(updatedData).length === 0) {
+    return res.status(400).json({ error: "No data provided for update" });
+  }
+
+  // Validate fields
+  const validation = validateOrderItemFields(updatedData, true);
+  if (!validation.isValid) {
+    return res.status(400).json({ errors: validation.errors });
+  }
+
+  try {
+    // Get the existing order item first
+    const existingItem = await OrderItem.findByPk(orderItemId);
+    if (!existingItem) {
+      return res.status(404).json({ error: "Order item not found" });
+    }
+
+    // Check if order belongs to user
+    const order = await Order.findOne({ where: { Order_Id: existingItem.Order_Id, User_Id: userId } });
+    if (!order) {
+      return res.status(403).json({ error: "You don't have permission to update this order item" });
+    }
+
+    // Only allow updating items in pending orders
+    if (order.Status !== 'pending') {
+      return res.status(400).json({ error: "Can only update items in orders with 'pending' status" });
+    }
+
+    // Determine which Product_Id to use for price lookup
+    const productIdForPrice = updatedData.Product_Id !== undefined 
+      ? updatedData.Product_Id 
+      : existingItem.Product_Id;
+
+    // If Product_Id is being updated, verify it exists
+    if (updatedData.Product_Id !== undefined) {
+      const newProduct = await Product.findOne({ where: { Product_Id: updatedData.Product_Id } });
+      if (!newProduct) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+    }
+
+    // Recalculate Amount if Quantity or Product_Id is being updated
+    if (updatedData.Quantity !== undefined || updatedData.Product_Id !== undefined) {
+      const product = await Product.findOne(
+        { 
+          where: { Product_Id: productIdForPrice },
+          attributes: ['Price']
+        }
+      );
+      if (product) {
+        const quantity = updatedData.Quantity !== undefined 
+          ? updatedData.Quantity 
+          : existingItem.Quantity;
+        updatedData.Amount = quantity * parseFloat(product.Price);
+      }
+    }
+
+    // Update the order item
+    await existingItem.update(updatedData);
+
+    // Update order total amount
+    const allOrderItems = await OrderItem.findAll({ where: { Order_Id: existingItem.Order_Id } });
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    await Order.update({ Amount: totalAmount }, { where: { Order_Id: existingItem.Order_Id } });
+
+    return res.status(200).json({
+      message: "Order item updated successfully",
+      data: existingItem
+    });
+  } catch (err) {
+    console.error("Error updating order item:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Delete order item by user - must own the order and order must be pending
+const delete_order_item_by_user = async (req, res) => {
+  const { OrderItem, Order } = getModel();
+  const userId = req.userId;
+  const orderItemId = req.params.orderItemId;
+
+  if (!orderItemId) {
+    return res.status(400).json({ error: "Order Item ID is required" });
+  }
+
+  try {
+    // Get the order item first
+    const orderItem = await OrderItem.findByPk(orderItemId);
+    if (!orderItem) {
+      return res.status(404).json({ error: "Order item not found" });
+    }
+
+    // Check if order belongs to user
+    const order = await Order.findOne({ where: { Order_Id: orderItem.Order_Id, User_Id: userId } });
+    if (!order) {
+      return res.status(403).json({ error: "You don't have permission to delete this order item" });
+    }
+
+    // Only allow deleting items in pending orders
+    if (order.Status !== 'pending') {
+      return res.status(400).json({ error: "Can only delete items from orders with 'pending' status" });
+    }
+
+    const orderId = orderItem.Order_Id;
+
+    // Delete the order item
+    await OrderItem.destroy({ where: { Order_Item_Id: orderItemId } });
+
+    // Update order total amount
+    const remainingItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
+    const totalAmount = remainingItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    await Order.update({ Amount: totalAmount }, { where: { Order_Id: orderId } });
+
+    return res.status(200).json({
+      message: "Order item deleted successfully",
+      deletedOrderItemId: orderItemId,
+      newOrderTotal: totalAmount
+    });
+  } catch (err) {
+    console.error("Error deleting order item:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export {
   // Order functions
   create_order,
-  // Order Item functions
-  create_order_item, delete_all_orders_by_user, delete_order, delete_order_item, get_all_details_order_by_user_id, get_order, get_order_items_by_order_id, update_order, update_order_item
+  // Order Item functions (admin)
+  create_order_item,
+  // User order item functions
+  create_order_item_by_user, delete_order, delete_order_by_user, delete_order_item, delete_order_item_by_user, get_all_details_order_by_user_id, get_order, get_order_items_by_order_id, update_order,
+  // User order functions
+  update_order_by_user, update_order_item, update_order_item_by_user
 };
 

@@ -47,12 +47,6 @@ const get_product_normal = async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const search = req.query.search || '';
   const offset = (page - 1) * limit;
-
-  // TODO: authentication and authorization for admin to see all products including inactive ones
-  const auth = req.headers.authorization;
-  if (search === '' && auth !== 'admin-secret') {
-    return res.status(403).json({ error: "Unauthorized" });
-  }
   
   // Build where clause for search
   const whereClause = search ? {
@@ -220,12 +214,6 @@ const create_product = async (req, res) => {
 const delete_product = (req, res) => {
   const { Product } = getModel();
   const productId = req.params.id;
-  const auth = req.headers.authorization;
-
-  // TODO: implement proper authentication and authorization
-  if (auth !== "admin-secret") {
-    return res.status(403).json({ error: "Unauthorized" });
-  }
 
   if (!productId) {
     return res.status(400).json({ error: "Product ID is required" });

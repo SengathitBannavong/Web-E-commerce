@@ -22,6 +22,8 @@ const adminMiddleware = (req, res, next) => {
             });
         }
 
+        // change data admin
+        req.userId = req.params.id || '';
         next();
     } catch (err) {
         if (err.name === 'TokenExpiredError') {

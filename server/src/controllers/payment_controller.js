@@ -1,5 +1,11 @@
 import { getModel } from "../config/database.js";
 
+// Valid payment types
+const validTypes = ["credit_card", "paypal", "bank_transfer"];
+
+// Valid payment statuses
+const validStatuses = ["pending", "completed", "failed"];
+
 const get_all_payments = async (req, res) => {
   try {
     const { Payment } = getModel();
@@ -91,7 +97,6 @@ const create_payment = async (req, res) => {
     }
 
     // Validate payment type
-    const validTypes = ["credit_card", "paypal", "bank_transfer"];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
     }
@@ -129,7 +134,6 @@ const update_payment = async (req, res) => {
     const { type, amount, status } = req.body;
 
     // Validate payment type
-    const validTypes = ["credit_card", "paypal", "bank_transfer"];
     if (type && !validTypes.includes(type)) {
       return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
     }
@@ -140,7 +144,6 @@ const update_payment = async (req, res) => {
     }
 
     // Validate payment status
-    const validStatuses = ["pending", "completed", "failed"];
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ error: `Invalid payment status. Valid statuses are: ${validStatuses.join(", ")}` });
     }
@@ -176,12 +179,6 @@ const delete_payment = async (req, res) => {
   try {
     const { Payment } = getModel();
     const id = req.params.id || req.query.id;
-    const auth = req.headers.authorization;
-
-    // TODO: Implement proper authentication and authorization
-    if (auth !== "admin-secret") {
-      return res.status(403).json({ error: "Unauthorized" });
-    }
 
     if (!id) {
       return res.status(400).json({ error: "Payment ID is required" });
