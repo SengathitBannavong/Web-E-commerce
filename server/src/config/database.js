@@ -9,6 +9,7 @@ import { Product } from "../models/product_model.js";
 import { Stock } from "../models/stock_model.js";
 import { User } from "../models/user_model.js";
 import { setupAssociations } from "./associations.js";
+import { initializeAdmin } from "./env.js";
 
 let sequelize = null;
 let models = {};
@@ -45,6 +46,9 @@ export const connectDB = async (dbUrl) => {
     // Sync database (create tables if they don't exist)
     await sequelize.sync({ alter: false });
     console.log("[INFO] Database synchronized!");
+
+    // Initialize admin user
+    await initializeAdmin(models);
 
     return sequelize;
   } catch (error) {

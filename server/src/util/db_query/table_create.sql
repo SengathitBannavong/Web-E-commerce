@@ -7,6 +7,7 @@ CREATE TABLE "User" (
   "Address" varchar(256) NOT NULL,
   "PhoneNumber" varchar(256) NOT NULL,
   "Gender" varchar(32) NOT NULL,
+  "Role" INTEGER NOT NULL DEFAULT 0,
   "created_at" timestamp
 );
 
@@ -34,6 +35,7 @@ CREATE TABLE "Product" (
   "Price" decimal(10,2) NOT NULL,
   "Photo_Id" varchar,
   "Category_Id" integer,
+  "Author" varchar(128),
   "created_at" timestamp
 );
 
