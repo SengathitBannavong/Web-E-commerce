@@ -1,86 +1,78 @@
 import { getModel } from "../config/database.js";
 
-const get_all_payments = async (res) => {
+// Valid payment types
+const validTypes = ["credit_card", "paypal", "bank_transfer"];
+
+// Valid payment statuses
+const validStatuses = ["pending", "completed", "failed"];
+
+const get_all_payments = async (req, res) => {
   try {
     const { Payment } = getModel();
-    const payments = await Payment.findAll();
-    res.json(payments);
+    
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Execute count and findAll in parallel
+    const [total, payments] = await Promise.all([
+      Payment.count(),
+      Payment.findAll({
+        limit: limit,
+        offset: offset
+      })
+    ]);
+    
+    const totalPage = Math.ceil(total / limit);
+    
+    res.json({
+      totalPage,
+      total,
+      data: payments
+    });
   } catch (err) {
     console.error("Error fetching payments:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-const get_payment_by_id = async (id, res) => {
+const get_payments_by_order_id = async (req, res) => {
   try {
-    if (!id) {
-      return res.status(400).json({ error: "Payment ID is required" });
-    }
+    const orderId = req.params.orderId;
 
-    const { Payment } = getModel();
-    const payment = await Payment.findByPk(id);
-
-    if (!payment) {
-      return res.status(404).json({ error: "Payment not found" });
-    }
-
-    res.json(payment);
-  } catch (err) {
-    console.error("Error fetching payment:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const get_payments_by_order_id = async (orderId, res) => {
-  try {
     if (!orderId) {
       return res.status(400).json({ error: "Order ID is required" });
     }
 
     const { Payment } = getModel();
-    const payments = await Payment.findAll({ where: { Order_Id: orderId } });
-    res.json(payments);
+    
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Execute count and findAll in parallel
+    const [total, payments] = await Promise.all([
+      Payment.count({ where: { Order_Id: orderId } }),
+      Payment.findAll({ 
+        where: { Order_Id: orderId },
+        limit: limit,
+        offset: offset
+      })
+    ]);
+    
+    const totalPage = Math.ceil(total / limit);
+    
+    res.json({
+      totalPage,
+      total,
+      data: payments
+    });
   } catch (err) {
     console.error("Error fetching payments by order ID:", err);
     res.status(500).json({ error: "Internal server error" });
   }
-};
-
-const get_payments_by_user_id = async (userId, res) => {
-  try {
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
-    }
-
-    const { Payment } = getModel();
-    const payments = await Payment.findAll({ where: { User_Id: userId } });
-    res.json(payments);
-  } catch (err) {
-    console.error("Error fetching payments by user ID:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const get_payments = async (req, res) => {
-  const id = req.params.id || req.query.id;
-  const orderId = req.params.orderId || req.query.orderId;
-  const userId = req.params.userId || req.query.userId;
-
-  if (id) {
-    return await get_payment_by_id(id, res);
-  } else if (orderId) {
-    return await get_payments_by_order_id(orderId, res);
-  } else if (userId) {
-    return await get_payments_by_user_id(userId, res);
-  } else {
-    // TODO: Implement proper authentication and authorization
-    const isAdmin = true;
-    if (isAdmin) {
-      return await get_all_payments(res);
-    }
-  }
-
-  return res.status(400).json({ error: "Payment ID or Order ID or User ID is required" });
 };
 
 const create_payment = async (req, res) => {
@@ -105,7 +97,6 @@ const create_payment = async (req, res) => {
     }
 
     // Validate payment type
-    const validTypes = ["credit_card", "paypal", "bank_transfer"];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
     }
@@ -143,7 +134,6 @@ const update_payment = async (req, res) => {
     const { type, amount, status } = req.body;
 
     // Validate payment type
-    const validTypes = ["credit_card", "paypal", "bank_transfer"];
     if (type && !validTypes.includes(type)) {
       return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
     }
@@ -154,7 +144,6 @@ const update_payment = async (req, res) => {
     }
 
     // Validate payment status
-    const validStatuses = ["pending", "completed", "failed"];
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ error: `Invalid payment status. Valid statuses are: ${validStatuses.join(", ")}` });
     }
@@ -190,12 +179,6 @@ const delete_payment = async (req, res) => {
   try {
     const { Payment } = getModel();
     const id = req.params.id || req.query.id;
-    const auth = req.params.auth || req.query.auth;
-
-    // TODO: Implement proper authentication and authorization
-    if (auth !== "admin-secret") {
-      return res.status(403).json({ error: "Unauthorized" });
-    }
 
     if (!id) {
       return res.status(400).json({ error: "Payment ID is required" });
@@ -214,4 +197,4 @@ const delete_payment = async (req, res) => {
   }
 };
 
-export { create_payment, delete_payment, get_payments, update_payment };
+export { create_payment, delete_payment, get_all_payments, get_payments_by_order_id, update_payment };

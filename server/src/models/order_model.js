@@ -15,6 +15,7 @@ export const Order = (sequelize) => {
     },
     Date: {
       type: DataTypes.DATE,
+      allowNull: true,
       field: "Date",
     },
     Status: {
@@ -26,6 +27,7 @@ export const Order = (sequelize) => {
     },
     Amount: {
       type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
       field: "Amount",
     },
   }, {

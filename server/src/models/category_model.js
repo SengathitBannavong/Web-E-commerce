@@ -9,7 +9,7 @@ export function Category(sequelize) {
       },
       Name: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       Description: {
         type: DataTypes.TEXT,

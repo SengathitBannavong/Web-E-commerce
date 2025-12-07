@@ -19,7 +19,7 @@ export const Cart = (sequelize) => {
       field: "Status",
       defaultValue: "active"
     },
-    create_at: {
+    created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       field: "created_at",

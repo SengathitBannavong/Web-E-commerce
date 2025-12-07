@@ -1,17 +1,12 @@
 import { DataTypes } from "sequelize";
 
-export const OrderItem = (sequelize) => {
-  return sequelize.define("Order_Item", {
-    Order_Item_Id: {
+export const Stock = (sequelize) => {
+  return sequelize.define("Stock", {
+    Stock_Id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      field: "Order_Item_Id",
-    },
-    Order_Id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "Order_Id",
+      field: "Stock_Id",
     },
     Product_Id: {
       type: DataTypes.STRING(8),
@@ -23,13 +18,13 @@ export const OrderItem = (sequelize) => {
       allowNull: false,
       field: "Quantity",
     },
-    Amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      field: "Amount",
-    },
+    Last_Updated: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "Last_Updated",
+    }
   }, {
-    tableName: "Order_Item",
+    tableName: "Stock",
     timestamps: false
   });
 };

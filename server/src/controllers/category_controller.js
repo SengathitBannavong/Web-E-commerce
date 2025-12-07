@@ -2,18 +2,33 @@ import { getModel } from "../config/database.js";
 
 const getCategories = async (req, res) => {
   const { Category } = getModel();
-  const { id } = req.query;
+  const { id } = req.params;
   try {
     if (id) {
       const category = await Category.findOne({ where: { Category_Id: id } });
       res.json(category);
     } else {
-      // TODO: should authenticate admin user before allowing access to all categories
-      var isAdmin = true;
-      if(isAdmin){
-        const categories = await Category.findAll();
-        res.json(categories);
-      }
+      // Get pagination parameters from query
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      
+      // Execute count and findAll in parallel
+      const [total, categories] = await Promise.all([
+        Category.count(),
+        Category.findAll({
+          limit: limit,
+          offset: offset
+        })
+      ]);
+      
+      const totalPage = Math.ceil(total / limit);
+      
+      res.json({
+        totalPage,
+        total,
+        data: categories
+      });
     }
   } catch (e) {
     console.error("[ERROR] Error fetching categories:", e);

@@ -2,19 +2,30 @@ import express from "express";
 import {
   create_user,
   delete_user,
+  get_current_user,
   get_user,
+  login_user,
+  update_user,
 } from "../controllers/user_controller.js";
+import { adminMiddleware } from "../middleware/admin.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const user_router = express.Router();
-// get all user and handle get user by query param
-user_router.get("/", get_user);
-// get user by id
-user_router.get("/:id", get_user);
-// delete user
-user_router.delete("/", delete_user);
-user_router.delete("/:id/:auth", delete_user);
-// create user
-user_router.post("/", create_user);
+
+// ==================== PUBLIC ROUTES ====================
+user_router.post("/register", create_user);
+user_router.post("/login", login_user);
+
+// ==================== USER ROUTES (auth required) ====================
+user_router.get("/me", authMiddleware, get_current_user);
+user_router.put("/me", authMiddleware, update_user); // User can update own profile
+
+// ==================== ADMIN ROUTES ====================
+user_router.get("/", authMiddleware, adminMiddleware, get_user); // Get all users
+user_router.get("/:id", authMiddleware, adminMiddleware, get_user); // Get specific user
+user_router.post("/", authMiddleware, adminMiddleware, create_user); // Admin create user
+user_router.put("/:id", authMiddleware, adminMiddleware, update_user); // Admin update any user
+user_router.delete("/:id", authMiddleware, adminMiddleware, delete_user); // Admin delete user
 
 
 export { user_router };
