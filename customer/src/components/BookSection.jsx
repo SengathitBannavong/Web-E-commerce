@@ -30,6 +30,7 @@ export default function BookSection({
         {displayedBooks.map((book) => (
           <BookCard
             key={book.id}
+            id={book.id}
             cover={book.cover}
             title={book.title}
             author={book.author}

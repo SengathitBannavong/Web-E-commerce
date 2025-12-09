@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import AppLayout from "./components/AppLayout";
 import Cart from "./pages/Cart";
 import Account from "./pages/Account";
+import BookDetail from "./pages/BookDetail";
+import CheckoutPage from "./pages/CheckoutPage";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path="cart" element={<Cart/>} />
           <Route path="profile" element={<Account />} />
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="books/:id" element={<BookDetail />} />
         </Route>
         <Route
           path="*"
