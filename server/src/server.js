@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { connectDB } from "./config/database.js";
-import { DATABASE_URL, PORT } from "./config/env.js"; // Load env first!
+import { CORS_ORIGINS, DATABASE_URL, PORT } from "./config/env.js"; // Load env first!
 import { cart_router } from "./routes/cart_route.js";
 import { category_router } from './routes/category_route.js';
 import { order_router } from "./routes/order_route.js";
@@ -13,11 +13,22 @@ import { user_router } from "./routes/user_route.js";
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:5173','http://127.0.0.1:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+  origin: CORS_ORIGINS,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true
 }));
 
 app.use(express.json());
+
+// Health check endpoint for Railway/monitoring
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 app.get('/', (req, res) => {
     res.send('Hello, Server is running');
 });

@@ -19,8 +19,20 @@ export const connectDB = async (dbUrl) => {
     if (!sequelize) {
       if (!dbUrl) throw new Error("Database URL not provided!");
       
+      // Check if it's a local database (localhost or 127.0.0.1)
+      const isLocalDB = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+      
+      // for remote DBs, enable SSL
+      const dialectOptions = isLocalDB ? {} : {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      };
+      
       sequelize = new Sequelize(dbUrl, {
         dialect: "postgres",
+        dialectOptions,
         logging: false,
       });
     }
