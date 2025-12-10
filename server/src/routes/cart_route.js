@@ -1,24 +1,30 @@
 import express from "express";
 import {
-    // Cart functions
-    create_cart,
-    // Cart Item functions
-    create_cart_item,
-    delete_all_cart,
-    delete_cart,
-    delete_cart_item,
-    get_all_details_cart_by_user_id,
-    get_cart,
-    get_cart_items_by_cart_id,
-    update_cart,
-    update_cart_item
+  // Cart functions
+  create_cart,
+  // Cart Item functions
+  create_cart_item,
+  delete_all_cart,
+  delete_cart,
+  delete_cart_item,
+  get_all_details_cart_by_user_id,
+  get_cart,
+  get_cart_items_by_cart_id,
+  update_cart,
+  update_cart_item
 } from "../controllers/cart_controller.js";
+import { checkout, getCartSummary, validateCartStock } from "../controllers/checkout_controller.js";
 import { authMiddleware, verifyUserOwnership } from "../middleware/auth.js";
 
 const cart_router = express.Router();
 
 // All cart routes require authentication
 cart_router.use(authMiddleware);
+
+// ==================== CHECKOUT ROUTES ====================
+cart_router.post("/:userId/checkout", verifyUserOwnership('userId'), checkout);
+cart_router.post("/:userId/validate-stock", verifyUserOwnership('userId'), validateCartStock);
+cart_router.get("/:userId/summary", verifyUserOwnership('userId'), getCartSummary);
 
 // ==================== CART ROUTES ====================
 cart_router.get("/:userId", verifyUserOwnership('userId'), get_cart);
