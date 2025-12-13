@@ -6,13 +6,9 @@ import { HERO_BANNERS } from "../data/heroBanners";
 import { getProducts } from "../services/productService";
 import "./Home.css";
 
-// Adapter function to map backend data to frontend component props
 const adaptProductData = (product) => {
-  // Assuming Photo_Id is just the image file name like '1.jpg'
-  // and our public images are in '/images/books/'
   const imagePath = `/images/books/${product.Photo_Id || "default.jpg"}`;
 
-  // Formatting price from a number (e.g., 240000) to a string (e.g., "240.000đ")
   const formattedPrice = new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
@@ -25,7 +21,6 @@ const adaptProductData = (product) => {
     price: formattedPrice,
     cover: imagePath,
     rawPrice: product.Price,
-    // Backend doesn't have a badge, so we can omit it or add logic later
   };
 };
 
@@ -39,12 +34,9 @@ export default function Home() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Fetch products for "New Releases" - e.g., first page, 5 items
         const newReleasesData = await getProducts({ page: 1, limit: 5 });
         setNewReleases(newReleasesData.data.map(adaptProductData));
 
-        // Fetch products for "Bestsellers" - e.g., second page, 5 items
-        // In a real app, this would likely be a separate API or query param
         const bestsellersData = await getProducts({ page: 2, limit: 5 });
         setBestsellers(bestsellersData.data.map(adaptProductData));
       } catch (err) {
@@ -58,7 +50,6 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  // Display loading or error states
   if (loading) {
     return (
       <div className="page home-page">

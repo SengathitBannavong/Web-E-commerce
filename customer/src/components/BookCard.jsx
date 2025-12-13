@@ -10,12 +10,11 @@ export default function BookCard({
   author,
   price,
   badge,
-  rawPrice, // Receive raw price for cart logic
+  rawPrice,
 }) {
   const { addToCart } = useCart();
 
   const handleAddToCart = (e) => {
-    // Stop event propagation to prevent navigating when clicking the button
     e.preventDefault();
     e.stopPropagation();
 
@@ -27,7 +26,6 @@ export default function BookCard({
       quantity: 1,
     };
     addToCart(itemToAdd);
-    // You can replace this alert with a more subtle notification (toast) later
     alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
   };
 

@@ -4,7 +4,7 @@ const API_BASE_URL = "http://localhost:8080"; // Default backend URL
 
 /**
  * Fetches data from the API.
- * @param {string} endpoint The API endpoint to call (e.g., '/products').
+ * @param {string} endpoint The API endpoint to call
  * @param {RequestInit} options The options for the fetch request.
  * @returns {Promise<any>} The JSON response from the API.
  */

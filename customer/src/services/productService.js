@@ -12,7 +12,7 @@ export const getProducts = (params = {}) => {
   const query = new URLSearchParams({
     page: params.page || 1,
     limit: params.limit || 10,
-    ...params.search && { search: params.search },
+    ...(params.search && { search: params.search }),
   }).toString();
 
   return apiFetch(`/products?${query}`);

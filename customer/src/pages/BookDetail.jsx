@@ -4,7 +4,6 @@ import { getProductById } from "../services/productService";
 import { useCart } from "../contexts/CartContext";
 import "./BookDetail.css";
 
-// Adapter function to map backend data to frontend component props
 const adaptProductData = (product) => {
   const imagePath = `/images/books/${product.Photo_Id || "default.jpg"}`;
   const formattedPrice = new Intl.NumberFormat("vi-VN", {
@@ -84,7 +83,6 @@ export default function BookDetail() {
       quantity: 1,
     };
     addToCart(itemToAdd);
-    // You can add a toast notification here to confirm addition to cart
     alert(`Đã thêm "${book.name}" vào giỏ hàng!`);
   };
 
