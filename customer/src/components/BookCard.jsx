@@ -1,28 +1,50 @@
-import "./BookCard.css";
+import { Link } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
+import { useCart } from "../contexts/CartContext";
+import "./BookCard.css";
 
 export default function BookCard({
+  id,
   cover,
   title,
   author,
   price,
   badge,
-  bookLink,
+  rawPrice, // Receive raw price for cart logic
 }) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e) => {
+    // Stop event propagation to prevent navigating when clicking the button
+    e.preventDefault();
+    e.stopPropagation();
+
+    const itemToAdd = {
+      id,
+      name: title,
+      price: rawPrice,
+      cover,
+      quantity: 1,
+    };
+    addToCart(itemToAdd);
+    // You can replace this alert with a more subtle notification (toast) later
+    alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
+  };
+
   return (
     <article className="book-card">
       <div className="book-card-cover">
-        <a href={bookLink} aria-label={`Xem chi tiết sách ${title}`}>
+        <Link to={`/books/${id}`} aria-label={`Xem chi tiết sách ${title}`}>
           <img src={cover} alt={title} loading="lazy" />
-        </a>
+        </Link>
         {badge ? <span className="book-card-badge">{badge}</span> : null}
       </div>
 
       <div className="book-card-body">
         <h4>
-          <a href={bookLink} className="book-card-title-link">
+          <Link to={`/books/${id}`} className="book-card-title-link">
             {title}
-          </a>
+          </Link>
         </h4>
         <p>{author}</p>
       </div>
@@ -33,10 +55,7 @@ export default function BookCard({
           type="button"
           className="book-card-add-to-cart"
           aria-label="Thêm vào giỏ hàng"
-          onClick={() => {
-            //  logic thêm giỏ hàng
-            console.log(`Đã thêm sách "${title}" vào giỏ hàng!`);
-          }}
+          onClick={handleAddToCart}
         >
           <FaShoppingCart />
         </button>

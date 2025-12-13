@@ -78,7 +78,7 @@ const get_product_normal = async (req, res) => {
 };
 
 
-const get_product_by_id = (id,res) => {
+const get_product_by_id = async (id, res) => {
   const { Product } = getModel();
   const productId = id;
 
@@ -86,17 +86,18 @@ const get_product_by_id = (id,res) => {
     return res.status(400).json({ error: "Product ID is required" });
   }
 
-  Product.findOne({ where: { Product_Id: productId } })
-    .then(product => {
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-      res.json(product);
-    })
-    .catch(err => {
-      console.error("Error fetching product:", err);
-      res.status(500).json({ error: "Internal server error" });
-    });
+  try {
+    const product = await Product.findOne({ where: { Product_Id: productId } });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    
+    res.json(product);
+  } catch (err) {
+    console.error("Error fetching product by ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 const get_products = (req, res) => {
