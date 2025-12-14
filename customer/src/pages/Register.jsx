@@ -1,6 +1,7 @@
 import "./Register.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { useState } from "react";
+import apiFetch from "../services/api"; // Import apiFetch
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -8,8 +9,14 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
+    address: "",
+    gender: "",
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -19,9 +26,11 @@ export default function Register() {
     }
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
+    // Made onSubmit async
     e.preventDefault();
     const validationErrors = {};
+    setServerError("");
 
     if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       validationErrors.email = "Please enter a valid email address.";
@@ -40,7 +49,29 @@ export default function Register() {
       return;
     }
 
-    console.log("register (UI only)", form);
+    setLoading(true);
+    try {
+      // Send all required fields to the backend for registration
+      const response = await apiFetch("/users/register", {
+        method: "POST",
+        body: JSON.stringify({
+          Name: form.name,
+          Email: form.email,
+          Password: form.password,
+          PhoneNumber: form.phone,
+          Address: form.address,
+          Gender: form.gender,
+        }),
+      });
+      console.log("Registration successful:", response);
+      localStorage.setItem("token", response.token); // Store token (TODO: Move to a dedicated context/service)
+      navigate("/"); // Redirect to home page (TODO: Make dynamic or user's last page)
+    } catch (error) {
+      console.error("Registration failed:", error.message);
+      setServerError(error.message || "Registration failed. Please try again."); // Display error to user
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,8 +144,58 @@ export default function Register() {
               )}
             </div>
 
-            <button type="submit" className="btn">
-              Create account
+            <div className="form-group">
+              <label htmlFor="phone"></label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={form.phone}
+                onChange={onChange}
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="address"></label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={form.address}
+                onChange={onChange}
+                placeholder="Enter your address"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="gender"></label>
+              <select
+                id="gender"
+                name="gender"
+                value={form.gender}
+                onChange={onChange}
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {serverError && (
+              <p
+                className="error-message"
+                style={{ color: "red", marginBottom: "1rem" }}
+              >
+                {serverError}
+              </p>
+            )}
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
