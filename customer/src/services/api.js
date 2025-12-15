@@ -1,6 +1,4 @@
-// A simple fetch wrapper for making API calls
-
-const API_BASE_URL = "http://localhost:8080"; // Default backend URL
+const API_BASE_URL = "http://localhost:8080/api"; // Default backend URL with /api prefix
 
 /**
  * Fetches data from the API.
@@ -9,13 +7,21 @@ const API_BASE_URL = "http://localhost:8080"; // Default backend URL
  * @returns {Promise<any>} The JSON response from the API.
  */
 async function apiFetch(endpoint, options = {}) {
+  const token = localStorage.getItem("token"); // Retrieve token from localStorage
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`; // Add Authorization header if token exists
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+      headers: headers,
     });
 
     if (!response.ok) {

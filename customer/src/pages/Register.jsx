@@ -1,37 +1,46 @@
 import "./Register.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Register() {
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
+    address: "",
+    gender: "",
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = {};
+    setServerError("");
 
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       validationErrors.email = "Please enter a valid email address.";
     }
 
-    if (!form.password || form.password.length < 6) {
+    if (!formData.password || formData.password.length < 6) {
       validationErrors.password = "Password must be at least 6 characters.";
     }
 
-    if (form.password !== form.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       validationErrors.confirmPassword = "Passwords do not match.";
     }
 
@@ -40,7 +49,31 @@ export default function Register() {
       return;
     }
 
-    console.log("register (UI only)", form);
+    setLoading(true);
+    try {
+      const result = await register({
+        Name: formData.name,
+        Email: formData.email,
+        Password: formData.password,
+        PhoneNumber: formData.phone,
+        Address: formData.address,
+        Gender: formData.gender,
+      });
+
+      if (result.success) {
+        console.log("Registration successful");
+        navigate("/");
+      } else {
+        setServerError(
+          result.message || "Registration failed. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Registration failed:", error.message);
+      setServerError(error.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,7 +88,7 @@ export default function Register() {
                 type="text"
                 id="name"
                 name="name"
-                value={form.name}
+                value={formData.name}
                 onChange={onChange}
                 placeholder="Enter your name"
                 required
@@ -68,7 +101,7 @@ export default function Register() {
                 type="email"
                 id="email"
                 name="email"
-                value={form.email}
+                value={formData.email}
                 onChange={onChange}
                 placeholder="Enter your email"
                 required
@@ -85,7 +118,7 @@ export default function Register() {
                 type="password"
                 id="password"
                 name="password"
-                value={form.password}
+                value={formData.password}
                 onChange={onChange}
                 placeholder="Enter a strong password"
                 required
@@ -102,7 +135,7 @@ export default function Register() {
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                value={form.confirmPassword}
+                value={formData.confirmPassword}
                 onChange={onChange}
                 placeholder="Re-enter your password"
                 required
@@ -113,8 +146,58 @@ export default function Register() {
               )}
             </div>
 
-            <button type="submit" className="btn">
-              Create account
+            <div className="form-group">
+              <label htmlFor="phone"></label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={onChange}
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="address"></label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={onChange}
+                placeholder="Enter your address"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="gender"></label>
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={onChange}
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {serverError && (
+              <p
+                className="error-message"
+                style={{ color: "red", marginBottom: "1rem" }}
+              >
+                {serverError}
+              </p>
+            )}
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
