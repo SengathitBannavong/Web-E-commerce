@@ -14,24 +14,15 @@ import { initializeAdmin } from "./env.js";
 let sequelize = null;
 let models = {};
 
-export const connectDB = async () => {
+export const connectDB = async (dbUrl) => {
   try {
     if (!sequelize) {
-      // Use individual env vars instead of a single URL string
-      const dbName = process.env.DB_NAME;
-      const dbUser = process.env.DB_USER;
-      const dbPass = process.env.DB_PASS;
-      const dbHost = process.env.DB_HOST;
-      const dbPort = process.env.DB_PORT;
-
-      if (!dbName || !dbUser || !dbPass || !dbHost || !dbPort) {
-        throw new Error("One or more database environment variables are missing!");
-      }
-
-      // Check if it's a local database (localhost or 127.0.0.1)
-      const isLocalDB = dbHost === 'localhost' || dbHost === '127.0.0.1';
+      if (!dbUrl) throw new Error("Database URL not provided!");
       
-      // For remote DBs, enable SSL
+      // Check if it's a local database (localhost or 127.0.0.1)
+      const isLocalDB = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+      
+      // for remote DBs, enable SSL
       const dialectOptions = isLocalDB ? {} : {
         ssl: {
           require: true,
@@ -39,13 +30,7 @@ export const connectDB = async () => {
         }
       };
       
-      // Pass a configuration object instead of a URL string
-      sequelize = new Sequelize({
-        database: dbName,
-        username: dbUser,
-        password: dbPass,
-        host: dbHost,
-        port: dbPort,
+      sequelize = new Sequelize(dbUrl, {
         dialect: "postgres",
         dialectOptions,
         logging: false,

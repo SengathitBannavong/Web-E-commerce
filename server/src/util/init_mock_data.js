@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const BASE_URL = `http://localhost:${process.env.PORT || 8080}`;
+const BASE_URL = `http://localhost:${process.env.PORT || 8000}`;
 
 // Admin credentials from .env
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';

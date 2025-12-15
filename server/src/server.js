@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import { connectDB } from "./config/database.js";
-import { CORS_ORIGINS, DATABASE_URL, PORT } from "./config/env.js";
+import { CORS_ORIGINS, DATABASE_URL, PORT } from "./config/env.js"; // Load env first!
 import { cart_router } from "./routes/cart_route.js";
 import { category_router } from "./routes/category_route.js";
 import { order_router } from "./routes/order_route.js";
@@ -43,6 +43,6 @@ app.use("/api/categories", category_router);
 app.use("/api/payments", payment_router);
 app.use("/api/stocks", stock_router);
 
-connectDB().then(async () => {
-  app.listen(PORT, () => console.log(`[INFO] Server running on port ${PORT}`));
+connectDB(DATABASE_URL).then(async() => {
+    app.listen(PORT, () => console.log(`[INFO] Server running on port ${PORT}`));
 });
