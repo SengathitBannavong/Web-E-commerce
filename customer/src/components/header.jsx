@@ -2,8 +2,15 @@ import { NavLink } from "react-router-dom";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
 import "./header.css";
 import SearchBox from "./search_box";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <header className="site-header">
       <div className="container">
@@ -27,13 +34,22 @@ export default function Header() {
               <span>Cart</span>
             </NavLink>
             <div className="account-dropdown">
-              <NavLink to="/profile" className="icon-text-link">
+              <NavLink to="/account" className="icon-text-link">
                 <FaUser />
                 <span>Account</span>
               </NavLink>
               <div className="dropdown-content">
-                <NavLink to="/login">Login</NavLink>
-                <NavLink to="/register">Register</NavLink>
+                {isAuthenticated ? (
+                  <>
+                    <NavLink to="/account">Profile</NavLink>
+                    <button onClick={handleLogout}>Logout</button>
+                  </>
+                ) : (
+                  <>
+                    <NavLink to="/login">Login</NavLink>
+                    <NavLink to="/register">Register</NavLink>
+                  </>
+                )}
               </div>
             </div>
           </nav>

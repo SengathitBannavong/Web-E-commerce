@@ -15,12 +15,14 @@ export const StoreContextProvider = (props) => {
       {props.children}
     </StoreContext.Provider>
   );
-}
+};
 
 export const useStoreContext = () => {
   const context = useContext(StoreContext);
   if (!context) {
-    throw new Error("useStoreContext must be used within a StoreContextProvider");
+    throw new Error(
+      "useStoreContext must be used within a StoreContextProvider"
+    );
   }
   return context;
 };

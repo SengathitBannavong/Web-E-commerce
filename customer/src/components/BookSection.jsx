@@ -36,6 +36,7 @@ export default function BookSection({
             author={book.author}
             price={book.price}
             badge={book.badge}
+            rawPrice={book.rawPrice}
           />
         ))}
       </div>

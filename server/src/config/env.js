@@ -10,6 +10,11 @@ export const DATABASE_URL = process.env.DATABASE_URL;
 // Server configuration
 export const PORT = process.env.PORT || 3000;
 
+// CORS configuration - comma-separated list of allowed origins
+export const CORS_ORIGINS = process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
 // JWT configuration
 export const JWT_SECRET = process.env.JWT_SECRET;
 export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';

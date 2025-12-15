@@ -1,14 +1,35 @@
 import "./Login.css";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("login", { email, password });
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        console.log("Login successful");
+        navigate("/");
+      } else {
+        setError(result.message || "Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      console.error("Login failed:", err.message);
+      setError(err.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,8 +60,16 @@ export default function Login() {
                 required
               />
             </div>
-            <button type="submit" className="btn">
-              Login
+            {error && (
+              <p
+                className="error-message"
+                style={{ color: "red", marginBottom: "1rem" }}
+              >
+                {error}
+              </p>
+            )}
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
           <p className="signup-link">

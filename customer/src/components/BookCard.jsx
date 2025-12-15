@@ -1,7 +1,9 @@
-import "./BookCard.css";
+import { Link } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useCart } from "../contexts/CartContext";
+import "./BookCard.css";
 
 export default function BookCard({
   id,
@@ -33,6 +35,31 @@ export default function BookCard({
           <img src={cover} alt={title} loading="lazy" />
         </NavLink>
 
+  rawPrice,
+}) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const itemToAdd = {
+      id,
+      name: title,
+      price: rawPrice,
+      cover,
+      quantity: 1,
+    };
+    addToCart(itemToAdd);
+    alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
+  };
+
+  return (
+    <article className="book-card">
+      <div className="book-card-cover">
+        <Link to={`/books/${id}`} aria-label={`Xem chi tiết sách ${title}`}>
+          <img src={cover} alt={title} loading="lazy" />
+        </Link>
         {badge ? <span className="book-card-badge">{badge}</span> : null}
       </div>
 
@@ -41,6 +68,9 @@ export default function BookCard({
           <NavLink to={`/books/${id}`} className="book-card-title-link">
             {title}
           </NavLink>
+          <Link to={`/books/${id}`} className="book-card-title-link">
+            {title}
+          </Link>
         </h4>
         <p>{author}</p>
       </div>
@@ -55,6 +85,7 @@ export default function BookCard({
             console.log(`Đã thêm sách "${title}" vào giỏ hàng!`);
             handleAddToCart({ id, cover, title, author, price, badge });
           }}
+          onClick={handleAddToCart}
         >
           <FaShoppingCart />
         </button>
