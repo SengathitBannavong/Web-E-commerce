@@ -41,6 +41,6 @@ app.use("/categories", category_router);
 app.use("/payments", payment_router);
 app.use("/stocks", stock_router);
 
-connectDB().then(async() => {
+connectDB(DATABASE_URL).then(async() => {
     app.listen(PORT, () => console.log(`[INFO] Server running on port ${PORT}`));
 });
