@@ -1,10 +1,10 @@
 import "./Register.css";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import apiFetch from "../services/api"; // Import apiFetch
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Register() {
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
@@ -16,31 +16,31 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const onSubmit = async (e) => {
-    // Made onSubmit async
     e.preventDefault();
     const validationErrors = {};
     setServerError("");
 
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       validationErrors.email = "Please enter a valid email address.";
     }
 
-    if (!form.password || form.password.length < 6) {
+    if (!formData.password || formData.password.length < 6) {
       validationErrors.password = "Password must be at least 6 characters.";
     }
 
-    if (form.password !== form.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       validationErrors.confirmPassword = "Passwords do not match.";
     }
 
@@ -51,24 +51,26 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // Send all required fields to the backend for registration
-      const response = await apiFetch("/users/register", {
-        method: "POST",
-        body: JSON.stringify({
-          Name: form.name,
-          Email: form.email,
-          Password: form.password,
-          PhoneNumber: form.phone,
-          Address: form.address,
-          Gender: form.gender,
-        }),
+      const result = await register({
+        Name: formData.name,
+        Email: formData.email,
+        Password: formData.password,
+        PhoneNumber: formData.phone,
+        Address: formData.address,
+        Gender: formData.gender,
       });
-      console.log("Registration successful:", response);
-      localStorage.setItem("token", response.token); // Store token (TODO: Move to a dedicated context/service)
-      navigate("/"); // Redirect to home page (TODO: Make dynamic or user's last page)
+
+      if (result.success) {
+        console.log("Registration successful");
+        navigate("/");
+      } else {
+        setServerError(
+          result.message || "Registration failed. Please try again."
+        );
+      }
     } catch (error) {
       console.error("Registration failed:", error.message);
-      setServerError(error.message || "Registration failed. Please try again."); // Display error to user
+      setServerError(error.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,7 @@ export default function Register() {
                 type="text"
                 id="name"
                 name="name"
-                value={form.name}
+                value={formData.name}
                 onChange={onChange}
                 placeholder="Enter your name"
                 required
@@ -99,7 +101,7 @@ export default function Register() {
                 type="email"
                 id="email"
                 name="email"
-                value={form.email}
+                value={formData.email}
                 onChange={onChange}
                 placeholder="Enter your email"
                 required
@@ -116,7 +118,7 @@ export default function Register() {
                 type="password"
                 id="password"
                 name="password"
-                value={form.password}
+                value={formData.password}
                 onChange={onChange}
                 placeholder="Enter a strong password"
                 required
@@ -133,7 +135,7 @@ export default function Register() {
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                value={form.confirmPassword}
+                value={formData.confirmPassword}
                 onChange={onChange}
                 placeholder="Re-enter your password"
                 required
@@ -150,7 +152,7 @@ export default function Register() {
                 type="tel"
                 id="phone"
                 name="phone"
-                value={form.phone}
+                value={formData.phone}
                 onChange={onChange}
                 placeholder="Enter your phone number"
                 required
@@ -163,7 +165,7 @@ export default function Register() {
                 type="text"
                 id="address"
                 name="address"
-                value={form.address}
+                value={formData.address}
                 onChange={onChange}
                 placeholder="Enter your address"
                 required
@@ -175,7 +177,7 @@ export default function Register() {
               <select
                 id="gender"
                 name="gender"
-                value={form.gender}
+                value={formData.gender}
                 onChange={onChange}
                 required
               >

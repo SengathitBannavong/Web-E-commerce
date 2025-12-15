@@ -1,7 +1,7 @@
 import "./Login.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import apiFetch from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,6 +9,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,16 +17,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await apiFetch("/users/login", {
-        method: "POST",
-        body: JSON.stringify({ Email: email, Password: password }),
-      });
-      console.log("Login successful:", response);
-      localStorage.setItem("token", response.token);
-      navigate("/");
-    } catch (error) {
-      console.error("Login failed:", error.message);
-      setError(error.message || "Login failed. Please check your credentials.");
+      const result = await login(email, password);
+      if (result.success) {
+        console.log("Login successful");
+        navigate("/");
+      } else {
+        setError(result.message || "Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      console.error("Login failed:", err.message);
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

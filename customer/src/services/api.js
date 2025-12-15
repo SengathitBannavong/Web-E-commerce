@@ -1,5 +1,3 @@
-// A simple fetch wrapper for making API calls
-
 const API_BASE_URL = "http://localhost:8080/api"; // Default backend URL with /api prefix
 
 /**
