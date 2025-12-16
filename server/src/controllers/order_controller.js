@@ -176,6 +176,44 @@ const get_all_details_order_by_user_id = async (req, res) => {
   }
 };
 
+const get_order_admin = async (req, res) => {
+  const { Order } = getModel();
+  const userId = req.params.userId || null;
+  const status = req.query.status || null;
+
+  let filter = {};
+  if (userId) filter.User_Id = userId;
+  if (status && validStatuses.includes(status)) filter.Status = status;
+
+  // Pagination
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [total, orders] = await Promise.all([
+      Order.count({ where: filter }),
+      Order.findAll({
+        where: filter,
+        limit,
+        offset,
+        order: [['Order_Id', 'DESC']]
+      })
+    ]);
+
+    const totalPage = Math.ceil(total / limit);
+
+    return res.status(200).json({
+      totalPage,
+      total,
+      data: orders
+    });
+  } catch (err) {
+    console.error("Error fetching orders:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const get_order = async (req, res) => {
   const userId = req.params.userId;
   const status = req.query.status || 'pending';
@@ -1097,7 +1135,7 @@ export {
   // Order Item functions (admin)
   create_order_item,
   // User order item functions
-  create_order_item_by_user, delete_order, delete_order_by_user, delete_order_item, delete_order_item_by_user, get_all_details_order_by_user_id, get_order, get_order_items_by_order_id, update_order,
+  create_order_item_by_user, delete_order, delete_order_by_user, delete_order_item, delete_order_item_by_user, get_all_details_order_by_user_id, get_order, get_order_admin, get_order_items_by_order_id, update_order,
   // User order functions
   update_order_by_user, update_order_item, update_order_item_by_user
 };

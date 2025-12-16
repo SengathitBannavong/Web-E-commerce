@@ -12,14 +12,20 @@ export const ProductContextProvider = (props) => {
   const [products, setProducts] = useState([]);
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState('');
 
 
   const fetchProducts = async () => {
     console.log("Fetching products...");
+    let url = `${API}products/?limit=${limit}&page=${page}`;
+    if (categoryFilter) {
+      url += `&category=${encodeURIComponent(categoryFilter)}`;
+    }
+
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: `${API}products/?limit=${limit}&page=${page}`,
+      url,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     };
     try {
@@ -33,7 +39,7 @@ export const ProductContextProvider = (props) => {
 
   useEffect(() => {
     fetchProducts();
-  }, [page, limit, token]);
+  }, [page, limit, token, categoryFilter]);
 
   const addLocalProduct = (product) => {
     // add product id and index by latest products length
@@ -118,8 +124,6 @@ export const ProductContextProvider = (props) => {
 
   const handleDeleteProduct = async (product) => {
     try {
-      // on part auth delete it's will impiment later
-      // TODO: impiment delete auth to secure this endpoint
       let config = {
         method: 'delete',
         maxBodyLength: Infinity,
@@ -153,6 +157,8 @@ export const ProductContextProvider = (props) => {
     setPage,
     limit,
     setLimit,
+    categoryFilter,
+    setCategoryFilter,
     fetchProducts,
   };
 

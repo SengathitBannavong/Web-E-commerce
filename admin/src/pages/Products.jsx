@@ -1,8 +1,8 @@
+import { useState } from 'react';
 import ProductBody from '../components/Product/ProductBody';
 import ProductHeader from '../components/Product/ProductHeader';
 import ProductFormModal from '../components/ProductFormModal.jsx';
 import { useProductContext } from '../contexts/ProductContext.jsx';
-import { useState } from 'react';
 
 function Products() {
 
@@ -102,6 +102,8 @@ function Products() {
         products={data}
         columns={columns}
         openEditModal={openEditModal}
+        page={page}
+        limit={limit}
       />
 
       <ProductFormModal 

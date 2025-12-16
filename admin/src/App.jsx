@@ -6,7 +6,7 @@ import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
 import { ProductContextProvider } from './contexts/ProductContext.jsx';
-// import { OrderContextProvider } from './contexts/OrderContext.jsx';
+import { OrderContextProvider } from './contexts/OrderContext.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
@@ -56,9 +56,9 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
                 <Route
                   path="/orders"
                   element={
-                    // <OrderContextProvider>
+                    <OrderContextProvider>
                       <Orders />
-                    // </OrderContextProvider>
+                    </OrderContextProvider>
                   }
                 />
 
