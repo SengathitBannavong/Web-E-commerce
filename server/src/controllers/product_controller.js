@@ -47,11 +47,13 @@ const get_product_normal = async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const search = req.query.search || '';
   const offset = (page - 1) * limit;
+  const category = req.query.category || null;
   
   // Build where clause for search
-  const whereClause = search ? {
-    Name: { [Op.iLike]: `%${search}%` }
-  } : {};
+  const whereClause = {
+    ...(search ? { Name: { [Op.iLike]: `%${search}%` } } : {}),
+    ...(category ? { Category_Id: category } : {})
+  };
   
   try {
     // Execute count and findAll in parallel

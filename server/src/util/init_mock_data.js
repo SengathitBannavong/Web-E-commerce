@@ -37,7 +37,7 @@ const api = async (method, endpoint, body = null, token = null) => {
     }
 
     try {
-        const response = await fetch(`${BASE_URL}${endpoint}`, options);
+        const response = await fetch(`${BASE_URL}/api${endpoint}`, options);
         const data = await response.json();
         
         if (!response.ok) {

@@ -1,13 +1,9 @@
-import BoardView from '../views/BoardView/index';
-import GridView from '../views/GridView/index';
 import TableView from '../views/TableView/index';
 
-function ProductBody({ viewMode, products, columns, openEditModal }) {
+function ProductBody({ products, columns, openEditModal, page = 1, limit = 10 }) {
   return (
     <div className="mt-6">
-      {viewMode === 'table' && <TableView data={products} columns={columns} onEdit={openEditModal} />}
-      {viewMode === 'grid' && <GridView data={products} onEdit={openEditModal} />}
-      {viewMode === 'board' && <BoardView data={products} onEdit={openEditModal} />}
+      <TableView data={products} columns={columns} onEdit={openEditModal} page={page} limit={limit} />
     </div>
   );
 }

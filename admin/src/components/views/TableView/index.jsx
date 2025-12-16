@@ -1,7 +1,7 @@
 import TableBody from './TableBody';
 import TableHeader from './TableHeader';
 
-function TableView({ data, columns, onEdit }) {
+function TableView({ data, columns, onEdit, page = 1, limit = 10 }) {
   const shouldHideColumn = (columnKey) => {
     const hiddenOnMobile = ['Description', 'Photo_Id', 'create_at'];
     return hiddenOnMobile.includes(columnKey);
@@ -12,7 +12,7 @@ function TableView({ data, columns, onEdit }) {
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto">
           <TableHeader cols={columns} onEdit={onEdit} shouldHideColumn={shouldHideColumn} />
-          <TableBody data={data} cols={columns} onEdit={onEdit} shouldHideColumn={shouldHideColumn} />
+          <TableBody data={data} cols={columns} onEdit={onEdit} shouldHideColumn={shouldHideColumn} page={page} limit={limit} />
         </table>
       </div>
     </div>

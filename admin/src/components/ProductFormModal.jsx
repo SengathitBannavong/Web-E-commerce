@@ -6,6 +6,7 @@ import ConfirmDialog from './ConfirmDialog.jsx';
 function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode = 'add' }) {
   const [formData, setFormData] = useState({
     Name: '',
+    Author: '',
     Description: '',
     Price: '',
     Photo_Id: '',
@@ -17,6 +18,7 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     if (mode === 'edit' && product) {
       setFormData({
         Name: product.Name || '',
+        Author: product.Author || '',
         Description: product.Description || '',
         Price: product.Price || '',
         Photo_Id: product.Photo_Id || '',
@@ -25,6 +27,7 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     } else {
       setFormData({
         Name: '',
+        Author: '',
         Description: '',
         Price: '',
         Photo_Id: '',
@@ -52,11 +55,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.Name || !formData.Price) {
+    if (!formData.Name || !formData.Price || !formData.Author) {
       toast.error("Please fill in all required fields.");
       return;
     }
     const cleanedData = {
+      Name: formData.Name,
+      Author: formData.Author,
       ...formData,
       Category_Id: formData.Category_Id === '' ? null : parseInt(formData.Category_Id),
       Price: parseFloat(formData.Price),
@@ -72,11 +77,13 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     
     setFormData({
       Name: '',
+      Author: '',
       Description: '',
       Price: '',
       Photo_Id: '',
       Category_Id: '',
     });
+    onClose();
   };
 
   const handleDelete = () => {
@@ -125,9 +132,24 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="Enter product name"
-                required
+                  required
               />
             </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  name="Author"
+                  value={formData.Author}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  placeholder="Enter author name"
+                  required
+                />
+              </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -220,7 +242,10 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          onClose();
+        }}
         onConfirm={confirmDelete}
         title="Delete Product"
         message={`Are you sure you want to delete "${product?.Name || 'this product'}"? This action cannot be undone.`}
