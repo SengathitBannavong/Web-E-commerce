@@ -3,7 +3,7 @@ function TableCell({ column, item, shouldHideColumn }) {
     if (col.key === 'Price') {
       return <span className="font-semibold text-emerald-600">${item[col.key]}</span>;
     }
-    if (col.key === 'create_at') {
+    if (col.key === 'created_at') {
       return item[col.key] ? item[col.key].split('T')[0] : '';
     }
     return item[col.key];

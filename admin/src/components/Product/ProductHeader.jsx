@@ -1,6 +1,6 @@
 import ProductAction from '../Product/ProductAction';
 
-function ProductHeader({ viewMode, viewButtons, setViewMode, openAddModal }) {
+function ProductHeader({ openAddModal }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div className="">
@@ -8,9 +8,6 @@ function ProductHeader({ viewMode, viewButtons, setViewMode, openAddModal }) {
         <p className="text-slate-600">Manage your product inventory</p>
       </div>
       <ProductAction 
-        viewMode={viewMode}
-        viewButtons={viewButtons} 
-        setViewMode={setViewMode} 
         openAddModal={openAddModal} 
       />
     </div>

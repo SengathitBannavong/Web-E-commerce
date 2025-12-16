@@ -1,49 +1,31 @@
 import axios from 'axios';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { HiListBullet, HiSquares2X2, HiViewColumns } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
 import { useStoreContext } from "./StoreContext.jsx";
 
 const ProductContext = createContext(null);
 
 export const ProductContextProvider = (props) => {
-  const { API } = useStoreContext();
+  const { API, token } = useStoreContext();
 
-  const [viewMode, setViewMode] = useState('grid'); // 'table', 'grid', or 'board'
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
 
 
-  const columns = [
-    { key: 'Index', label: 'Index' },
-    { key: 'Product_Id', label: 'Product ID' },
-    { key: 'Name', label: 'Name' },
-    { key: 'Description', label: 'Description' },
-    { key: 'Price', label: 'Price' },
-    { key: 'Photo_Id', label: 'Photo ID' },
-    { key: 'Category_Id', label: 'Category' },
-    { key: 'create_at', label: 'Created At' },
-  ];
-
-  const viewButtons = [
-    { mode: 'table', icon: HiViewColumns, label: 'Table' },
-    { mode: 'grid', icon: HiSquares2X2, label: 'Grid' },
-    { mode: 'board', icon: HiListBullet, label: 'Board' },
-  ];
-
-  // TODO: on deploy change the localhost to env variable
   const fetchProducts = async () => {
+    console.log("Fetching products...");
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: `${API}products/`,
-      headers: { }
+      url: `${API}products/?limit=${limit}&page=${page}`,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     };
     try {
       const response = await axios.request(config);
       setProducts(response.data);
+      console.log("Products fetched:", response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -51,7 +33,7 @@ export const ProductContextProvider = (props) => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [page, limit, token]);
 
   const addLocalProduct = (product) => {
     // add product id and index by latest products length
@@ -69,6 +51,7 @@ export const ProductContextProvider = (props) => {
     try {
       const productData = {
         Name: formData.Name,
+        Author: formData.Author,
         Description: formData.Description,
         Price: Number(formData.Price),
         Photo_Id: formData.Photo_Id,
@@ -80,20 +63,21 @@ export const ProductContextProvider = (props) => {
         maxBodyLength: Infinity,
         url: `${API}products/`,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         data : JSON.stringify(productData)
       };
       const response = await axios.request(config);
-      if(response.status === 201){
+      if (response.status === 201) {
         toast.success('Product added successfully!');
+        await fetchProducts();
+        return response.data;
       }
-      addLocalProduct(formData);
+      return null;
     } catch (error) {
       console.error('Error adding product:', error);
       toast.error('Failed to add product. Please try again.');
-    } finally {
-      setIsModalOpen(false);
     }
   };
 
@@ -101,6 +85,7 @@ export const ProductContextProvider = (props) => {
     try {
       const productData = {
         Name: formData.Name,
+        Author: formData.Author,
         Description: formData.Description,
         Price: Number(formData.Price),
         Photo_Id: formData.Photo_Id,
@@ -110,27 +95,23 @@ export const ProductContextProvider = (props) => {
       let config = {
         method: 'put',
         maxBodyLength: Infinity,
-        url: `${API}products?id=${formData.Product_Id}`,
+        url: `${API}products/${formData.Product_Id}`,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         data : JSON.stringify(productData)
       };
       const response = await axios.request(config);
       if(response.status === 200){
         toast.success('Product updated successfully!');
-        // Update local state
-        setProducts(prevProducts => 
-          prevProducts.map(p => 
-            p.Product_Id === formData.Product_Id ? { ...p, ...formData } : p
-          )
-        );
+        await fetchProducts();
+        return response.data;
       }
     } catch (error) {
       console.error('Error updating product:', error);
       toast.error('Failed to update product. Please try again.');
     } finally {
-      setIsModalOpen(false);
       setSelectedProduct(null);
     }
   };
@@ -139,46 +120,40 @@ export const ProductContextProvider = (props) => {
     try {
       // on part auth delete it's will impiment later
       // TODO: impiment delete auth to secure this endpoint
-      let auth = "admin-secret";
       let config = {
         method: 'delete',
         maxBodyLength: Infinity,
-        url: `${API}products?id=${product.Product_Id}&auth=${auth}`,
+        url: `${API}products/${product.Product_Id}`,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       };
       const response = await axios.request(config);
       if(response.status === 200 || response.status === 204){
         toast.success('Product deleted successfully!');
-        // Remove from local state
-        setProducts(prevProducts => 
-          prevProducts.filter(p => p.Product_Id !== product.Product_Id)
-        );
+        await fetchProducts();
       }
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product. Please try again.');
     } finally {
-      setIsModalOpen(false);
       setSelectedProduct(null);
     }
   };
 
 
   const contextValue = {
-    // States
-    columns,
-    viewButtons,
-    viewMode,
     products,
-    isModalOpen,
-    modalMode,
     selectedProduct,
-    // Actions
-    setViewMode,
-    setIsModalOpen,
-    setModalMode,
     setSelectedProduct,
     setProducts,
     handleDeleteProduct,
+    handleAddProduct,
+    handleUpdateProduct,
+    // pagination
+    page,
+    setPage,
+    limit,
+    setLimit,
+    fetchProducts,
   };
 
   return (
