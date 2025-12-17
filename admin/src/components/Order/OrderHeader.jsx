@@ -1,27 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useOrderContext } from '../../contexts/OrderContext.jsx';
 
 function OrderHeader() {
-  const { userFilter, setUserFilter, statusFilter, setStatusFilter, fetchOrders } = useOrderContext();
+  const { userFilter, setUserFilter, statusFilter, setStatusFilter, fetchOrders, setPage } = useOrderContext();
 
   const [searchTerm, setSearchTerm] = useState(userFilter || '');
 
-  // debounce updating
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const val = (searchTerm || '').trim();
-      if (val === '') {
-        setUserFilter('');
-      } else if (val.length >= 8) {
-        setUserFilter(val);
-      }
-    }, 400);
-
-    return () => clearTimeout(handler);
-  }, [searchTerm, setUserFilter]);
-
   const onStatusChange = (e) => {
     setStatusFilter(e.target.value);
+    setPage(1);
+    fetchOrders();
+  };
+
+  const doSearch = () => {
+    const val = (searchTerm || '').trim();
+    setPage(1);
+    setUserFilter(val);
+    fetchOrders();
   };
 
   return (
@@ -37,6 +32,7 @@ function OrderHeader() {
           placeholder="Filter by User ID"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }}
           className="border px-2 py-1 rounded"
         />
 
@@ -46,6 +42,8 @@ function OrderHeader() {
           <option value="paid">Paid</option>
           <option value="cancelled">Cancelled</option>
         </select>
+
+        <button onClick={doSearch} className="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
 
         <button
           onClick={() => fetchOrders()}

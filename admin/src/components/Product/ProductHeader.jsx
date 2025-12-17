@@ -3,7 +3,7 @@ import { useProductContext } from '../../contexts/ProductContext.jsx';
 import ProductAction from '../Product/ProductAction';
 
 function ProductHeader({ openAddModal }) {
-  const { categoryFilter, setCategoryFilter, setPage } = useProductContext();
+  const { categoryFilter, setCategoryFilter, setPage, fetchProducts } = useProductContext();
 
   const [inputValue, setInputValue] = useState(categoryFilter || '');
 
@@ -12,21 +12,12 @@ function ProductHeader({ openAddModal }) {
     setInputValue(categoryFilter || '');
   }, [categoryFilter]);
 
-  // debounce updating context
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const val = (inputValue || '').trim();
-      if (val === '') {
-        setCategoryFilter('');
-        setPage(1);
-      } else {
-        setCategoryFilter(val);
-        setPage(1);
-      }
-    }, 400);
-
-    return () => clearTimeout(handler);
-  }, [inputValue, setCategoryFilter, setPage]);
+  const doSearch = () => {
+    const val = (inputValue || '').trim();
+    setPage(1);
+    setCategoryFilter(val);
+    fetchProducts();
+  };
 
   const onCategoryChange = (e) => {
     // allow only digits (unsigned integers); strip non-digits
@@ -45,13 +36,16 @@ function ProductHeader({ openAddModal }) {
         <input
           type="number"
           placeholder="Filter by Category ID"
-          value={categoryFilter}
+          value={inputValue}
           onChange={onCategoryChange}
+          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }}
           className="border px-2 py-1 rounded"
         />
 
-        <ProductAction 
-          openAddModal={openAddModal} 
+        <button onClick={doSearch} className="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
+
+        <ProductAction
+          openAddModal={openAddModal}
         />
       </div>
     </div>

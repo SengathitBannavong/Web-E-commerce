@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { HiTrash, HiXMark } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
-import ConfirmDialog from './ConfirmDialog.jsx';
+import ConfirmDialog from '../ConfirmDialog.jsx';
 
 function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode = 'add' }) {
   const [formData, setFormData] = useState({

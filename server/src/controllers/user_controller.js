@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { Op } from 'sequelize';
 import { getModel } from "../config/database.js";
 import { generateToken } from "../middleware/auth.js";
 
@@ -86,27 +87,53 @@ const get_all_users = async (req, res) => {
     }
 };
 
-const get_user = (req, res) => {
-    const id = req.params.id;
-    
-    // If no ID provided, return all users (admin access verified by middleware)
-    if (!id) {
+const get_user = async (req, res) => {
+    const search = req.query.search;
+
+    // If no search parameter provided, return paginated list
+    if (!search) {
         return get_all_users(req, res);
     }
 
     const { User } = getModel();
-    
-    User.findOne({ where: { User_Id: id } })
-    .then(user => {
-        if (!user) {
+
+    // pagination params (apply to search results too)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    try {
+        let whereClause;
+
+        // If looks like an email
+        if (String(search).includes('@')) {
+            whereClause = { Email: search };
+        // If matches expected User_Id pattern (e.g. U0000001)
+        } else if (/^U\d+$/.test(String(search))) {
+            whereClause = { User_Id: search };
+        } else {
+            whereClause = {
+                Name: { [Op.iLike]: `%${search}%` }
+            };
+        }
+
+        // Get total matching count and the page slice
+        const [total, users] = await Promise.all([
+            User.count({ where: whereClause }),
+            User.findAll({ where: whereClause, limit, offset })
+        ]);
+
+        if (!users || users.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json(user);
-    })
-    .catch(err => {
+
+        const totalPage = Math.ceil(total / limit);
+
+        res.json({ totalPage, total, data: users });
+    } catch (err) {
         console.error("Error fetching user:", err);
         res.status(500).json({ error: "Internal server error" });
-    });
+    }
 };
 
 const generateUserId = async (User) => {

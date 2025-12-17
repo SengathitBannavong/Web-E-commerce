@@ -22,7 +22,6 @@ user_router.put("/me", authMiddleware, update_user); // User can update own prof
 
 // ==================== ADMIN ROUTES ====================
 user_router.get("/", authMiddleware, adminMiddleware, get_user); // Get all users
-user_router.get("/:id", authMiddleware, adminMiddleware, get_user); // Get specific user
 user_router.post("/", authMiddleware, adminMiddleware, create_user); // Admin create user
 user_router.put("/:id", authMiddleware, adminMiddleware, update_user); // Admin update any user
 user_router.delete("/:id", authMiddleware, adminMiddleware, delete_user); // Admin delete user
