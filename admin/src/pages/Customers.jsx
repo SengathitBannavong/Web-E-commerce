@@ -27,7 +27,7 @@ function Customers() {
     { key: 'Email', label: 'Email' },
     { key: 'User_Id', label: 'User ID' },
     { key: 'Role', label: 'Role' },
-    { key: 'Date', label: 'Created At' },
+    { key: 'created_at', label: 'Created At' },
   ];
 
   const handleSubmit = (formData) => {
