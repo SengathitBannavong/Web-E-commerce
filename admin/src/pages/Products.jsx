@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ProductBody from '../components/Product/ProductBody';
+import ProductFormModal from '../components/Product/ProductFormModal.jsx';
 import ProductHeader from '../components/Product/ProductHeader';
-import ProductFormModal from '../components/ProductFormModal.jsx';
 import { useProductContext } from '../contexts/ProductContext.jsx';
 
 function Products() {

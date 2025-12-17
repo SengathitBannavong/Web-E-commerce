@@ -3,17 +3,18 @@ import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-route
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import { CustomerContextProvider } from './contexts/CustomerContext.jsx';
 import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
-import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import { OrderContextProvider } from './contexts/OrderContext.jsx';
+import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Login from './pages/Login.jsx';
 import Orders from './pages/Orders.jsx';
 import Payments from './pages/Payments.jsx';
 import Products from './pages/Products.jsx';
-import Login from './pages/Login.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './toast-custom.css';
 
 function App() {
@@ -71,7 +72,14 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
                   }
                 />
 
-                <Route path="/customers" element={<Customers />} />
+                <Route
+                  path="/customers"
+                  element={
+                    <CustomerContextProvider>
+                      <Customers />
+                    </CustomerContextProvider>
+                  }
+                />
                 <Route path="/payments" element={<Payments />} />
               </Route>
             </Routes>
