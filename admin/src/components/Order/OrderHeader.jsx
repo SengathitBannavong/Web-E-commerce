@@ -33,17 +33,17 @@ function OrderHeader() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }}
-          className="border px-2 py-1 rounded"
+          className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200"
         />
 
-        <select value={statusFilter} onChange={onStatusChange} className="border px-2 py-1 rounded">
+        <select value={statusFilter} onChange={onStatusChange} className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
           <option value="paid">Paid</option>
           <option value="cancelled">Cancelled</option>
         </select>
 
-        <button onClick={doSearch} className="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
+        <button onClick={doSearch} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-md transition-all">Search</button>
 
         <button
           onClick={() => fetchOrders()}

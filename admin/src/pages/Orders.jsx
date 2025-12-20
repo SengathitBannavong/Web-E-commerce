@@ -58,7 +58,7 @@ function Orders() {
           <button
             onClick={() => canPrev && setPage(page - 1)}
             disabled={!canPrev}
-            className={`px-3 py-1 rounded-md border ${canPrev ? 'bg-white' : 'bg-slate-100 text-slate-400'}`}
+            className={`px-3 py-1 rounded-md border ${canPrev ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-md' : 'bg-slate-100 text-slate-400'}`}
           >
             Prev
           </button>
@@ -68,7 +68,7 @@ function Orders() {
           <button
             onClick={() => canNext && setPage(page + 1)}
             disabled={!canNext}
-            className={`px-3 py-1 rounded-md border ${canNext ? 'bg-white' : 'bg-slate-100 text-slate-400'}`}
+            className={`px-3 py-1 rounded-md border ${canNext ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-md' : 'bg-slate-100 text-slate-400'}`}
           >
             Next
           </button>
@@ -76,7 +76,7 @@ function Orders() {
 
         <div className="flex items-center gap-2">
           <label className="text-sm">Show</label>
-          <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }} className="border rounded px-2 py-1">
+          <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }} className="border rounded px-3 py-1 outline-none">
             <option value={5}>5</option>
             <option value={10}>10</option>
             <option value={20}>20</option>

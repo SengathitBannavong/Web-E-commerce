@@ -191,6 +191,15 @@ const create_product = async (req, res) => {
     });
   }
 
+  // check category id if provided
+  if (Category_Id) {
+    const { Category } = getModel();
+    const category = await Category.findOne({ where: { Category_Id } });
+    if (!category) {
+      return res.status(400).json({ error: "Invalid Category_Id" });
+    }
+  }
+
   try {
     // Auto generate Product_Id
     const Product_Id = await generateProductId(Product);

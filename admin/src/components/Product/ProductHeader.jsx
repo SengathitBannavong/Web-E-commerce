@@ -39,10 +39,10 @@ function ProductHeader({ openAddModal }) {
           value={inputValue}
           onChange={onCategoryChange}
           onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }}
-          className="border px-2 py-1 rounded"
+          className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200"
         />
 
-        <button onClick={doSearch} className="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
+        <button onClick={doSearch} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-md transition-all">Search</button>
 
         <ProductAction
           openAddModal={openAddModal}

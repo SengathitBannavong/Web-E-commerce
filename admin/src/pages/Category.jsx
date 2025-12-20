@@ -1,54 +1,61 @@
 
 import { useState } from 'react';
-import CustomerBody from '../components/Customer/CustomerBody';
-import CustomerFormModal from '../components/Customer/CustomerFormModal.jsx';
-import CustomerHeader from '../components/Customer/CustomerHeader';
-import { useCustomerContext } from '../contexts/CustomerContext.jsx';
+import CategoryBody from '../components/Category/CategoryBody';
+import CategoryFormModal from '../components/Category/CategoryFormModal.jsx';
+import CategoryHeader from '../components/Category/CategoryHeader';
+import { useCategoryContext } from '../contexts/CategoryContext.jsx';
 
-function Customers() {
+function Category() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('add');
 
   const {
-    customers,
-    selectedCustomer,
-    setSelectedCustomer,
-    handleDeleteCustomer,
-    handleUpdateCustomer,
+    categories,
+    selectedCategory,
+    setSelectedCategory,
+    handleDeleteCategory,
+    handleAddCategory,
+    handleUpdateCategory,
     page,
     setPage,
     limit,
     setLimit,
-    setSearchFilter,
-  } = useCustomerContext();
+  } = useCategoryContext();
 
   const columns = [
     { key: 'Index', label: 'Index' },
+    { key: 'Category_Id', label: 'Category ID' },
     { key: 'Name', label: 'Name' },
-    { key: 'Email', label: 'Email' },
-    { key: 'User_Id', label: 'User ID' },
-    { key: 'Role', label: 'Role' },
+    { key: 'Description', label: 'Description' },
+    { key: 'Photo_Id', label: 'Photo ID' },
     { key: 'created_at', label: 'Created At' },
   ];
 
   const handleSubmit = (formData) => {
-    if (selectedCustomer) {
-      handleUpdateCustomer(formData);
-    }
+    if (modalMode === 'edit') handleUpdateCategory(formData);
+    else handleAddCategory(formData);
   };
 
-  const openEditModal = (user) => {
-    setSelectedCustomer(user);
+  const openAddModal = () => {
+    setModalMode('add');
+    setSelectedCategory(null);
     setIsModalOpen(true);
   };
 
-  const data = Array.isArray(customers) ? customers : (customers && customers.data) ? customers.data : [];
-  const total = customers && (customers.total || customers.totalCount || customers.count);
+  const openEditModal = (category) => {
+    setModalMode('edit');
+    setSelectedCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const data = Array.isArray(categories) ? categories : (categories && categories.data) ? categories.data : [];
+  const total = categories && (categories.total || categories.totalCount || categories.count);
   const canPrev = page > 1;
   const canNext = Array.isArray(data) ? data.length >= limit : true;
 
   return (
     <div Name="main-container" className="p-6">
-      <CustomerHeader setSearchFilter={setSearchFilter} />
+      <CategoryHeader openAddModal={openAddModal} />
 
       <div className="flex items-center justify-between gap-4 mt-4">
         <div className="flex items-center gap-2">
@@ -82,29 +89,24 @@ function Customers() {
         </div>
       </div>
 
-      <CustomerBody
-        customers={data}
+      <CategoryBody
+        categories={data}
         columns={columns}
         openEditModal={openEditModal}
         page={page}
         limit={limit}
       />
 
-      <CustomerFormModal
-        mode={'edit'}
+      <CategoryFormModal
+        mode={modalMode}
         isOpen={isModalOpen}
-        setOpen={setIsModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedCustomer(null);
-        }}
+        onClose={() => { setIsModalOpen(false); setSelectedCategory(null); }}
         onSubmit={handleSubmit}
-        onDelete={handleDeleteCustomer}
-        customer={selectedCustomer}
+        onDelete={handleDeleteCategory}
+        category={selectedCategory}
       />
-
     </div>
   );
 }
 
-export default Customers;
+export default Category;
