@@ -140,7 +140,7 @@ export const setupAssociations = (models) => {
     as: 'user'
   });
 
-  // Stock ↔ Product (One-to-One or Many-to-One)
+  // Stock ↔ Product (One-to-One)
   // One product can have one stock record
   Product.hasOne(Stock, {
     foreignKey: 'Product_Id',

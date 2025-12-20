@@ -3,10 +3,20 @@ import { getModel } from "../config/database.js";
 const getCategories = async (req, res) => {
   const { Category } = getModel();
   const { id } = req.params;
+  const { search } = req.query;
   try {
     if (id) {
       const category = await Category.findOne({ where: { Category_Id: id } });
       res.json(category);
+    } else if(search) {
+      const categories = await Category.findAll({
+        where: {
+          Name: {
+            [Op.iLike]: `%${search}%`
+          }
+        }
+      });
+      res.json(categories);
     } else {
       // Get pagination parameters from query
       const page = parseInt(req.query.page) || 1;

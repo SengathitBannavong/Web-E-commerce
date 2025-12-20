@@ -10,25 +10,34 @@ const get_all_stocks = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
+
+        const total = await Stock.count();
         
-        const [total, stocks] = await Promise.all([
-            Stock.count(),
-            Stock.findAll({
-                limit,
-                offset,
-                include: [{
-                    model: Product,
-                    attributes: ['Product_Id', 'Name', 'Price']
-                }]
-            })
-        ]);
-        
-        const totalPage = Math.ceil(total / limit);
+        const result = await Stock.findAll({
+          attributes: [
+            'Stock_Id',
+            'Product_Id',
+            'Quantity',
+            'Last_Updated',
+            [Stock.sequelize.col('product.Name'), 'Product_Name'],
+            [Stock.sequelize.col('product.Price'), 'Product_Price']
+          ],
+          include: [{
+            model: Product,
+            as: 'product',
+            attributes: [],
+            required: false 
+          }],
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          subQuery: false,
+          raw: true,
+          order: [['Product_Id', 'ASC']]
+        });
         
         res.json({
-            totalPage,
-            total,
-            data: stocks
+            total: total,
+            data: result
         });
     } catch (err) {
         console.error("Error fetching stocks:", err);

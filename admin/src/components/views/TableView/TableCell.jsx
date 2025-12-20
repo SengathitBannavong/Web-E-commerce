@@ -9,7 +9,7 @@ function TableCell({ column, item, shouldHideColumn, rowIndex = 0, page = 1, lim
     if (col.key === 'Price') {
       return <span className="font-semibold text-emerald-600">${item[col.key]}</span>;
     }
-    if (col.key === 'created_at' || col.key === 'Date') {
+    if (col.key === 'created_at' || col.key === 'Date' || col.key === 'Last_Updated') {
       return item[col.key] ? item[col.key].split('T')[0] : '';
     }
     if( col.key === 'Role') {

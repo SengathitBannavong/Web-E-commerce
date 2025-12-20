@@ -83,7 +83,7 @@ export const ProductContextProvider = (props) => {
       return null;
     } catch (error) {
       console.error('Error adding product:', error);
-      toast.error('Failed to add product. Please try again.');
+      toast.error('Failed to add product:' + (error.response?.data?.error || error.message));
     }
   };
 

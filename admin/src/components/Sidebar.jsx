@@ -1,9 +1,10 @@
 import {
-    HiOutlineCube,
-    HiOutlineCurrencyDollar,
-    HiOutlineShoppingCart,
-    HiOutlineUsers,
-    HiSquares2X2
+  HiOutlineCube,
+  HiOutlineCurrencyDollar,
+  HiOutlineShoppingCart,
+  HiOutlineUsers,
+  HiSquares2X2,
+  HiViewColumns
 } from "react-icons/hi2";
 import Logo from './Logo.jsx';
 import Nav_items from './NavbarItems.jsx';
@@ -14,6 +15,8 @@ function Sidebar({isOpen, onClose}) {
     { id: 'dashboard', label: 'Dashboard', icon: HiSquares2X2 },
     { id: 'Orders',    label: 'Orders',    icon: HiOutlineShoppingCart },
     { id: 'Products',  label: 'Products',  icon: HiOutlineCube },
+    { id: 'Category',  label: 'Category',  icon: HiViewColumns },
+    { id: 'Stock',     label: 'Stock',     icon: HiOutlineCube },
     { id: 'Customers', label: 'Customers', icon: HiOutlineUsers },
     { id: 'Payments',  label: 'Payments',  icon: HiOutlineCurrencyDollar },
   ];
