@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { getModel } from "../config/database.js";
+import { getDB, getModel } from "../config/database.js";
 
 // Validation helper function
 const validateProductFields = (fields, isUpdate = false) => {
@@ -62,7 +62,8 @@ const get_product_normal = async (req, res) => {
       Product.findAll({
         where: whereClause,
         limit: limit,
-        offset: offset
+        offset: offset,
+        order: [['Index', 'ASC']]
       })
     ]);
     
@@ -201,21 +202,34 @@ const create_product = async (req, res) => {
   }
 
   try {
-    // Auto generate Product_Id
-    const Product_Id = await generateProductId(Product);
+    // Use a transaction to create both product and initial stock atomically
+    const sequelize = getDB();
+    const t = await sequelize.transaction();
+    try {
+      // Auto generate Product_Id
+      const Product_Id = await generateProductId(Product);
 
-    const product = await Product.create({
-      Product_Id,
-      Name,
-      Author,
-      Description,
-      Price,
-      Photo_Id,
-      Category_Id,
-      created_at: new Date()
-    });
+      const product = await Product.create({
+        Product_Id,
+        Name,
+        Author,
+        Description,
+        Price,
+        Photo_Id,
+        Category_Id,
+        created_at: new Date()
+      }, { transaction: t });
 
-    res.status(201).json(product);
+      // create initial stock record with quantity 0
+      const { Stock } = getModel();
+      await Stock.create({ Product_Id, Quantity: 0, Last_Updated: new Date() }, { transaction: t });
+
+      await t.commit();
+      res.status(201).json(product);
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
   } catch (err) {
     console.error("Error creating product:", err);
     res.status(500).json({ error: "Internal server error" });

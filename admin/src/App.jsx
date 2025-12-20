@@ -10,6 +10,7 @@ import { CustomerContextProvider } from './contexts/CustomerContext.jsx';
 import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
 import { OrderContextProvider } from './contexts/OrderContext.jsx';
 import { ProductContextProvider } from './contexts/ProductContext.jsx';
+import { StockContextProvider } from './contexts/StockContext.jsx';
 import Category from './pages/Category.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -83,7 +84,14 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
                     </CategoryContextProvider>
                   }
                 />
-                <Route path="/stock" element={<Stock />} />
+                <Route
+                  path="/stock"
+                  element={
+                    <StockContextProvider>
+                      <Stock />
+                    </StockContextProvider>
+                  }
+                />
 
                 <Route
                   path="/customers"

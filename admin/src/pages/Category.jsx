@@ -24,8 +24,8 @@ function Category() {
 
   const columns = [
     { key: 'Index', label: 'Index' },
-    { key: 'Category_Id', label: 'Category ID' },
     { key: 'Name', label: 'Name' },
+    { key: 'Category_Id', label: 'Category ID' },
     { key: 'Description', label: 'Description' },
     { key: 'Photo_Id', label: 'Photo ID' },
     { key: 'created_at', label: 'Created At' },
