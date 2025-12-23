@@ -1,82 +1,93 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import HeroSlider from "../components/HeroSlider";
 import BookSection from "../components/BookSection";
 import Newsletter from "../components/Newsletter";
 import { HERO_BANNERS } from "../data/heroBanners";
 import { getProducts } from "../services/productService";
+import { getCategories } from "../services/categoryService";
 import "./Home.css";
 
-const adaptProductData = (product) => {
-  const imagePath = `/images/books/${product.Photo_Id || "default.jpg"}`;
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    price || 0
+  );
 
-  const formattedPrice = new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(product.Price || 0);
-
-  return {
-    id: product.Product_Id,
-    title: product.Name,
-    author: product.Author,
-    price: formattedPrice,
-    cover: imagePath,
-    rawPrice: product.Price,
-  };
-};
+const adaptProductData = (product) => ({
+  id: product.Product_Id,
+  title: product.Name,
+  author: product.Author,
+  price: formatPrice(product.Price),
+  cover: `/images/books/${product.Photo_Id || "default.jpg"}`,
+  rawPrice: product.Price,
+});
 
 export default function Home() {
-  const [newReleases, setNewReleases] = useState([]);
-  const [bestsellers, setBestsellers] = useState([]);
+  const [data, setData] = useState({
+    newReleases: [],
+    bestsellers: [],
+    categories: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchHomeData = async () => {
       try {
         setLoading(true);
-        const newReleasesData = await getProducts({ page: 1, limit: 5 });
-        setNewReleases(newReleasesData.data.map(adaptProductData));
+        const [newReleasesRes, bestsellersRes, categoriesRes] =
+          await Promise.all([
+            getProducts({ page: 1, limit: 5 }),
+            getProducts({ page: 2, limit: 5 }),
+            getCategories(),
+          ]);
 
-        const bestsellersData = await getProducts({ page: 2, limit: 5 });
-        setBestsellers(bestsellersData.data.map(adaptProductData));
+        setData({
+          newReleases: newReleasesRes.data.map(adaptProductData),
+          bestsellers: bestsellersRes.data.map(adaptProductData),
+          categories: categoriesRes.data || [],
+        });
       } catch (err) {
-        setError("Không thể tải sản phẩm. Vui lòng thử lại sau.");
         console.error(err);
+        setError(
+          "Không thể tải dữ liệu trang chủ. Vui lòng kiểm tra kết nối."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchHomeData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="page home-page">
-        <main className="home-main-content">
-          <p>Đang tải sản phẩm...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="page home-page">
-        <main className="home-main-content">
-          <p style={{ color: "red" }}>{error}</p>
-        </main>
-      </div>
-    );
-  }
+  if (loading)
+    return <div className="page-loading">Đang tải trải nghiệm đọc sách...</div>;
+  if (error) return <div className="page-error">{error}</div>;
 
   return (
     <div className="page home-page">
       <HeroSlider slides={HERO_BANNERS} />
 
       <main className="home-main-content">
-        <BookSection title="Mới phát hành" books={newReleases} withCta />
-        <BookSection title="Bán chạy nhất" books={bestsellers} withCta />
+        <section className="category-list-section">
+          <div className="container">
+            <h3>Khám phá theo thể loại</h3>
+            <div className="category-grid">
+              {data.categories.slice(0, 6).map((cat) => (
+                <Link
+                  to={`/books?category=${cat.Category_Id}`}
+                  key={cat.Category_Id}
+                  className="category-card"
+                >
+                  <span className="cat-name">{cat.Name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <BookSection title="Mới phát hành" books={data.newReleases} withCta />
+        <BookSection title="Sách bán chạy" books={data.bestsellers} withCta />
         <Newsletter />
       </main>
     </div>
