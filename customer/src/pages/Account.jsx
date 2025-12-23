@@ -1,176 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Account.css";
-import {
-  FaUser,
-  FaBox,
-  FaHeart,
-  FaMapMarkerAlt,
-  FaCreditCard,
-  FaBell,
-  FaCog,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaUser, FaBox, FaMapMarkerAlt, FaSignOutAlt } from "react-icons/fa"; 
 import { AccountSidebar } from "../components/AccountSidebar";
 import { ProfileForm } from "../components/ProfileForm";
-import { MOCK_USER as mockUser } from "../data/account";
-
-const createFormState = (user) => ({
-  fullName: user?.name ?? "",
-  phone: user?.phone ?? "",
-  email: user?.email ?? "",
-  birthDay: user?.birthDate?.day ? user.birthDate.day.toString() : "",
-  birthMonth: user?.birthDate?.month ? user.birthDate.month.toString() : "",
-  birthYear: user?.birthDate?.year ? user.birthDate.year.toString() : "",
-  gender: user?.gender ?? "",
-});
+import { useAuth } from "../contexts/AuthContext";
+import { updateProfile } from "../services/userService";
 
 const Account = () => {
-  const [userData, setUserData] = useState(mockUser);
-  const [isEditing, setIsEditing] = useState(!mockUser.isProfileCompleted);
-  const [formState, setFormState] = useState(createFormState(mockUser));
+  const { user, logout } = useAuth(); 
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    gender: "",
+    address: "",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: ""
+  });
+
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.name || "",
+        phone: user.phone || "",
+        gender: user.gender || "Khác",
+        address: user.address || "",
+        birthDay: "", 
+        birthMonth: "",
+        birthYear: ""
+      });
+    }
+  }, [user]);
 
   const menuItems = [
     { icon: <FaUser />, text: "Hồ Sơ Cá Nhân", active: true },
-    { icon: <FaBox />, text: "Đơn Hàng Của Tôi" },
+    { icon: <FaBox />, text: "Đơn Hàng Của Tôi" }, 
     { icon: <FaMapMarkerAlt />, text: "Sổ Địa Chỉ" },
-    { icon: <FaCreditCard />, text: "Phương Thức Thanh Toán" },
-    { icon: <FaBell />, text: "Thông Báo" },
-    { icon: <FaSignOutAlt />, text: "Đăng Xuất" },
+    { icon: <FaSignOutAlt />, text: "Đăng Xuất", onClick: logout }, 
   ];
 
   const handleFieldChange = (field, value) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleEditClick = () => {
-    setFormState(createFormState(userData));
-    setIsEditing(true);
+  const handleSaveProfile = async () => {
+    setMessage({ type: "", text: "" });
+    try {
+      await updateProfile(formData);
+      
+      setMessage({ type: "success", text: "Cập nhật hồ sơ thành công!" });
+      setIsEditing(false);
+      
+      window.location.reload(); 
+      
+    } catch (error) {
+      setMessage({ type: "error", text: error.message || "Có lỗi xảy ra." });
+    }
   };
 
-  const handleCancelEdit = () => {
-    setFormState(createFormState(userData));
-    setIsEditing(false);
-  };
-
-  const handleSaveProfile = () => {
-    const sanitizedName = formState.fullName.trim();
-    const sanitizedPhone = formState.phone.trim();
-
-    const updatedUser = {
-      ...userData,
-      name: sanitizedName,
-      phone: sanitizedPhone,
-      gender: formState.gender,
-      birthDate: {
-        day: formState.birthDay ? Number(formState.birthDay) : null,
-        month: formState.birthMonth ? Number(formState.birthMonth) : null,
-        year: formState.birthYear ? Number(formState.birthYear) : null,
-      },
-    };
-
-    const hasBasicInfo = Boolean(
-      sanitizedName &&
-        sanitizedPhone &&
-        updatedUser.birthDate.day &&
-        updatedUser.birthDate.month &&
-        updatedUser.birthDate.year &&
-        formState.gender
-    );
-
-    updatedUser.isProfileCompleted = hasBasicInfo;
-    updatedUser.needsProfileUpdate = false;
-
-    setUserData(updatedUser);
-    setIsEditing(false);
-  };
-
-  const shouldPromptProfile = !userData.isProfileCompleted;
-  const shouldPromptUpdate = userData.needsProfileUpdate;
+  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="account-page">
-      <AccountSidebar user={userData} menuItems={menuItems} />
+      <AccountSidebar user={user} menuItems={menuItems} />
       <div className="account-content">
         <div className="content-section">
           <div className="content-header">
             <div>
               <h1 className="content-header__title">Hồ Sơ Cá Nhân</h1>
-              <p className="content-header__subtitle">
-                Quản lý thông tin cá nhân của bạn
-              </p>
+              <p className="content-header__subtitle">Quản lý thông tin cá nhân</p>
             </div>
             <div className="content-header__actions">
               {isEditing ? (
                 <>
-                  <button
-                    type="button"
-                    className="button button--secondary"
-                    onClick={handleCancelEdit}
-                  >
-                    Huỷ
-                  </button>
-                  <button
-                    type="button"
-                    className="button button--primary"
-                    onClick={handleSaveProfile}
-                  >
-                    Lưu
-                  </button>
+                  <button className="button button--secondary" onClick={() => setIsEditing(false)}>Huỷ</button>
+                  <button className="button button--primary" onClick={handleSaveProfile}>Lưu</button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  className="button button--primary"
-                  onClick={handleEditClick}
-                >
-                  Chỉnh Sửa
-                </button>
+                <button className="button button--primary" onClick={() => setIsEditing(true)}>Chỉnh Sửa</button>
               )}
             </div>
           </div>
 
-          {(shouldPromptProfile || shouldPromptUpdate) && (
-            <div
-              className={`account-alert ${
-                shouldPromptProfile
-                  ? "account-alert--warning"
-                  : "account-alert--info"
-              }`}
-            >
-              {shouldPromptProfile
-                ? 'Hồ sơ của bạn chưa hoàn thiện. Nhấn "Chỉnh Sửa" để bổ sung thông tin.'
-                : "Đã đến lúc cập nhật hồ sơ của bạn để đảm bảo thông tin luôn chính xác."}
+          {message.text && (
+            <div className={`account-alert account-alert--${message.type === 'error' ? 'danger' : 'success'}`}>
+              {message.text}
             </div>
           )}
-
-          <div className="card">
-            <div className="card__body avatar-section">
-              <img
-                src={userData.avatar}
-                alt="User Avatar"
-                className="avatar-section__img"
-              />
-              <div className="avatar-section__actions">
-                <button
-                  type="button"
-                  className="button button--secondary"
-                  disabled={!isEditing}
-                >
-                  Thay Đổi Ảnh
-                </button>
-                <button
-                  type="button"
-                  className="button button--danger-outline"
-                  disabled={!isEditing}
-                >
-                  Xóa Ảnh
-                </button>
-                <p className="avatar-section__hint">
-                  Dung lượng tối đa 2MB. Định dạng: JPG, PNG
-                </p>
-              </div>
-            </div>
-          </div>
 
           <div className="card">
             <div className="card__header">
@@ -178,8 +98,8 @@ const Account = () => {
             </div>
             <div className="card__body">
               <ProfileForm
-                user={userData}
-                formData={formState}
+                user={user} 
+                formData={formData}
                 onFieldChange={handleFieldChange}
                 isEditing={isEditing}
               />

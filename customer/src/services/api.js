@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080/api"; // Default backend URL with /api prefix
+const API_BASE_URL = "http://localhost:3000/api"; // Default backend URL with /api prefix
 
 /**
  * Fetches data from the API.

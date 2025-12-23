@@ -47,7 +47,7 @@ export default function BookCard({
       </div>
 
       <div className="book-card-footer">
-        <span className="book-price">{price} đ</span>
+        <span className="book-price">{price}</span>
         <button
           type="button"
           className="book-card-add-to-cart"

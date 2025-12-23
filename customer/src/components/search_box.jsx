@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./search_box.css";
 
 export default function SearchBox() {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("Searching for:", searchTerm);
+    if (searchTerm.trim()) {
+      navigate(`/books?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
   };
 
   return (

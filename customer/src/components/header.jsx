@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaShoppingCart, FaUser } from "react-icons/fa";
+import { FaBook, FaShoppingCart, FaUser } from "react-icons/fa";
 import "./header.css";
 import SearchBox from "./search_box";
 import { useAuth } from "../contexts/AuthContext";
@@ -14,21 +14,22 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="container">
-        {/* Left: Logo/title */}
         <div className="header-left">
           <h1 className="logo-title">
             <NavLink to="/">Bookstore</NavLink>
           </h1>
         </div>
 
-        {/* Center: Search Box */}
         <div className="header-center">
           <SearchBox />
         </div>
 
-        {/* Right: Navigation */}
         <div className="header-right">
           <nav>
+            <NavLink to="/books" className="icon-text-link">
+              <FaBook />
+              <span>Books</span>
+            </NavLink>
             <NavLink to="/cart" className="icon-text-link">
               <FaShoppingCart />
               <span>Cart</span>
