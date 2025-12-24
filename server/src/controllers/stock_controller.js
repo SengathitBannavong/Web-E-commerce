@@ -16,9 +16,10 @@ const get_all_stocks = async (req, res) => {
         const result = await Stock.findAll({
           attributes: [
             'Stock_Id',
-            'Product_Id',
+            'Product_Index',
             'Quantity',
             'Last_Updated',
+            [Stock.sequelize.col('product.Product_Id'), 'Product_Id'],
             [Stock.sequelize.col('product.Name'), 'Product_Name'],
             [Stock.sequelize.col('product.Price'), 'Product_Price']
           ],
@@ -32,7 +33,7 @@ const get_all_stocks = async (req, res) => {
           offset: parseInt(offset),
           subQuery: false,
           raw: true,
-          order: [['Product_Id', 'ASC']]
+          order: [['Product_Index', 'ASC']]
         });
         
         res.json({
@@ -50,14 +51,17 @@ const get_all_stocks = async (req, res) => {
  */
 const get_stock_by_product_id = async (req, res) => {
     try {
-        const { Stock } = getModel();
+        const { Stock, Product } = getModel();
         const productId = req.params.productId;
         
         if (!productId) {
             return res.status(400).json({ error: "Product ID is required" });
         }
         
-        const stock = await Stock.findOne({ where: { Product_Id: productId } });
+        // resolve product code to product Index
+        const product = await Product.findOne({ where: { Product_Id: productId } });
+        if (!product) return res.status(404).json({ error: "Product not found" });
+        const stock = await Stock.findOne({ where: { Product_Index: product.Index } });
         
         if (!stock) {
             return res.status(404).json({ error: "Stock not found for this product" });
@@ -73,7 +77,7 @@ const get_stock_by_product_id = async (req, res) => {
 /**
  * Create or update stock for a product
  */
-const upsert_stock = async (req, res) => {
+const update_stock = async (req, res) => {
     try {
         const { Stock, Product } = getModel();
         const { productId, quantity } = req.body;
@@ -90,25 +94,24 @@ const upsert_stock = async (req, res) => {
             return res.status(400).json({ error: "Quantity must be a valid non-negative number" });
         }
         
-        // Check if product exists
+        // Check if product exists and get its Index
         const product = await Product.findOne({ where: { Product_Id: productId } });
         if (!product) {
             return res.status(404).json({ error: "Product not found" });
         }
-        
-        // Check if stock exists for this product
-        let stock = await Stock.findOne({ where: { Product_Id: productId } });
+
+        // Check if stock exists for this product (by Product_Index)
+        let stock = await Stock.findOne({ where: { Product_Index: product.Index } });
         
         if (stock) {
             // Update existing stock
-            await Stock.update(
-                { 
-                    Quantity: parseInt(quantity),
-                    Last_Updated: new Date()
-                },
-                { where: { Product_Id: productId } }
+            stock = await Stock.update(
+              { 
+                Quantity: parseInt(quantity),
+                Last_Updated: new Date()
+              },
+              { where: { Product_Index: product.Index } }
             );
-            stock = await Stock.findOne({ where: { Product_Id: productId } });
             
             res.json({
                 message: "Stock updated successfully",
@@ -117,7 +120,7 @@ const upsert_stock = async (req, res) => {
         } else {
             // Create new stock
             stock = await Stock.create({
-                Product_Id: productId,
+                Product_Index: product.Index,
                 Quantity: parseInt(quantity),
                 Last_Updated: new Date()
             });
@@ -150,7 +153,10 @@ const update_stock_quantity = async (req, res) => {
             return res.status(400).json({ error: "Change value is required" });
         }
         
-        const stock = await Stock.findOne({ where: { Product_Id: productId } });
+        // resolve product code to product Index
+        const product = await Product.findOne({ where: { Product_Id: productId } });
+        if (!product) return res.status(404).json({ error: "Product not found" });
+        const stock = await Stock.findOne({ where: { Product_Index: product.Index } });
         
         if (!stock) {
             return res.status(404).json({ error: "Stock not found for this product" });
@@ -162,15 +168,14 @@ const update_stock_quantity = async (req, res) => {
             return res.status(400).json({ error: "Insufficient stock" });
         }
         
-        await Stock.update(
-            { 
-                Quantity: newQuantity,
-                Last_Updated: new Date()
-            },
-            { where: { Product_Id: productId } }
+        const updatedStock = await Stock.update(
+          { 
+            Quantity: newQuantity,
+            Last_Updated: new Date()
+          },
+          { where: { Product_Index: product.Index } }
         );
         
-        const updatedStock = await Stock.findOne({ where: { Product_Id: productId } });
         
         res.json({
             message: "Stock quantity updated successfully",
@@ -194,7 +199,7 @@ const delete_stock = async (req, res) => {
             return res.status(400).json({ error: "Product ID is required" });
         }
         
-        const deletedCount = await Stock.destroy({ where: { Product_Id: productId } });
+        const deletedCount = await Stock.destroy({ where: { Product_Index: product.Index } });
         
         if (deletedCount === 0) {
             return res.status(404).json({ error: "Stock not found" });
@@ -209,6 +214,6 @@ const delete_stock = async (req, res) => {
 
 export {
   delete_stock, get_all_stocks,
-  get_stock_by_product_id, update_stock_quantity, upsert_stock
+  get_stock_by_product_id, update_stock, update_stock_quantity
 };
 

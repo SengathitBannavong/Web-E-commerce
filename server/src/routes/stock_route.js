@@ -3,8 +3,8 @@ import {
   delete_stock,
   get_all_stocks,
   get_stock_by_product_id,
-  update_stock_quantity,
-  upsert_stock
+  update_stock,
+  update_stock_quantity
 } from "../controllers/stock_controller.js";
 import { adminMiddleware } from "../middleware/admin.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -16,7 +16,7 @@ stock_router.get("/:productId", get_stock_by_product_id);
 
 // Admin only routes - manage stock
 stock_router.get("/", authMiddleware, adminMiddleware, get_all_stocks);
-stock_router.post("/", authMiddleware, adminMiddleware, upsert_stock);
+stock_router.post("/", authMiddleware, adminMiddleware, update_stock);
 stock_router.put("/:productId", authMiddleware, adminMiddleware, update_stock_quantity);
 stock_router.delete("/:productId", authMiddleware, adminMiddleware, delete_stock);
 

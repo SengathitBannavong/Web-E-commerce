@@ -338,8 +338,9 @@ async function createOrders() {
     
     if (aliceToken && aliceId) {
         const order = await api('POST', `/orders/${aliceId}`, {
-            Status: 'paid',
-            Amount: 69.97
+            Status: 'pending',
+            Amount: 69.97,
+            Shipping_Address: users.find(u => u.Email === 'alice@example.com')?.Address || ''
         }, aliceToken);
         
         if (order && order.data) {
@@ -373,7 +374,8 @@ async function createOrders() {
     if (bobToken && bobId) {
         const order = await api('POST', `/orders/${bobId}`, {
             Status: 'pending',
-            Amount: 14.50
+            Amount: 14.50,
+            Shipping_Address: users.find(u => u.Email === 'bob@example.com')?.Address || ''
         }, bobToken);
         
         if (order && order.data) {

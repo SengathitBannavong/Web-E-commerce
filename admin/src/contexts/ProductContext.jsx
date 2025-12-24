@@ -31,7 +31,6 @@ export const ProductContextProvider = (props) => {
     try {
       const response = await axios.request(config);
       setProducts(response.data);
-      console.log("Products fetched:", response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
     }

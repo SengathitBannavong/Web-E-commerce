@@ -56,15 +56,17 @@ export const checkout = async (req, res) => {
     const stockUpdates = [];
 
     for (const item of cart.items) {
+      const prodIndex = item.Product_Index ?? item.product?.Index;
+
       const stock = await Stock.findOne({
-        where: { Product_Id: item.Product_Id },
+        where: { Product_Index: prodIndex },
         transaction,
         lock: transaction.LOCK.UPDATE // Lock row to prevent race conditions
       });
 
       if (!stock) {
         stockErrors.push({
-          productId: item.Product_Id,
+          productId: item.product?.Product_Id ?? prodIndex,
           productName: item.product?.Name || 'Unknown',
           error: "Stock record not found"
         });
@@ -73,7 +75,7 @@ export const checkout = async (req, res) => {
 
       if (stock.Quantity < item.Quantity) {
         stockErrors.push({
-          productId: item.Product_Id,
+          productId: item.product?.Product_Id ?? prodIndex,
           productName: item.product?.Name || 'Unknown',
           requested: item.Quantity,
           available: stock.Quantity,
@@ -105,21 +107,35 @@ export const checkout = async (req, res) => {
       totalAmount += itemPrice * item.Quantity;
     }
 
-    // 4. Create Order
+    const providedAddress = (req.body.Shipping_Address || req.body.shipping_address || '').toString().trim();
+    let shippingAddress = providedAddress;
+    if(!providedAddress) {
+      // 4. Create Order (prefer Shipping_Address from request body, fallback to user's Address)
+      const userRecord = await User.findOne({ where: { User_Id: userId }, transaction });
+      shippingAddress = providedAddress.length > 0 ? providedAddress : (userRecord?.Address || '');
+    }
+
+    if (!shippingAddress) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Shipping address is required: provide 'Shipping_Address' in request body or set Address on user profile" });
+    }
+
     const order = await Order.create({
       User_Id: userId,
       Date: new Date(),
       Status: 'pending',
-      Amount: totalAmount
+      Amount: totalAmount,
+      Shipping_Address: shippingAddress
     }, { transaction });
 
     // 5. Create OrderItems
     const orderItems = [];
     for (const item of cart.items) {
       const itemPrice = parseFloat(item.product?.Price || 0);
+      const prodIndex = item.Product_Index ?? item.product?.Index;
       const orderItem = await OrderItem.create({
         Order_Id: order.Order_Id,
-        Product_Id: item.Product_Id,
+        Product_Index: prodIndex,
         Quantity: item.Quantity,
         Amount: itemPrice * item.Quantity
       }, { transaction });
@@ -156,9 +172,9 @@ export const checkout = async (req, res) => {
         Date: order.Date,
         Status: order.Status,
         Amount: totalAmount,
-        items: orderItems.map(item => ({
+          items: orderItems.map(item => ({
           Order_Item_Id: item.Order_Item_Id,
-          Product_Id: item.Product_Id,
+          Product_Index: item.Product_Index,
           Quantity: item.Quantity,
           Amount: item.Amount
         }))
@@ -213,15 +229,14 @@ export const validateCartStock = async (req, res) => {
     let allValid = true;
 
     for (const item of cart.items) {
-      const stock = await Stock.findOne({
-        where: { Product_Id: item.Product_Id }
-      });
+      const prodIndex = item.Product_Index ?? item.product?.Index;
+      const stock = await Stock.findOne({ where: { Product_Index: prodIndex } });
 
       const isValid = stock && stock.Quantity >= item.Quantity;
       if (!isValid) allValid = false;
 
       validationResults.push({
-        productId: item.Product_Id,
+        productId: item.product?.Product_Id ?? prodIndex,
         productName: item.product?.Name || 'Unknown',
         requestedQuantity: item.Quantity,
         availableQuantity: stock?.Quantity || 0,
@@ -283,13 +298,12 @@ export const getCartSummary = async (req, res) => {
       totalItems += item.Quantity;
 
       // Check stock
-      const stock = await Stock.findOne({
-        where: { Product_Id: item.Product_Id }
-      });
+      const prodIndex = item.Product_Index ?? item.product?.Index;
+      const stock = await Stock.findOne({ where: { Product_Index: prodIndex } });
 
       items.push({
         cartItemId: item.Cart_Item_Id,
-        productId: item.Product_Id,
+        productId: item.product?.Product_Id ?? prodIndex,
         productName: item.product?.Name,
         price: price,
         quantity: item.Quantity,
