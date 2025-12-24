@@ -30,6 +30,11 @@ export const Order = (sequelize) => {
       allowNull: false,
       field: "Amount",
     },
+    Shipping_Address: {
+      type: DataTypes.STRING(256),
+      allowNull: false,
+      field: "Shipping_Address",
+    },
   }, {
     tableName: "Order",
     timestamps: false

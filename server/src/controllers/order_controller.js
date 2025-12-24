@@ -337,13 +337,13 @@ const create_order_item = async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    // Get all Product_Ids from request
+    // Get all Product_Ids from request and resolve to indexes/prices
     const productIds = items.map(item => item.Product_Id);
 
-    // Fetch all products to get their prices
+    // Fetch all products to get their prices and indexes
     const products = await Product.findAll({
       where: { Product_Id: productIds },
-      attributes: ['Product_Id', 'Price']
+      attributes: ['Product_Id', 'Index', 'Price']
     });
 
     // Verify all products exist
@@ -356,19 +356,19 @@ const create_order_item = async (req, res) => {
       });
     }
 
-    // Create a price map for quick lookup
-    const priceMap = new Map(
-      products.map(p => [p.Product_Id, parseFloat(p.Price)])
-    );
+    // Create maps for quick lookup
+    const priceMap = new Map(products.map(p => [p.Product_Id, parseFloat(p.Price)]));
+    const indexMap = new Map(products.map(p => [p.Product_Id, p.Index]));
 
-    // Find existing items in ONE query
+    // Find existing items in ONE query using Product_Index
+    const productIndexes = products.map(p => p.Index);
     const existingItems = await OrderItem.findAll({
-      where: { Order_Id: orderId, Product_Id: productIds }
+      where: { Order_Id: orderId, Product_Index: productIndexes }
     });
 
-    // Create a map for quick lookup
+    // Create a map for quick lookup keyed by Product_Index
     const existingMap = new Map(
-      existingItems.map(item => [item.Product_Id, item])
+      existingItems.map(item => [item.Product_Index, item])
     );
 
     // Separate items into toCreate and toUpdate
@@ -377,8 +377,9 @@ const create_order_item = async (req, res) => {
 
     for (const item of items) {
       const productPrice = priceMap.get(item.Product_Id);
+      const pIndex = indexMap.get(item.Product_Id);
       const itemAmount = item.Quantity * productPrice;
-      const existing = existingMap.get(item.Product_Id);
+      const existing = existingMap.get(pIndex);
       
       if (existing) {
         const newQuantity = existing.Quantity + item.Quantity;
@@ -390,7 +391,7 @@ const create_order_item = async (req, res) => {
         });
       } else {
         toCreate.push({
-          Product_Id: item.Product_Id,
+          Product_Index: pIndex,
           Quantity: item.Quantity,
           Amount: itemAmount,
           Order_Id: orderId
@@ -460,31 +461,32 @@ const update_order_item = async (req, res) => {
       return res.status(404).json({ error: "Order item not found" });
     }
 
-    // Determine which Product_Id to use for price lookup
-    const productIdForPrice = updatedData.Product_Id !== undefined 
-      ? updatedData.Product_Id 
-      : existingItem.Product_Id;
-
-    // If Product_Id is being updated, verify it exists
+    // If Product_Id is being updated, verify it exists and set Product_Index on updatedData
     if (updatedData.Product_Id !== undefined) {
-      const newProduct = await Product.findOne({ where: { Product_Id: updatedData.Product_Id } });
+      const newProduct = await Product.findOne({ where: { Product_Id: updatedData.Product_Id }, attributes: ['Index', 'Price'] });
       if (!newProduct) {
         return res.status(404).json({ error: "Product not found" });
       }
+      updatedData.Product_Index = newProduct.Index;
     }
 
     // Recalculate Amount if Quantity or Product_Id is being updated
     if (updatedData.Quantity !== undefined || updatedData.Product_Id !== undefined) {
-      const product = await Product.findOne(
-        { 
-          where: { Product_Id: productIdForPrice },
-          attributes: ['Price']
-        }
-      );
+      let product = null;
+
+      // Prefer lookup by Product_Index (primary key) if available
+      const lookupIndex = updatedData.Product_Index !== undefined ? updatedData.Product_Index : existingItem.Product_Index;
+      if (lookupIndex !== undefined && lookupIndex !== null) {
+        product = await Product.findByPk(lookupIndex, { attributes: ['Price'] });
+      }
+
+      // Fallback to lookup by Product_Id if no product found by PK
+      if (!product && updatedData.Product_Id !== undefined) {
+        product = await Product.findOne({ where: { Product_Id: updatedData.Product_Id }, attributes: ['Price'] });
+      }
+
       if (product) {
-        const quantity = updatedData.Quantity !== undefined 
-          ? updatedData.Quantity 
-          : existingItem.Quantity;
+        const quantity = updatedData.Quantity !== undefined ? updatedData.Quantity : existingItem.Quantity;
         updatedData.Amount = quantity * parseFloat(product.Price);
       }
     }
@@ -586,6 +588,7 @@ const create_order = async (req, res) => {
 
     // Fetch products and create price map if items provided
     let priceMap = new Map();
+    let indexMap = new Map();
 
     // Validate items if provided
     if (items !== undefined) {
@@ -611,11 +614,11 @@ const create_order = async (req, res) => {
         return res.status(400).json({ errors: itemValidationErrors });
       }
 
-      // Verify all products exist and get their prices
+      // Verify all products exist and get their prices and indexes
       const productIds = items.map(item => item.Product_Id);
       const existingProducts = await Product.findAll({
         where: { Product_Id: productIds },
-        attributes: ['Product_Id', 'Price']
+        attributes: ['Product_Id', 'Index', 'Price']
       });
 
       if (existingProducts.length !== new Set(productIds).size) {
@@ -627,10 +630,9 @@ const create_order = async (req, res) => {
         });
       }
 
-      // Create price map for Amount calculation
-      priceMap = new Map(
-        existingProducts.map(p => [p.Product_Id, parseFloat(p.Price)])
-      );
+      // Create price and index maps for Amount calculation
+      priceMap = new Map(existingProducts.map(p => [p.Product_Id, parseFloat(p.Price)]));
+      indexMap = new Map(existingProducts.map(p => [p.Product_Id, p.Index]));
     }
 
     // Set default values
@@ -644,6 +646,14 @@ const create_order = async (req, res) => {
       newOrder.Date = new Date();
     }
 
+    // Ensure Shipping_Address is set (prefer request body, fallback to user.Address)
+    const providedAddress = (req.body.Shipping_Address || req.body.shipping_address || '').toString().trim();
+    newOrder.Shipping_Address = providedAddress.length > 0 ? providedAddress : (user.Address || '');
+
+    if(!newOrder.Shipping_Address) {
+      return res.status(400).json({ error: "Shipping address is required: provide 'Shipping_Address' in request body or set Address on user profile" });
+    }
+
     // Create order
     const createdOrder = await Order.create(newOrder);
 
@@ -652,9 +662,10 @@ const create_order = async (req, res) => {
       // Add Order_Id and calculate Amount for all items
       const itemsWithOrderId = items.map(item => {
         const productPrice = priceMap.get(item.Product_Id);
+        const pIndex = indexMap.get(item.Product_Id);
         const itemAmount = item.Quantity * productPrice;
         return {
-          Product_Id: item.Product_Id,
+          Product_Index: pIndex,
           Quantity: item.Quantity,
           Amount: itemAmount,
           Order_Id: createdOrder.Order_Id
@@ -897,39 +908,26 @@ const create_order_item_by_user = async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    // Get all Product_Ids from request
+    // Get all Product_Ids from request and resolve to indexes/prices
     const productIds = items.map(item => item.Product_Id);
-
-    // Fetch all products to get their prices
     const products = await Product.findAll({
       where: { Product_Id: productIds },
-      attributes: ['Product_Id', 'Price']
+      attributes: ['Product_Id', 'Index', 'Price']
     });
 
-    // Verify all products exist
     if (products.length !== new Set(productIds).size) {
       const existingProductIds = products.map(p => p.Product_Id);
       const missingProductIds = [...new Set(productIds)].filter(id => !existingProductIds.includes(id));
-      return res.status(400).json({
-        error: "Some products not found",
-        missingProductIds
-      });
+      return res.status(400).json({ error: 'Some products not found', missingProductIds });
     }
 
-    // Create a price map for quick lookup
-    const priceMap = new Map(
-      products.map(p => [p.Product_Id, parseFloat(p.Price)])
-    );
+    const priceMap = new Map(products.map(p => [p.Product_Id, parseFloat(p.Price)]));
+    const indexMap = new Map(products.map(p => [p.Product_Id, p.Index]));
+    const productIndexes = products.map(p => p.Index);
 
-    // Find existing items in ONE query
-    const existingItems = await OrderItem.findAll({
-      where: { Order_Id: orderId, Product_Id: productIds }
-    });
-
-    // Create a map for quick lookup
-    const existingMap = new Map(
-      existingItems.map(item => [item.Product_Id, item])
-    );
+    // Find existing items in ONE query using Product_Index
+    const existingItems = await OrderItem.findAll({ where: { Order_Id: orderId, Product_Index: productIndexes } });
+    const existingMap = new Map(existingItems.map(item => [item.Product_Index, item]));
 
     // Separate items into toCreate and toUpdate
     const toCreate = [];
@@ -937,24 +935,16 @@ const create_order_item_by_user = async (req, res) => {
 
     for (const item of items) {
       const productPrice = priceMap.get(item.Product_Id);
+      const pIndex = indexMap.get(item.Product_Id);
       const itemAmount = item.Quantity * productPrice;
-      const existing = existingMap.get(item.Product_Id);
-      
+      const existing = existingMap.get(pIndex);
+
       if (existing) {
         const newQuantity = existing.Quantity + item.Quantity;
         const newAmount = newQuantity * productPrice;
-        toUpdate.push({
-          item: existing,
-          newQuantity,
-          newAmount
-        });
+        toUpdate.push({ item: existing, newQuantity, newAmount });
       } else {
-        toCreate.push({
-          Product_Id: item.Product_Id,
-          Quantity: item.Quantity,
-          Amount: itemAmount,
-          Order_Id: orderId
-        });
+        toCreate.push({ Product_Index: pIndex, Quantity: item.Quantity, Amount: itemAmount, Order_Id: orderId });
       }
     }
 
@@ -1033,27 +1023,20 @@ const update_order_item_by_user = async (req, res) => {
       return res.status(400).json({ error: "Can only update items in orders with 'pending' status" });
     }
 
-    // Determine which Product_Id to use for price lookup
-    const productIdForPrice = updatedData.Product_Id !== undefined 
-      ? updatedData.Product_Id 
-      : existingItem.Product_Id;
-
-    // If Product_Id is being updated, verify it exists
+    // If Product_Id is being updated, verify it exists and set Product_Index on updatedData
     if (updatedData.Product_Id !== undefined) {
-      const newProduct = await Product.findOne({ where: { Product_Id: updatedData.Product_Id } });
+      const newProduct = await Product.findOne({ where: { Product_Id: updatedData.Product_Id }, attributes: ['Index', 'Price'] });
       if (!newProduct) {
         return res.status(404).json({ error: "Product not found" });
       }
+      updatedData.Product_Index = newProduct.Index;
     }
 
     // Recalculate Amount if Quantity or Product_Id is being updated
     if (updatedData.Quantity !== undefined || updatedData.Product_Id !== undefined) {
-      const product = await Product.findOne(
-        { 
-          where: { Product_Id: productIdForPrice },
-          attributes: ['Price']
-        }
-      );
+      const product = updatedData.Product_Id !== undefined
+        ? await Product.findOne({ where: { Product_Id: updatedData.Product_Id }, attributes: ['Price'] })
+        : await Product.findOne({ where: { Index: existingItem.Product_Index }, attributes: ['Price'] });
       if (product) {
         const quantity = updatedData.Quantity !== undefined 
           ? updatedData.Quantity 

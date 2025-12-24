@@ -8,10 +8,10 @@ export const Stock = (sequelize) => {
       primaryKey: true,
       field: "Stock_Id",
     },
-    Product_Id: {
-      type: DataTypes.STRING(8),
+    Product_Index: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      field: "Product_Id",
+      field: "Product_Index",
     },
     Quantity: {
       type: DataTypes.INTEGER,

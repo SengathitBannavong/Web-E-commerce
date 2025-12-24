@@ -39,15 +39,15 @@ export const setupAssociations = (models) => {
   });
 
   // Product ↔ OrderItem (One-to-Many)
-  // One product can appear in many order items
+  // One product can appear in many order items (use Index as key)
   Product.hasMany(OrderItem, {
-    foreignKey: 'Product_Id',
-    sourceKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    sourceKey: 'Index',
     as: 'orderItems'
   });
   OrderItem.belongsTo(Product, {
-    foreignKey: 'Product_Id',
-    targetKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    targetKey: 'Index',
     as: 'product'
   });
 
@@ -56,12 +56,12 @@ export const setupAssociations = (models) => {
   Order.belongsToMany(Product, {
     through: OrderItem,
     foreignKey: 'Order_Id',
-    otherKey: 'Product_Id',
+    otherKey: 'Product_Index',
     as: 'products'
   });
   Product.belongsToMany(Order, {
     through: OrderItem,
-    foreignKey: 'Product_Id',
+    foreignKey: 'Product_Index',
     otherKey: 'Order_Id',
     as: 'orders'
   });
@@ -78,15 +78,15 @@ export const setupAssociations = (models) => {
   });
 
   // Product ↔ CartItem (One-to-Many)
-  // One product can appear in many cart items
+  // One product can appear in many cart items (use Index as key)
   Product.hasMany(CartItem, {
-    foreignKey: 'Product_Id',
-    sourceKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    sourceKey: 'Index',
     as: 'cartItems'
   });
   CartItem.belongsTo(Product, {
-    foreignKey: 'Product_Id',
-    targetKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    targetKey: 'Index',
     as: 'product'
   });
 
@@ -95,12 +95,12 @@ export const setupAssociations = (models) => {
   Cart.belongsToMany(Product, {
     through: CartItem,
     foreignKey: 'Cart_Id',
-    otherKey: 'Product_Id',
+    otherKey: 'Product_Index',
     as: 'products'
   });
   Product.belongsToMany(Cart, {
     through: CartItem,
-    foreignKey: 'Product_Id',
+    foreignKey: 'Product_Index',
     otherKey: 'Cart_Id',
     as: 'carts'
   });
@@ -143,13 +143,13 @@ export const setupAssociations = (models) => {
   // Stock ↔ Product (One-to-One)
   // One product can have one stock record
   Product.hasOne(Stock, {
-    foreignKey: 'Product_Id',
-    sourceKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    sourceKey: 'Index',
     as: 'stock'
   });
   Stock.belongsTo(Product, {
-    foreignKey: 'Product_Id',
-    targetKey: 'Product_Id',
+    foreignKey: 'Product_Index',
+    targetKey: 'Index',
     as: 'product'
   });
 
