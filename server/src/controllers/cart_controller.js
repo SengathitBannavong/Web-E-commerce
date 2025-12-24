@@ -27,7 +27,7 @@ const validateCartFields = (fields, isUpdate = false) => {
 const validateCartItemFields = (fields, isUpdate = false) => {
   const errors = [];
 
-  // For create, Cart_Id and Product_Id are required
+  // For create, Cart_Id and Product_Id (product code) are required
   if (!isUpdate) {
     if (!fields.Cart_Id) {
       errors.push("Cart_Id is required");
@@ -186,7 +186,7 @@ const get_cart_items_by_cart_id = async (req, res) => {
 };
 
 const create_cart_item = async (req, res) => {
-  const { CartItem, Cart } = getModel();
+  const { CartItem, Cart, Product } = getModel();
   const cartId = req.params.cartId;
   const items = Array.isArray(req.body) ? req.body : [req.body];
 
@@ -215,17 +215,27 @@ const create_cart_item = async (req, res) => {
       return res.status(404).json({ error: "Cart not found" });
     }
 
-    // Get all Product_Ids from request
+    // Get all Product_Ids from request and resolve to product Indexes
     const productIds = items.map(item => item.Product_Id);
 
-    // Find existing items in ONE query
+    const products = await Product.findAll({ where: { Product_Id: productIds }, attributes: ['Product_Id', 'Index'] });
+    if (products.length !== new Set(productIds).size) {
+      const existingProductIds = products.map(p => p.Product_Id);
+      const missing = [...new Set(productIds)].filter(id => !existingProductIds.includes(id));
+      return res.status(400).json({ error: 'Some products not found', missingProductIds: missing });
+    }
+
+    const idToIndex = new Map(products.map(p => [p.Product_Id, p.Index]));
+
+    // Find existing items in ONE query using Product_Index
+    const productIndexes = products.map(p => p.Index);
     const existingItems = await CartItem.findAll({
-      where: { Cart_Id: cartId, Product_Id: productIds }
+      where: { Cart_Id: cartId, Product_Index: productIndexes }
     });
 
-    // Create a map for quick lookup
+    // Create a map for quick lookup keyed by Product_Index
     const existingMap = new Map(
-      existingItems.map(item => [item.Product_Id, item])
+      existingItems.map(item => [item.Product_Index, item])
     );
 
     // Separate items into toCreate and toUpdate
@@ -233,7 +243,8 @@ const create_cart_item = async (req, res) => {
     const toUpdate = [];
 
     for (const item of items) {
-      const existing = existingMap.get(item.Product_Id);
+      const pIndex = idToIndex.get(item.Product_Id);
+      const existing = existingMap.get(pIndex);
       if (existing) {
         toUpdate.push({
           item: existing,
@@ -241,8 +252,9 @@ const create_cart_item = async (req, res) => {
         });
       } else {
         toCreate.push({
-          ...item,
-          Cart_Id: cartId
+          Cart_Id: cartId,
+          Product_Index: pIndex,
+          Quantity: item.Quantity
         });
       }
     }
@@ -497,10 +509,10 @@ const delete_cart = async (req, res) => {
 
 
 export {
-    // Cart functions
-    create_cart,
-    // Cart Item functions
-    create_cart_item, delete_all_cart, delete_cart, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
-    get_cart_items_by_cart_id, update_cart, update_cart_item
+  // Cart functions
+  create_cart,
+  // Cart Item functions
+  create_cart_item, delete_all_cart, delete_cart, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
+  get_cart_items_by_cart_id, update_cart, update_cart_item
 };
 

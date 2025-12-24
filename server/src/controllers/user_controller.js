@@ -4,6 +4,12 @@ import { getModel } from "../config/database.js";
 import { generateToken } from "../middleware/auth.js";
 
 const SALT_ROUNDS = 10;
+const ROLE_MAP = {
+  [0xFAC]: 'admin',
+  0: 'user'
+};
+
+const mapRoleToName = (role) => ROLE_MAP[role] || 'user';
 
 // Validation helper function
 const validateUserFields = (fields, isUpdate = false) => {
@@ -75,11 +81,18 @@ const get_all_users = async (req, res) => {
         ]);
         
         const totalPage = Math.ceil(total / limit);
-        
+
+        const mapped = users.map(u => {
+            const ud = u.toJSON ? u.toJSON() : u;
+            delete ud.Password;
+            ud.Role = mapRoleToName(ud.Role);
+            return ud;
+        });
+
         res.json({
             totalPage,
             total,
-            data: users
+            data: mapped
         });
     } catch (err) {
         console.error("Error fetching users:", err);
@@ -129,7 +142,14 @@ const get_user = async (req, res) => {
 
         const totalPage = Math.ceil(total / limit);
 
-        res.json({ totalPage, total, data: users });
+        const mapped = users.map(u => {
+            const ud = u.toJSON ? u.toJSON() : u;
+            delete ud.Password;
+            ud.Role = mapRoleToName(ud.Role);
+            return ud;
+        });
+
+        res.json({ totalPage, total, data: mapped });
     } catch (err) {
         console.error("Error fetching user:", err);
         res.status(500).json({ error: "Internal server error" });
@@ -247,7 +267,7 @@ const update_user = async (req, res) => {
         return res.status(400).json({ error: "User ID is required" });
     }
 
-    const { Name, Email, Password, Address, PhoneNumber, Gender } = req.body;
+    const { Name, Email, Password, Address, PhoneNumber, Gender, Role } = req.body;
 
     // Validate fields using helper function (isUpdate = true)
     const validation = validateUserFields(req.body, true);
@@ -284,6 +304,18 @@ const update_user = async (req, res) => {
         if (Address) updateData.Address = Address;
         if (PhoneNumber) updateData.PhoneNumber = PhoneNumber;
         if (Gender) updateData.Gender = Gender;
+        if (Role) {
+          switch (Role) {
+            case 'admin':
+              updateData.Role = 0xFAC;
+              break;
+            case 'user':
+              updateData.Role = 0;
+              break;
+            default:
+              return res.status(400).json({ error: "Invalid role value" });
+          }
+        }
 
         // Hash password if provided
         if (Password) {
@@ -382,9 +414,10 @@ const get_current_user = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Return user data without password
+        // Return user data without password and map role
         const userData = user.toJSON();
         delete userData.Password;
+        userData.Role = mapRoleToName(userData.Role);
 
         res.json(userData);
     } catch (err) {
@@ -393,5 +426,67 @@ const get_current_user = async (req, res) => {
     }
 };
 
+/**
+ * Change password for the authenticated user
+ * Body: { oldPassword, newPassword }
+ */
+const change_password_self = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const userId = req.userId;
 
-export { create_user, delete_user, get_current_user, get_user, login_user, update_user };
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ error: 'oldPassword and newPassword are required' });
+        }
+
+        const { User } = getModel();
+        const user = await User.findOne({ where: { User_Id: userId } });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const isValid = await bcrypt.compare(oldPassword, user.Password);
+        if (!isValid) return res.status(401).json({ error: 'Old password is incorrect' });
+
+        if (oldPassword === newPassword) {
+            return res.status(400).json({ error: 'New password must be different from old password' });
+        }
+
+        const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        await User.update({ Password: hashed }, { where: { User_Id: userId } });
+
+        return res.json({ message: 'Password changed successfully' });
+    } catch (err) {
+        console.error('Error changing password for user:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Admin: change password for any user
+ * Params: id (User_Id)
+ * Body: { newPassword }
+ */
+const change_password_admin = async (req, res) => {
+    try {
+        const targetUserId = req.params.id;
+        const { newPassword } = req.body;
+
+        if (!targetUserId) return res.status(400).json({ error: 'User ID is required' });
+        if (!newPassword) return res.status(400).json({ error: 'newPassword is required' });
+
+        const { User } = getModel();
+        const user = await User.findOne({ where: { User_Id: targetUserId } });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        await User.update({ Password: hashed }, { where: { User_Id: targetUserId } });
+
+        return res.json({ message: `Password updated for user ${targetUserId}` });
+    } catch (err) {
+        console.error('Error changing password by admin:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+export { change_password_admin, change_password_self, create_user, delete_user, get_current_user, get_user, login_user, update_user };
+

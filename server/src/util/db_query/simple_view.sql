@@ -16,7 +16,7 @@ FROM "Cart" AS c
 LEFT JOIN "CartItem" AS ci 
 ON c."Cart_Id" = ci."Cart_Id"
 LEFT JOIN "Product" AS p
-ON ci."Product_Id" = p."Product_Id"
+ON ci."Product_Index" = p."Index"
 WHERE c."User_Id" = 'U0000001' AND c."Status" = 'active'
 ORDER BY c."Cart_Id", ci."Cart_Item_Id";
 
@@ -44,7 +44,7 @@ SELECT
   o."Date"
 FROM "Order" o
 JOIN "Order_Item" oi ON o."Order_Id" = oi."Order_Id"
-JOIN "Product" p ON oi."Product_Id" = p."Product_Id"
+JOIN "Product" p ON oi."Product_Index" = p."Index"
 JOIN "User" c ON o."User_Id" = c."User_Id";
 
 CREATE OR REPLACE VIEW product_stock_view AS
@@ -56,7 +56,7 @@ SELECT
   s."Quantity" AS stock_quantity
 FROM "Product" p
 LEFT JOIN "Category" c ON p."Category_Id" = c."Category_Id"
-LEFT JOIN "Stock" s ON p."Product_Id" = s."Product_Id";
+LEFT JOIN "Stock" s ON p."Index" = s."Product_Index";
 
 CREATE OR REPLACE VIEW user_cart_view AS
 SELECT
@@ -70,7 +70,7 @@ SELECT
 FROM "Cart" ca
 JOIN "User" cu ON ca."User_Id" = cu."User_Id"
 JOIN "CartItem" ci ON ca."Cart_Id" = ci."Cart_Id"
-JOIN "Product" p ON ci."Product_Id" = p."Product_Id";
+JOIN "Product" p ON ci."Product_Index" = p."Index";
 
 CREATE OR REPLACE VIEW product_sales_summary AS
 SELECT
@@ -79,7 +79,7 @@ SELECT
   SUM(oi."Quantity") AS total_sold,
   SUM(oi."Amount") AS total_revenue
 FROM "Product" p
-JOIN "Order_Item" oi ON p."Product_Id" = oi."Product_Id"
+JOIN "Order_Item" oi ON p."Index" = oi."Product_Index"
 GROUP BY p."Product_Id", p."Name";
 
 

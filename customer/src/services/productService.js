@@ -1,27 +1,38 @@
 import apiFetch from "./api";
 
 /**
- * Fetches a list of products from the server.
- * @param {object} params - The query parameters.
- * @param {number} [params.page=1] - The page number to fetch.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {string} [params.search] - A search term to filter products by name.
- * @returns {Promise<object>} An object containing product data and pagination info.
+ * Lấy danh sách sản phẩm
+ * @param {object} params
+ * @param {number} [params.page=1]
+ * @param {number} [params.limit=10]
+ * @param {string} [params.search]
+ * @param {number|string} [params.category] 
  */
 export const getProducts = (params = {}) => {
-  const query = new URLSearchParams({
+  // Tạo object chứa các tham số query
+  const queryParams = {
     page: params.page || 1,
     limit: params.limit || 10,
-    ...(params.search && { search: params.search }),
-  }).toString();
+  };
+
+  // Nếu có search thì thêm vào
+  if (params.search) {
+    queryParams.search = params.search;
+  }
+
+  //  Nếu có category thì thêm vào query
+  if (params.category) {
+    queryParams.category = params.category;
+  }
+
+  // Chuyển object thành chuỗi query 
+  const query = new URLSearchParams(queryParams).toString();
 
   return apiFetch(`/products?${query}`);
 };
 
 /**
- * Fetches a single product by its ID.
- * @param {string} productId The ID of the product to fetch.
- * @returns {Promise<object>} The product data.
+ * Lấy chi tiết sản phẩm
  */
 export const getProductById = (productId) => {
   if (!productId) {

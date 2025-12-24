@@ -222,7 +222,7 @@ const create_product = async (req, res) => {
 
       // create initial stock record with quantity 0
       const { Stock } = getModel();
-      await Stock.create({ Product_Id, Quantity: 0, Last_Updated: new Date() }, { transaction: t });
+      await Stock.create({ Product_Index: product.Index, Quantity: 0, Last_Updated: new Date() }, { transaction: t });
 
       await t.commit();
       res.status(201).json(product);

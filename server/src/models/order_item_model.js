@@ -13,10 +13,10 @@ export const OrderItem = (sequelize) => {
       allowNull: false,
       field: "Order_Id",
     },
-    Product_Id: {
-      type: DataTypes.STRING(8),
+    Product_Index: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      field: "Product_Id",
+      field: "Product_Index",
     },
     Quantity: {
       type: DataTypes.INTEGER,
