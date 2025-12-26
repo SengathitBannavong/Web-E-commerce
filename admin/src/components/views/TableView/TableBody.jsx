@@ -6,7 +6,7 @@ function TableBody({ data, cols, onEdit, shouldHideColumn, page = 1, limit = 10 
     <tbody className="bg-white divide-y divide-slate-200">
       {row.map((item, index) => (
         <TableRow
-          key={item.Product_Id || item.Order_Id || index}
+          key={item.Payment_Id || item.Product_Id || item.Order_Id || index}
           item={item}
           cols={cols}
           onEdit={onEdit}

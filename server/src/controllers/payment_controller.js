@@ -15,21 +15,44 @@ const get_all_payments = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     
+    // Get filter parameters
+    const { status, userId } = req.query;
+    
+    const whereClause = {};
+
+    if (status) {
+        whereClause.Status = status;
+    }
+
+    if (userId) {
+        whereClause.User_Id = userId;
+    }
+    
     // Execute count and findAll in parallel
     const [total, payments] = await Promise.all([
-      Payment.count(),
+      Payment.count({ where: whereClause }),
       Payment.findAll({
+        where: whereClause,
         limit: limit,
-        offset: offset
+        offset: offset,
+        order: [['created_at', 'DESC']]
       })
     ]);
     
     const totalPage = Math.ceil(total / limit);
     
+    const mapped = payments.map((p) => {
+      const obj = p.toJSON ? p.toJSON() : p;
+      return {
+        ...obj,
+        Date: obj.created_at || obj.createdAt || obj.CreatedAt || null,
+      };
+    });
+
     res.json({
       totalPage,
       total,
-      data: payments
+      data: mapped
     });
   } catch (err) {
     console.error("Error fetching payments:", err);
@@ -40,7 +63,7 @@ const get_all_payments = async (req, res) => {
 const get_payments_by_order_id = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-
+    const status = req.query.status;
     if (!orderId) {
       return res.status(400).json({ error: "Order ID is required" });
     }
@@ -53,21 +76,33 @@ const get_payments_by_order_id = async (req, res) => {
     const offset = (page - 1) * limit;
     
     // Execute count and findAll in parallel
+    const where = { Order_Id: orderId };
+    if (status) where.Status = status;
+
     const [total, payments] = await Promise.all([
-      Payment.count({ where: { Order_Id: orderId } }),
+      Payment.count({ where }),
       Payment.findAll({ 
-        where: { Order_Id: orderId },
+        where,
         limit: limit,
-        offset: offset
+        offset: offset,
+        order: [['created_at', 'DESC']]
       })
     ]);
     
     const totalPage = Math.ceil(total / limit);
     
+    const mapped = payments.map((p) => {
+      const obj = p.toJSON ? p.toJSON() : p;
+      return {
+        ...obj,
+        Date: obj.created_at || obj.createdAt || obj.CreatedAt || null,
+      };
+    });
+
     res.json({
       totalPage,
       total,
-      data: payments
+      data: mapped
     });
   } catch (err) {
     console.error("Error fetching payments by order ID:", err);
@@ -114,9 +149,12 @@ const create_payment = async (req, res) => {
       Status: status || 'pending'
     });
 
+    const obj = newPayment.toJSON ? newPayment.toJSON() : newPayment;
+    obj.Date = obj.created_at || obj.createdAt || obj.CreatedAt || null;
+
     res.status(201).json({
       message: "Payment created successfully",
-      payment: newPayment
+      payment: obj
     });
   } catch (err) {
     console.error("Error creating payment:", err);
@@ -130,21 +168,11 @@ const create_payment = async (req, res) => {
 const update_payment = async (req, res) => {
   try {
     const { Payment } = getModel();
-    const id = req.params.id || req.query.id;
-    const { type, amount, status } = req.body;
-
-    // Validate payment type
-    if (type && !validTypes.includes(type)) {
-      return res.status(400).json({ error: `Invalid payment type. Valid types are: ${validTypes.join(", ")}` });
-    }
-
-    // Validate amount
-    if (amount && (isNaN(amount) || Number(amount) <= 0)) {
-      return res.status(400).json({ error: "Amount must be a positive number" });
-    }
+    const id = req.params.id;
+    const { Status } = req.body;
 
     // Validate payment status
-    if (status && !validStatuses.includes(status)) {
+    if (Status && !validStatuses.includes(Status)) {
       return res.status(400).json({ error: `Invalid payment status. Valid statuses are: ${validStatuses.join(", ")}` });
     }
 
@@ -158,16 +186,21 @@ const update_payment = async (req, res) => {
       return res.status(404).json({ error: "Payment not found" });
     }
 
+    if(Status && payment.Status === 'completed') {
+      return res.status(400).json({ error: "Cannot change status of a completed payment" });
+    }
+
     // Update only provided fields
-    if (type !== undefined) payment.Type = type;
-    if (amount !== undefined) payment.Amount = amount;
-    if (status !== undefined) payment.Status = status;
+    if (Status !== undefined) payment.Status = Status;
 
     await payment.save();
 
+    const obj = payment.toJSON ? payment.toJSON() : payment;
+    obj.Date = obj.created_at || obj.createdAt || obj.CreatedAt || null;
+
     res.json({
       message: "Payment updated successfully",
-      payment
+      payment: obj
     });
   } catch (err) {
     console.error("Error updating payment:", err);

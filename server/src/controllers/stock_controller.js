@@ -18,7 +18,8 @@ const get_all_stocks = async (req, res) => {
             'Stock_Id',
             'Product_Index',
             'Quantity',
-            'Last_Updated',
+            'created_at',
+            'updated_at',
             [Stock.sequelize.col('product.Product_Id'), 'Product_Id'],
             [Stock.sequelize.col('product.Name'), 'Product_Name'],
             [Stock.sequelize.col('product.Price'), 'Product_Price']

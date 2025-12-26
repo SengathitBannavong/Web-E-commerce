@@ -17,14 +17,11 @@ export const Stock = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "Quantity",
-    },
-    Last_Updated: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      field: "Last_Updated",
     }
   }, {
     tableName: "Stock",
-    timestamps: false
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   });
 };

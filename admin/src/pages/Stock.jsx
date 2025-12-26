@@ -27,7 +27,8 @@ function Stock() {
     { key: 'Product_Name', label: 'Product Name' },
     { key: 'Product_Price', label: 'Price' },
     { key: 'Quantity', label: 'Quantity' },
-    { key: 'Last_Updated', label: 'Last Updated' },
+    { key: 'updated_at', label: 'Updated At' },
+    { key: 'created_at', label: 'Created At' },
   ];
 
   const handleSubmit = (formData) => {
