@@ -24,6 +24,9 @@ user_router.put("/me", authMiddleware, update_user); // User can update own prof
 user_router.post("/change_password", authMiddleware, change_password_self); // User change own password
 
 // ==================== ADMIN ROUTES ====================
+user_router.get("/admin/check", authMiddleware, adminMiddleware, (req, res) => {
+  res.status(200).json({ data: "OK" });
+});
 user_router.get("/", authMiddleware, adminMiddleware, get_user); // Get all users
 user_router.post("/", authMiddleware, adminMiddleware, create_user); // Admin create user
 user_router.put("/:id", authMiddleware, adminMiddleware, update_user); // Admin update any user

@@ -26,10 +26,20 @@ function Login() {
           Password: password,
         };
       const res = await axios.post(`${API}users/login`, body);
+      const checkAdmin = await axios.get(`${API}users/admin/check`, {
+        headers: {
+          Authorization: `Bearer ${res.data.token}`,
+        },
+      });
+      if (checkAdmin.status !== 200) {
+        setError('You do not have admin privileges');
+        setLoading(false);
+        return;
+      }
       // adjust token path according to your API
       const token = res?.data?.token || res?.data?.accessToken || null;
-      const adminName = res?.data?.user.name || 'Admin';
-      const adminEmail = res?.data?.user.email || email;
+      const adminName = res?.data?.user.Name || 'Admin';
+      const adminEmail = res?.data?.user.Email || email;
       setAdminName(adminName);
       setAdminEmail(adminEmail);
       if (token) {
@@ -42,7 +52,7 @@ function Login() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
