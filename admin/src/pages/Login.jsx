@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStoreContext } from '../contexts/StoreContext.jsx';
 
 function Login() {
   const navigate = useNavigate();
-  const { API, setAppToken, token } = useStoreContext();
+  const { API, setAppToken, token, setAdminName, setAdminEmail } = useStoreContext();
 
   useEffect(() => {
     if (token) navigate('/');
@@ -28,6 +28,10 @@ function Login() {
       const res = await axios.post(`${API}users/login`, body);
       // adjust token path according to your API
       const token = res?.data?.token || res?.data?.accessToken || null;
+      const adminName = res?.data?.user.name || 'Admin';
+      const adminEmail = res?.data?.user.email || email;
+      setAdminName(adminName);
+      setAdminEmail(adminEmail);
       if (token) {
         // store token in app memory only
         setAppToken(token);

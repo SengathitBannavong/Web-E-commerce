@@ -8,6 +8,8 @@ export const StoreContextProvider = (props) => {
 
   // Token stored only in memory (app state) per requirement
   const [token, setToken] = useState(null);
+  const [adminName, setAdminName] = useState('Admin');
+  const [adminEmail, setAdminEmail] = useState('');
 
   const setAppToken = (t) => {
     setToken(t);
@@ -22,6 +24,10 @@ export const StoreContextProvider = (props) => {
     token,
     setAppToken,
     clearAppToken,
+    adminName,
+    setAdminName,
+    adminEmail,
+    setAdminEmail,
   };
 
   return (
