@@ -214,52 +214,30 @@ const get_order_admin = async (req, res) => {
   }
 };
 
-const get_order = async (req, res) => {
-  const userId = req.params.userId;
-  const status = req.query.status || 'pending';
+const get_order_detail = async (req, res) => {
+  const { Order, OrderItem } = getModel();
+  const orderId = req.params.orderId;
+  const userId = req.userId;
 
-  if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
+  const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
+  if (!order) {
+    return res.status(404).json({ error: "Order not found for this user" });
   }
 
-  if (validStatuses.indexOf(status) === -1) {
-    return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
-  }
+  // get all details of the order including items
+  const orderDetails = await Order.findOne({
+    where: { Order_Id: orderId, User_Id: userId },
+    include: [
+      {
+        model: OrderItem,
+        as: 'items'
+      }
+    ]
+  });
 
-  const { Order } = getModel();
-
-  // Pagination
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-
-  try {
-    const whereClause = { 
-      User_Id: userId,
-      Status: status
-    };
-
-    const [total, orders] = await Promise.all([
-      Order.count({ where: whereClause }),
-      Order.findAll({
-        where: whereClause,
-        limit,
-        offset,
-        order: [['Order_Id', 'DESC']]
-      })
-    ]);
-
-    const totalPage = Math.ceil(total / limit);
-
-    return res.status(200).json({
-      totalPage,
-      total,
-      data: orders
-    });
-  } catch (err) {
-    console.error("Error fetching orders:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+  return res.status(200).json({
+    data: orderDetails
+  });
 };
 
 // ==================== ORDER ITEM CRUD ====================
@@ -778,56 +756,50 @@ const delete_order = async (req, res) => {
   }
 };
 
-// Update order by user - only pending <-> cancelled transitions allowed
+// Update order by user - only pending -> cancelled allowed
 const update_order_by_user = async (req, res) => {
   try {
     const { Order } = getModel();
     const userId = req.userId;
     const orderId = req.params.orderId;
-    const newStatus = req.body.status;
+    const newStatus = 'cancelled'; // Force to 'cancelled' for user updates
 
-    // Validate using validation function
+    // Validate basic fields
     const validation = validateUpdateOrderByUser({ userId, orderId, newStatus });
     if (!validation.isValid) {
       return res.status(400).json({ errors: validation.errors });
     }
 
-    // Check if order exists and belongs to user
+    // Ensure user intends to cancel
+    if (newStatus !== 'cancelled') {
+      return res.status(400).json({ error: "Users can only change order status to 'cancelled'" });
+    }
+
+    // Check order exists and belongs to user
     const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
     if (!order) {
       return res.status(404).json({ error: "Order not found for this user" });
     }
 
-    // Check if transition is allowed
-    const currentStatus = order.Status;
-    const allowedTransitions = validation.allowedTransitions;
-
-    if (!allowedTransitions[currentStatus]) {
-      return res.status(400).json({ 
-        error: `Cannot update order with status '${currentStatus}'. Only 'pending' or 'cancelled' orders can be updated by user.`
-      });
+    // Only allow cancelling from pending state
+    if (order.Status !== 'pending') {
+      return res.status(400).json({ error: `Only orders with status 'pending' can be cancelled. Current status: '${order.Status}'` });
     }
 
-    if (!allowedTransitions[currentStatus].includes(newStatus)) {
-      return res.status(400).json({ 
-        error: `Cannot change status from '${currentStatus}' to '${newStatus}'. Allowed: ${allowedTransitions[currentStatus].join(', ')}`
-      });
-    }
-
-    // Update the order status
-    await order.update({ Status: newStatus });
+    // Perform update
+    const updatedOrder = await order.update({ Status: 'cancelled' });
 
     return res.status(200).json({
-      message: "Order status updated successfully",
-      data: order
+      message: "Order status updated to 'cancelled' successfully",
+      data: updatedOrder
     });
   } catch (err) {
     console.error("Error updating order:", err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Delete order by user - only pending or cancelled status allowed
+// Delete order by user - only cancelled status allowed
 const delete_order_by_user = async (req, res) => {
   try {
     const { Order, OrderItem } = getModel();
@@ -846,10 +818,10 @@ const delete_order_by_user = async (req, res) => {
       return res.status(404).json({ error: "Order not found for this user" });
     }
 
-    // Check if order status allows deletion
-    if (!validation.allowedDeleteStatuses.includes(order.Status)) {
-      return res.status(400).json({ 
-        error: `Cannot delete order with status '${order.Status}'. Only 'pending' or 'cancelled' orders can be deleted.`
+    // Only allow deletion when status is 'cancelled'
+    if (order.Status !== 'cancelled') {
+      return res.status(400).json({
+        error: `Only orders with status 'cancelled' can be deleted. Current status: '${order.Status}'`
       });
     }
 
@@ -1117,7 +1089,7 @@ export {
   // Order Item functions (admin)
   create_order_item,
   // User order item functions
-  create_order_item_by_user, delete_order, delete_order_by_user, delete_order_item, delete_order_item_by_user, get_all_details_order_by_user_id, get_order, get_order_admin, get_order_items_by_order_id, update_order,
+  create_order_item_by_user, delete_order, delete_order_by_user, delete_order_item, delete_order_item_by_user, get_all_details_order_by_user_id, get_order_admin, get_order_detail, get_order_items_by_order_id, update_order,
   // User order functions
   update_order_by_user, update_order_item, update_order_item_by_user
 };
