@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const payload = {
-        Name: userData.fullName,
+        Name: userData.Name || userData.name,
         Email: userData.email,
         Password: userData.password,
         PhoneNumber: userData.phone,
@@ -98,9 +98,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  const refreshUser = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+          try {
+              const userData = await apiFetch("/users/me");
+              setUser(mapUserResponse(userData));
+          } catch (error) {
+              console.error("Failed to refresh user:", error);
+          }
+      }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, token, login, logout, register, loading }}
+      value={{ isAuthenticated, user, token, login, logout, register, refreshUser, loading }}
     >
       {!loading && children} 
     </AuthContext.Provider>

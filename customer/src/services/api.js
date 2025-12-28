@@ -25,14 +25,17 @@ async function apiFetch(endpoint, options = {}) {
     });
 
     if (!response.ok) {
-      // Try to parse error response from the server
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `API call failed with status: ${response.status}`
-      );
+      const errorMessage = errorData.error || errorData.message || `API call failed with status: ${response.status}`;
+      console.error("API call error details:", errorData);
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    if (response.status === 204) {
+      return null;
+    }
+
+    return await response.json();
   } catch (error) {
     console.error(`API call to ${endpoint} failed:`, error);
     throw error;
