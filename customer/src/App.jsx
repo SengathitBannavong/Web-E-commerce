@@ -14,8 +14,7 @@
 
   function App() {
     return (
-      <AuthProvider>
-        <Routes>
+      <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="books" element={<BookList />} />
@@ -34,7 +33,6 @@
             </Route>
           </Route>
         </Routes>
-      </AuthProvider>
     );
   }
 

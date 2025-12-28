@@ -13,7 +13,7 @@ export default function BookCard({
 }) {
   const { addToCart } = useCart();
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -24,8 +24,10 @@ export default function BookCard({
       cover,
       quantity: 1,
     };
-    addToCart(itemToAdd);
-    alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
+    const success = await addToCart(itemToAdd);
+    if (success) {
+        alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
+    }
   };
 
   return (

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { getProducts } from "../services/productService";
 import { getCategories, getCategoryById } from "../services/categoryService";
 import BookCard from "../components/BookCard"; 
+import Pagination from "../components/Pagination";
 import "./BookList.css";
 
 const BookList = () => {
@@ -10,18 +11,28 @@ const BookList = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("Tất cả sách");
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 20;
 
   // Lấy params từ URL
   const categoryId = searchParams.get("category");
   const searchTerm = searchParams.get("search");
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryId, searchTerm]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const params = {
-          page: 1,
-          limit: 20,
+          page: currentPage,
+          limit: limit,
         };
         
         if (categoryId) params.category = parseInt(categoryId);
@@ -29,6 +40,7 @@ const BookList = () => {
 
         const productRes = await getProducts(params);
         setBooks(productRes.data);
+        setTotalPages(productRes.totalPage || productRes.totalPages || 1);
 
         // Logic set tiêu đề
         if (categoryId) {
@@ -52,7 +64,7 @@ const BookList = () => {
     };
 
     fetchData();
-  }, [categoryId, searchTerm]);
+  }, [categoryId, searchTerm, currentPage]);
 
   const formatBookData = (book) => {
     const formattedPrice = new Intl.NumberFormat("vi-VN").format(book.Price);
@@ -67,27 +79,40 @@ const BookList = () => {
     };
   };
 
-  if (loading) return <div className="book-list-page container" style={{paddingTop: '100px'}}>Đang tải...</div>;
+  const handlePageChange = (page) => {
+      setCurrentPage(page);
+      window.scrollTo(0, 0); // Scroll to top when changing page
+  };
+
+  if (loading && books.length === 0) return <div className="book-list-page container" style={{paddingTop: '100px'}}>Đang tải...</div>;
 
   return (
     <div className="book-list-page">
       <div className="container">
         <h1 className="page-title">{title}</h1>
         
-        {books.length === 0 ? (
+        {books.length === 0 && !loading ? (
             <p className="no-results">Không tìm thấy cuốn sách nào.</p>
         ) : (
-            <div className="book-grid">
-            {books.map((book) => {
-                const formattedBook = formatBookData(book);
-                return (
-                    <BookCard
-                        key={formattedBook.id}
-                        {...formattedBook} 
-                    />
-                );
-            })}
-            </div>
+            <>
+                <div className="book-grid">
+                {books.map((book) => {
+                    const formattedBook = formatBookData(book);
+                    return (
+                        <BookCard
+                            key={formattedBook.id}
+                            {...formattedBook} 
+                        />
+                    );
+                })}
+                </div>
+                
+                <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
+            </>
         )}
       </div>
     </div>

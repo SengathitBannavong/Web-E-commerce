@@ -11,7 +11,7 @@ import apiFetch from "./api";
 export const getCategories = (params = {}) => {
   const queryParams = {
     page: params.page || 1,
-    limit: params.limit || 100, // Mặc định lấy 100 để hiển thị đủ trên menu/home
+    limit: params.limit || 100,
   };
 
   if (params.search) {

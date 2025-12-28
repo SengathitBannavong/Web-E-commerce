@@ -17,7 +17,16 @@ export const AccountSidebar = ({ user, menuItems }) => {
         <ul className="sidebar-nav__list">
           {menuItems.map((item, index) => (
             <li key={index} className={`sidebar-nav__item ${item.active ? 'sidebar-nav__item--active' : ''}`}>
-              <a href="#" className="sidebar-nav__link">
+              <a 
+                href="#" 
+                className="sidebar-nav__link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (item.onClick) {
+                    item.onClick();
+                  }
+                }}
+              >
                 <span className="sidebar-nav__icon">{item.icon}</span>
                 <span className="sidebar-nav__text">{item.text}</span>
               </a>
