@@ -18,10 +18,10 @@ const validateProductFields = (fields, isUpdate = false) => {
     errors.push("At least one field is required to update");
   }
 
-  // Validate Price if provided
+  // Validate Price if provided (Price is in VND)
   if (Price !== undefined && Price !== null) {
     if (isNaN(Price) || parseFloat(Price) < 0) {
-      errors.push("Price must be a valid positive number");
+      errors.push("Price must be a valid positive number in VND");
     }
   }
 

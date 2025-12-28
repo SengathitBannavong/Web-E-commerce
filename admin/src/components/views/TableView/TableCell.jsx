@@ -7,7 +7,7 @@ function TableCell({ column, item, shouldHideColumn, rowIndex = 0, page = 1, lim
       return computed;
     }
     if (col.key === 'Price') {
-      return <span className="font-semibold text-emerald-600">${item[col.key]}</span>;
+      return <span className="font-semibold text-emerald-600">{item[col.key]} VND</span>;
     }
     if (col.key === 'created_at' || col.key === 'Date' || col.key === 'updated_at') {
       return item[col.key] ? item[col.key].split('T')[0] : '';

@@ -25,8 +25,13 @@ export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123456';
 export const ADMIN_NAME = process.env.ADMIN_NAME || 'System Admin';
 export const ADMIN_ROLE = 4012; // 0xFAC - Admin role bitwise value
 
+// Stripe configuration
+export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+export const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
 // Validate required environment variables
-const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET','STRIPE_SECRET_KEY'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {

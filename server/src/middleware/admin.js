@@ -1,3 +1,5 @@
+import { ADMIN_ROLE } from "../config/env.js";
+
 // this is middleware after authMiddleware to verify admin users
 const adminMiddleware = (req, res, next) => {
     try {
@@ -16,7 +18,7 @@ const adminMiddleware = (req, res, next) => {
         }
 
         // bitwise AND to check for admin role (0xFAC = 4012)
-        if(!(userRole & 0xFAC)){
+        if(!(userRole & ADMIN_ROLE)){
             return res.status(403).json({
                 error: 'Access denied. Admins only.'
             });

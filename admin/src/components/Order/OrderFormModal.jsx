@@ -4,7 +4,7 @@ import { useOrderContext } from '../../contexts/OrderContext.jsx';
 import ConfirmDialog from '../ConfirmDialog.jsx';
 
 function OrderFormModal({ isOpen, onClose, onSubmit, onDelete, order, mode = 'add' }) {
-  const { fetchOrderItems } = useOrderContext();
+  const { fetchOrderItems, validStatuses } = useOrderContext();
   const [formData, setFormData] = useState({ User_Id: '', Status: 'pending' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [items, setItems] = useState([]);
@@ -73,9 +73,9 @@ function OrderFormModal({ isOpen, onClose, onSubmit, onDelete, order, mode = 'ad
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
             <select name="Status" value={formData.Status} onChange={handleChange} className="w-full px-3 py-2 border rounded">
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-              <option value="cancelled">Cancelled</option>
+              {validStatuses.map(status => (
+                <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+              ))}
             </select>
           </div>
 

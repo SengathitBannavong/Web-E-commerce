@@ -33,6 +33,7 @@ export const Product = (sequelize) => {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       field: "Price",
+      comment: "Price in VND"
     },
     Photo_Id: {
       type: DataTypes.STRING,

@@ -15,6 +15,8 @@ export const OrderContextProvider = (props) => {
   const [statusFilter, setStatusFilter] = useState('');
   const [userFilter, setUserFilter] = useState('');
 
+  const validStatuses = ["pending", "paid", "cancelled", "processing", "shipped", "delivered"];
+
   const fetchOrders = async () => {
     try {
       let url = '';
@@ -149,6 +151,7 @@ export const OrderContextProvider = (props) => {
     setStatusFilter,
     userFilter,
     setUserFilter,
+    validStatuses,
   };
 
   return (

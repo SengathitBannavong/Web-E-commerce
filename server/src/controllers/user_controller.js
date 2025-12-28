@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Op } from 'sequelize';
-import { getModel } from "../config/database.js";
+import { getDB, getModel } from "../config/database.js";
 import { generateToken } from "../middleware/auth.js";
 
 const SALT_ROUNDS = 10;
@@ -184,45 +184,63 @@ const create_user = async (req, res) => {
     }
 
     try {
-      const { User } = getModel();
-      
-      // Check for existing email and generate User_Id in parallel
-      const [existingUser, User_Id, hashedPassword] = await Promise.all([
-        User.findOne({ where: { Email } }),
-        generateUserId(User),
-        bcrypt.hash(Password, SALT_ROUNDS)
-      ]);
-      
-      // Handle duplicate email
-      if (existingUser) {
-        return res.status(409).json({ 
-          error: "User with this email already exists" 
-        });
-      }
-      
-      // Create user with generated User_Id and hashed password
-      const user = await User.create({
-        User_Id,
-        Name,
-        Email,
-        Password: hashedPassword,
-        Address,
-        PhoneNumber,
-        Gender
-      });
+      const sequelize = getDB();
+      const transaction = await sequelize.transaction();
 
-      // Generate JWT token
-      const token = generateToken(user);
-      
-      // Return user data without password
-      const userData = user.toJSON();
-      delete userData.Password;
-      
-      res.status(201).json({
-        message: "User registered successfully",
-        user: userData,
-        token
-      });
+      try {
+        const { User, Cart } = getModel();
+        
+        // Check for existing email and generate User_Id in parallel
+        const [existingUser, User_Id, hashedPassword] = await Promise.all([
+          User.findOne({ where: { Email }, transaction }),
+          generateUserId(User),
+          bcrypt.hash(Password, SALT_ROUNDS)
+        ]);
+        
+        // Handle duplicate email
+        if (existingUser) {
+          await transaction.rollback();
+          return res.status(409).json({ 
+            error: "User with this email already exists" 
+          });
+        }
+        
+        // Create user with generated User_Id and hashed password
+        const user = await User.create({
+          User_Id,
+          Name,
+          Email,
+          Password: hashedPassword,
+          Address,
+          PhoneNumber,
+          Gender
+        }, { transaction });
+
+        // Auto-create active cart for the new user
+        await Cart.create({
+          User_Id: user.User_Id,
+          Status: 'active'
+        }, { transaction });
+
+        // Commit transaction
+        await transaction.commit();
+
+        // Generate JWT token
+        const token = generateToken(user);
+        
+        // Return user data without password
+        const userData = user.toJSON();
+        delete userData.Password;
+        
+        res.status(201).json({
+          message: "User registered successfully",
+          user: userData,
+          token
+        });
+      } catch (innerErr) {
+        await transaction.rollback();
+        throw innerErr;
+      }
     } catch (err) {
       console.error("Error creating user:", err);
       
