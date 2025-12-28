@@ -1,6 +1,6 @@
 import { getModel } from "../config/database.js";
 
-const validStatuses = ['pending', 'paid', 'cancelled'];
+const validStatuses = ["pending", "paid", "cancelled", "processing", "shipped", "delivered"];
 
 // ==================== ORDER VALIDATION ====================
 const validateOrderFields = (fields, isUpdate = false) => {
@@ -383,17 +383,16 @@ const create_order_item = async (req, res) => {
       
       if (existing) {
         const newQuantity = existing.Quantity + item.Quantity;
-        const newAmount = newQuantity * productPrice;
         toUpdate.push({
           item: existing,
           newQuantity,
-          newAmount
+          newAmount: productPrice // Keep unit price
         });
       } else {
         toCreate.push({
           Product_Index: pIndex,
           Quantity: item.Quantity,
-          Amount: itemAmount,
+          Amount: productPrice, // Store unit price
           Order_Id: orderId
         });
       }
@@ -421,7 +420,7 @@ const create_order_item = async (req, res) => {
 
     // Update order total amount
     const allOrderItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
-    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await order.update({ Amount: totalAmount });
 
     return res.status(201).json({
@@ -487,7 +486,7 @@ const update_order_item = async (req, res) => {
 
       if (product) {
         const quantity = updatedData.Quantity !== undefined ? updatedData.Quantity : existingItem.Quantity;
-        updatedData.Amount = quantity * parseFloat(product.Price);
+        updatedData.Amount = parseFloat(product.Price); // Store unit price
       }
     }
 
@@ -496,7 +495,7 @@ const update_order_item = async (req, res) => {
 
     // Update order total amount
     const allOrderItems = await OrderItem.findAll({ where: { Order_Id: existingItem.Order_Id } });
-    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await Order.update({ Amount: totalAmount }, { where: { Order_Id: existingItem.Order_Id } });
 
     return res.status(200).json({
@@ -531,7 +530,7 @@ const delete_order_item = async (req, res) => {
 
     // Update order total amount
     const remainingItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
-    const totalAmount = remainingItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = remainingItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await Order.update({ Amount: totalAmount }, { where: { Order_Id: orderId } });
 
     return res.status(200).json({
@@ -941,10 +940,10 @@ const create_order_item_by_user = async (req, res) => {
 
       if (existing) {
         const newQuantity = existing.Quantity + item.Quantity;
-        const newAmount = newQuantity * productPrice;
+        const newAmount = productPrice; // Store unit price
         toUpdate.push({ item: existing, newQuantity, newAmount });
       } else {
-        toCreate.push({ Product_Index: pIndex, Quantity: item.Quantity, Amount: itemAmount, Order_Id: orderId });
+        toCreate.push({ Product_Index: pIndex, Quantity: item.Quantity, Amount: productPrice, Order_Id: orderId });
       }
     }
 
@@ -970,7 +969,7 @@ const create_order_item_by_user = async (req, res) => {
 
     // Update order total amount
     const allOrderItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
-    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await order.update({ Amount: totalAmount });
 
     return res.status(201).json({
@@ -1041,7 +1040,7 @@ const update_order_item_by_user = async (req, res) => {
         const quantity = updatedData.Quantity !== undefined 
           ? updatedData.Quantity 
           : existingItem.Quantity;
-        updatedData.Amount = quantity * parseFloat(product.Price);
+        updatedData.Amount = parseFloat(product.Price); // Store unit price
       }
     }
 
@@ -1050,7 +1049,7 @@ const update_order_item_by_user = async (req, res) => {
 
     // Update order total amount
     const allOrderItems = await OrderItem.findAll({ where: { Order_Id: existingItem.Order_Id } });
-    const totalAmount = allOrderItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = allOrderItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await Order.update({ Amount: totalAmount }, { where: { Order_Id: existingItem.Order_Id } });
 
     return res.status(200).json({
@@ -1098,7 +1097,7 @@ const delete_order_item_by_user = async (req, res) => {
 
     // Update order total amount
     const remainingItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
-    const totalAmount = remainingItems.reduce((sum, item) => sum + parseFloat(item.Amount), 0);
+    const totalAmount = remainingItems.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Amount)), 0);
     await Order.update({ Amount: totalAmount }, { where: { Order_Id: orderId } });
 
     return res.status(200).json({

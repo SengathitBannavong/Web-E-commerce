@@ -1,5 +1,46 @@
 import { getModel } from "../config/database.js";
 
+// ==================== CART MIDDLEWARE ====================
+const getActiveCart = async (req, res, next) => {
+  try {
+    const { Cart, CartItem, Product } = getModel();
+
+    const cart = await Cart.findOne({
+      where: { 
+        User_Id: req.userId, 
+        Status: 'active' 
+      },
+      include: [
+        {
+          model: CartItem,
+          as: 'items',
+          include: [
+            {
+              model: Product,
+              as: 'product',
+              attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id'] // Price in VND
+            }
+          ]
+        }
+      ],
+      order: [
+        ['Cart_Id', 'ASC'],
+        [{ model: CartItem, as: 'items' }, 'Cart_Item_Id', 'ASC']
+      ]
+    });
+
+    if (!cart) {
+      return res.status(404).json({ error: "No active cart found" });
+    }
+
+    req.cart = cart;
+    next();
+  } catch (err) {
+    console.error("Error fetching active cart:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // ==================== CART VALIDATION ====================
 const validateCartFields = (fields, isUpdate = false) => {
   const errors = [];
@@ -54,11 +95,7 @@ const validateCartItemFields = (fields, isUpdate = false) => {
 };
 
 const get_all_details_cart_by_user_id = async (req, res) => {
-  const userId = req.params.userId;
-  const status = req.query.status || 'active';
-  if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
+  const userId = req.userId;
 
   try {
     const { Cart, CartItem, Product } = getModel();
@@ -66,7 +103,7 @@ const get_all_details_cart_by_user_id = async (req, res) => {
     const cart = await Cart.findOne({
       where: { 
         User_Id: userId, 
-        Status: status 
+        Status: 'active' 
       },
       include: [
         {
@@ -76,7 +113,7 @@ const get_all_details_cart_by_user_id = async (req, res) => {
             {
               model: Product,
               as: 'product',
-              attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id']
+              attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id'] // Price in VND
             }
           ]
         }
@@ -102,14 +139,13 @@ const get_all_details_cart_by_user_id = async (req, res) => {
 };
 
 const get_cart = (req, res) => {
-  const userId = req.params.userId || '';
-  const status = req.query.status || '';
+  const userId = req.userId;
+  const status = req.query.status || 'active';
 
   // userId or status not exist
-  if(userId === '' || status === '') {
-    return res.status(402).json({ 
-      error: "Invalid request parameters",
-      required: ["userId, status in query"],
+  if(!userId) {
+    return res.status(400).json({ 
+      error: "User ID is required",
     });
   }
 
@@ -186,141 +222,108 @@ const get_cart_items_by_cart_id = async (req, res) => {
 };
 
 const create_cart_item = async (req, res) => {
-  const { CartItem, Cart, Product } = getModel();
-  const cartId = req.params.cartId;
-  const items = Array.isArray(req.body) ? req.body : [req.body];
+  const { CartItem, Product } = getModel();
+  const cartId = req.cart.Cart_Id;
+  const productId = req.params.productId;
+  const { quantity } = req.body;
 
   if (!cartId) {
     return res.status(400).json({ error: "Cart ID is required" });
   }
 
-  // Validate all items
-  const validationErrors = [];
-  items.forEach((item, index) => {
-    const itemWithCartId = { ...item, Cart_Id: cartId };
-    const validation = validateCartItemFields(itemWithCartId, false);
-    if (!validation.isValid) {
-      validationErrors.push({ index, errors: validation.errors });
-    }
-  });
+  if (!productId) {
+    return res.status(400).json({ error: "Product ID is required" });
+  }
 
-  if (validationErrors.length > 0) {
-    return res.status(400).json({ errors: validationErrors });
+  if (!quantity || typeof quantity !== 'number' || quantity < 1) {
+    return res.status(400).json({ error: "Quantity must be a positive number" });
   }
 
   try {
-    // Check if cart exists
-    const cart = await Cart.findByPk(cartId);
-    if (!cart) {
-      return res.status(404).json({ error: "Cart not found" });
+    // Check if product exists and get its index
+    const product = await Product.findOne({ where: { Product_Id: productId }, attributes: ['Product_Id', 'Index'] });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
     }
 
-    // Get all Product_Ids from request and resolve to product Indexes
-    const productIds = items.map(item => item.Product_Id);
+    const productIndex = product.Index;
 
-    const products = await Product.findAll({ where: { Product_Id: productIds }, attributes: ['Product_Id', 'Index'] });
-    if (products.length !== new Set(productIds).size) {
-      const existingProductIds = products.map(p => p.Product_Id);
-      const missing = [...new Set(productIds)].filter(id => !existingProductIds.includes(id));
-      return res.status(400).json({ error: 'Some products not found', missingProductIds: missing });
-    }
-
-    const idToIndex = new Map(products.map(p => [p.Product_Id, p.Index]));
-
-    // Find existing items in ONE query using Product_Index
-    const productIndexes = products.map(p => p.Index);
-    const existingItems = await CartItem.findAll({
-      where: { Cart_Id: cartId, Product_Index: productIndexes }
+    // Check if item already exists in cart
+    const existingItem = await CartItem.findOne({
+      where: { Cart_Id: cartId, Product_Index: productIndex }
     });
 
-    // Create a map for quick lookup keyed by Product_Index
-    const existingMap = new Map(
-      existingItems.map(item => [item.Product_Index, item])
-    );
-
-    // Separate items into toCreate and toUpdate
-    const toCreate = [];
-    const toUpdate = [];
-
-    for (const item of items) {
-      const pIndex = idToIndex.get(item.Product_Id);
-      const existing = existingMap.get(pIndex);
-      if (existing) {
-        toUpdate.push({
-          item: existing,
-          newQuantity: existing.Quantity + item.Quantity
-        });
-      } else {
-        toCreate.push({
-          Cart_Id: cartId,
-          Product_Index: pIndex,
-          Quantity: item.Quantity
-        });
-      }
-    }
-
-    const results = {
-      created: [],
-      updated: []
-    };
-
-    // Bulk create new items
-    if (toCreate.length > 0) {
-      results.created = await CartItem.bulkCreate(toCreate);
-    }
-
-    // Bulk update existing items using Promise.all
-    if (toUpdate.length > 0) {
-      await Promise.all(
-        toUpdate.map(({ item, newQuantity }) => 
-          item.update({ Quantity: newQuantity })
-        )
-      );
-      results.updated = toUpdate.map(({ item }) => item);
+    let result;
+    if (existingItem) {
+      // Update existing item by adding quantity
+      const newQuantity = existingItem.Quantity + quantity;
+      await existingItem.update({ Quantity: newQuantity });
+      result = existingItem;
+    } else {
+      // Create new item
+      result = await CartItem.create({
+        Cart_Id: cartId,
+        Product_Index: productIndex,
+        Quantity: quantity
+      });
     }
 
     return res.status(201).json({
-      message: "Cart items processed successfully",
-      data: results
+      message: existingItem ? "Cart item updated successfully" : "Cart item created successfully",
+      data: result
     });
   } catch (err) {
-    console.error("Error creating cart items:", err);
+    console.error("Error creating/updating cart item:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 const update_cart_item = async (req, res) => {
-  const { CartItem } = getModel();
-  const cartItemId = req.params.id;
-  const updatedData = req.body;
+  const { CartItem, Product } = getModel();
+  const cartId = req.cart.Cart_Id;
+  const productId = req.params.productId;
+  const { quantity } = req.body;
 
-  if (!cartItemId) {
-    return res.status(400).json({ error: "Cart Item ID is required" });
+  if (!cartId) {
+    return res.status(400).json({ error: "Cart ID is required" });
   }
 
-  if (!updatedData || Object.keys(updatedData).length === 0) {
-    return res.status(400).json({ error: "No data provided for update" });
+  if (!productId) {
+    return res.status(400).json({ error: "Product ID is required" });
   }
 
-  // Validate fields
-  const validation = validateCartItemFields(updatedData, true);
-  if (!validation.isValid) {
-    return res.status(400).json({ errors: validation.errors });
+  if( quantity === undefined ) {
+    return res.status(400).json({ error: "Quantity is required" });
+  }
+
+  if (typeof quantity !== 'number' || quantity < 1) {
+    return res.status(400).json({ error: "Quantity must be a positive number and type number"});
   }
 
   try {
-    const [updated, updatedItems] = await CartItem.update(updatedData, {
-      where: { Cart_Item_Id: cartItemId },
-      returning: true
+    // Check if product exists and get its index
+    const product = await Product.findOne({ where: { Product_Id: productId }, attributes: ['Product_Id', 'Index'] });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const productIndex = product.Index;
+
+    // Find the cart item
+    const cartItem = await CartItem.findOne({
+      where: { Cart_Id: cartId, Product_Index: productIndex }
     });
 
-    if (updated === 0) {
+    if (!cartItem) {
       return res.status(404).json({ error: "Cart item not found" });
     }
 
+    // Update the quantity
+    await cartItem.update({ Quantity: quantity });
+
     return res.status(200).json({
       message: "Cart item updated successfully",
-      data: updatedItems[0]
+      data: cartItem
     });
   } catch (err) {
     console.error("Error updating cart item:", err);
@@ -329,23 +332,42 @@ const update_cart_item = async (req, res) => {
 };
 
 const delete_cart_item = async (req, res) => {
-  const { CartItem } = getModel();
-  const cartItemId = req.params.id;
+  const { CartItem, Product } = getModel();
+  const cartId = req.cart.Cart_Id;
+  const productId = req.params.productId;
 
-  if (!cartItemId) {
-    return res.status(400).json({ error: "Cart Item ID is required" });
+  if (!cartId) {
+    return res.status(400).json({ error: "Cart ID is required" });
+  }
+
+  if (!productId) {
+    return res.status(400).json({ error: "Product ID is required" });
   }
 
   try {
-    const deleted = await CartItem.destroy({ where: { Cart_Item_Id: cartItemId } });
+    // Check if product exists and get its index
+    const product = await Product.findOne({ where: { Product_Id: productId }, attributes: ['Product_Id', 'Index'] });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
 
-    if (deleted === 0) {
+    const productIndex = product.Index;
+
+    // Find the cart item
+    const cartItem = await CartItem.findOne({
+      where: { Cart_Id: cartId, Product_Index: productIndex }
+    });
+
+    if (!cartItem) {
       return res.status(404).json({ error: "Cart item not found" });
     }
 
+    // Delete the cart item
+    await CartItem.destroy({ where: { Cart_Item_Id: cartItem.Cart_Item_Id } });
+
     return res.status(200).json({
       message: "Cart item deleted successfully",
-      deletedCartItemId: cartItemId
+      deletedCartItemId: cartItem.Cart_Item_Id
     });
   } catch (err) {
     console.error("Error deleting cart item:", err);
@@ -398,12 +420,8 @@ const create_cart = async (req, res) => {
 
 const update_cart = async (req, res) => {
   const { Cart } = getModel();
-  const userId = req.params.userId;
+  const userId = req.userId;
   const updatedData = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
 
   if (!updatedData || Object.keys(updatedData).length === 0) {
     return res.status(400).json({ error: "No data provided for update" });
@@ -432,13 +450,9 @@ const update_cart = async (req, res) => {
 const delete_all_cart = async (req, res) => {
   try {
     const { Cart, CartItem } = getModel();
-    const userId = req.params.userId;
+    const userId = req.userId;
     let status = req.query.status;
     let res_message = [];
-    
-    if(!userId) {
-      return res.status(400).json({ error: "User ID is required" });
-    }
     
     // Authentication and authorization handled by middleware
 
@@ -474,35 +488,24 @@ const delete_all_cart = async (req, res) => {
   }
 };
 
-const delete_cart = async (req, res) => {
-  const { Cart, CartItem } = getModel();
-  const cartId = req.params.id;
+const delete_all_cart_items = async (req, res) => {
+  const { CartItem } = getModel();
+  const cartId = req.cart.Cart_Id;
 
   if (!cartId) {
-    return res.status(400).json({ error: "Cart ID is required" });
+    return res.status(400).json({ error: "Cart Access Denied" });
   }
 
-  // Authentication and authorization handled by middleware
-
   try {
-    // Check if cart exists
-    const cart = await Cart.findByPk(cartId);
-    if (!cart) {
-      return res.status(404).json({ error: "Cart not found" });
-    }
-
     // Delete all cart items associated with this cart
     await CartItem.destroy({ where: { Cart_Id: cartId } });
 
-    // Delete the cart itself
-    await Cart.destroy({ where: { Cart_Id: cartId } });
-
     return res.status(200).json({
-      message: "Cart and associated items deleted successfully",
+      message: "All cart items deleted successfully",
       deletedCartId: cartId
     });
   } catch (err) {
-    console.error("Error deleting cart:", err);
+    console.error("Error deleting cart items:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -512,7 +515,9 @@ export {
   // Cart functions
   create_cart,
   // Cart Item functions
-  create_cart_item, delete_all_cart, delete_cart, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
-  get_cart_items_by_cart_id, update_cart, update_cart_item
+  create_cart_item, delete_all_cart, delete_all_cart_items, delete_cart_item, get_all_details_cart_by_user_id, get_cart,
+  get_cart_items_by_cart_id,
+  // Middleware
+  getActiveCart, update_cart, update_cart_item
 };
 

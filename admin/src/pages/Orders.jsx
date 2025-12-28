@@ -29,6 +29,7 @@ function Orders() {
     { key: 'Status', label: 'Status' },
     { key: 'Amount', label: 'Amount' },
     { key: 'Date', label: 'Created At' },
+    { key: 'Shipping_Address', label: 'Shipping Address' },
   ];
 
   const handleSubmit = (formData) => {

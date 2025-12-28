@@ -93,16 +93,16 @@ const categories = [
 ];
 
 const products = [
-    { Name: 'The Great Gatsby', Author: 'F. Scott Fitzgerald', Description: 'Classic novel by F. Scott Fitzgerald', Price: 9.99, Category: 'Fiction' },
-    { Name: '1984', Author: 'George Orwell', Description: 'Dystopian novel by George Orwell', Price: 12.99, Category: 'Fiction' },
-    { Name: 'To Kill a Mockingbird', Author: 'Harper Lee', Description: 'Novel by Harper Lee', Price: 11.50, Category: 'Fiction' },
-    { Name: 'A Brief History of Time', Author: 'Stephen Hawking', Description: 'Science book by Stephen Hawking', Price: 14.50, Category: 'Science' },
-    { Name: 'The Selfish Gene', Author: 'Richard Dawkins', Description: 'Book by Richard Dawkins', Price: 13.99, Category: 'Science' },
-    { Name: 'Learning JavaScript', Author: 'Ethan Brown', Description: 'Programming guide for JS beginners', Price: 29.99, Category: 'Technology' },
-    { Name: 'Clean Code', Author: 'Robert C. Martin', Description: 'A handbook of agile software craftsmanship', Price: 34.99, Category: 'Technology' },
-    { Name: 'Python Crash Course', Author: 'Eric Matthes', Description: 'Hands-on introduction to Python', Price: 27.50, Category: 'Technology' },
-    { Name: 'Sapiens', Author: 'Yuval Noah Harari', Description: 'A brief history of humankind', Price: 16.99, Category: 'History' },
-    { Name: 'Atomic Habits', Author: 'James Clear', Description: 'Build good habits, break bad ones', Price: 15.99, Category: 'Self-Help' }
+    { Name: 'The Great Gatsby', Author: 'F. Scott Fitzgerald', Description: 'Classic novel by F. Scott Fitzgerald', Price: 200000, Category: 'Fiction' },
+    { Name: '1984', Author: 'George Orwell', Description: 'Dystopian novel by George Orwell', Price: 300000, Category: 'Fiction' },
+    { Name: 'To Kill a Mockingbird', Author: 'Harper Lee', Description: 'Novel by Harper Lee', Price: 250000, Category: 'Fiction' },
+    { Name: 'A Brief History of Time', Author: 'Stephen Hawking', Description: 'Science book by Stephen Hawking', Price: 350000, Category: 'Science' },
+    { Name: 'The Selfish Gene', Author: 'Richard Dawkins', Description: 'Book by Richard Dawkins', Price: 320000, Category: 'Science' },
+    { Name: 'Learning JavaScript', Author: 'Ethan Brown', Description: 'Programming guide for JS beginners', Price: 700000, Category: 'Technology' },
+    { Name: 'Clean Code', Author: 'Robert C. Martin', Description: 'A handbook of agile software craftsmanship', Price: 800000, Category: 'Technology' },
+    { Name: 'Python Crash Course', Author: 'Eric Matthes', Description: 'Hands-on introduction to Python', Price: 650000, Category: 'Technology' },
+    { Name: 'Sapiens', Author: 'Yuval Noah Harari', Description: 'A brief history of humankind', Price: 400000, Category: 'History' },
+    { Name: 'Atomic Habits', Author: 'James Clear', Description: 'Build good habits, break bad ones', Price: 380000, Category: 'Self-Help' }
 ];
 
 // ==================== INITIALIZATION FUNCTIONS ====================
@@ -214,7 +214,7 @@ async function createProducts(categoryMap) {
         
         if (result) {
             productIds[product.Name] = result.Product_Id;
-            console.log(`  [OK] Created product: ${product.Name} ($${product.Price})`);
+            console.log(`  [OK] Created product: ${product.Name} (VND ${product.Price})`);
         }
     }
 }
@@ -339,7 +339,7 @@ async function createOrders() {
     if (aliceToken && aliceId) {
         const order = await api('POST', `/orders/${aliceId}`, {
             Status: 'pending',
-            Amount: 69.97,
+            Amount: 1600000,
             Shipping_Address: users.find(u => u.Email === 'alice@example.com')?.Address || ''
         }, aliceToken);
         
@@ -349,8 +349,8 @@ async function createOrders() {
             
             // Add order items
             const items = [
-                { productName: 'The Great Gatsby', quantity: 1, amount: 9.99 },
-                { productName: 'Learning JavaScript', quantity: 2, amount: 59.98 }
+                { productName: 'The Great Gatsby', quantity: 1, amount: 200000 },
+                { productName: 'Learning JavaScript', quantity: 2, amount: 1400000 }
             ];
             
             for (const item of items) {
@@ -374,7 +374,7 @@ async function createOrders() {
     if (bobToken && bobId) {
         const order = await api('POST', `/orders/${bobId}`, {
             Status: 'pending',
-            Amount: 14.50,
+            Amount: 350000,
             Shipping_Address: users.find(u => u.Email === 'bob@example.com')?.Address || ''
         }, bobToken);
         
@@ -387,7 +387,7 @@ async function createOrders() {
                 await api('POST', `/orders/items/${order.data.Order_Id}`, {
                     Product_Id: productId,
                     Quantity: 1,
-                    Amount: 14.50
+                    Amount: 350000
                 }, bobToken);
                 console.log(`    [+] Added 1x A Brief History of Time`);
             }
@@ -407,12 +407,12 @@ async function createPayments() {
             orderId: aliceOrderId,
             userId: userIds['alice@example.com'],
             type: 'credit_card',
-            amount: 69.97,
+            amount: 1600000,
             status: 'completed'
         }, aliceToken);
         
         if (payment) {
-            console.log(`  [OK] Created payment for Alice's order (Credit Card - $69.97)`);
+            console.log(`  [OK] Created payment for Alice's order (Credit Card - VND 1,600,000)`);
         }
     }
     
@@ -425,12 +425,12 @@ async function createPayments() {
             orderId: bobOrderId,
             userId: userIds['bob@example.com'],
             type: 'paypal',
-            amount: 14.50,
+            amount: 350000,
             status: 'pending'
         }, bobToken);
         
         if (payment) {
-            console.log(`  [OK] Created payment for Bob's order (PayPal - $14.50)`);
+            console.log(`  [OK] Created payment for Bob's order (PayPal - VND 350,000)`);
         }
     }
 }

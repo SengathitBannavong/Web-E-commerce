@@ -9,6 +9,7 @@ import { CategoryContextProvider } from './contexts/CategoryContext.jsx';
 import { CustomerContextProvider } from './contexts/CustomerContext.jsx';
 import { DashboardContextProvider } from './contexts/DashboardContext.jsx';
 import { OrderContextProvider } from './contexts/OrderContext.jsx';
+import { PaymentContextProvider } from './contexts/PaymentContext.jsx';
 import { ProductContextProvider } from './contexts/ProductContext.jsx';
 import { StockContextProvider } from './contexts/StockContext.jsx';
 import Category from './pages/Category.jsx';
@@ -101,7 +102,14 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
                     </CustomerContextProvider>
                   }
                 />
-                <Route path="/payments" element={<Payments />} />
+                <Route
+                  path="/payments"
+                  element={
+                    <PaymentContextProvider>
+                      <Payments />
+                    </PaymentContextProvider>
+                  }
+                />
               </Route>
             </Routes>
           </div>

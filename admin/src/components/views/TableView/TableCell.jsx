@@ -7,13 +7,13 @@ function TableCell({ column, item, shouldHideColumn, rowIndex = 0, page = 1, lim
       return computed;
     }
     if (col.key === 'Price') {
-      return <span className="font-semibold text-emerald-600">${item[col.key]}</span>;
+      return <span className="font-semibold text-emerald-600">{item[col.key]} VND</span>;
     }
-    if (col.key === 'created_at' || col.key === 'Date' || col.key === 'Last_Updated') {
+    if (col.key === 'created_at' || col.key === 'Date' || col.key === 'updated_at') {
       return item[col.key] ? item[col.key].split('T')[0] : '';
     }
-    if( col.key === 'Role') {
-      return item[col.key] === 4012 ? <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">Admin</span> : <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">User</span>;
+    if(col.key === 'Role') {
+      return item[col.key] === "admin" ? <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">Admin</span> : <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">User</span>;
     }
     return item[col.key];
   };

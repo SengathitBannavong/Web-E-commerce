@@ -28,13 +28,15 @@ export function Payment(sequelize) {
       Status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "Pending",
-        // Values: "Pending", "Completed", "Failed"
+        defaultValue: "pending",
+        // Values: "pending", "completed", "failed"
       },
     },
     {
       tableName: "Payment",
-      timestamps: false,
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
     }
   );
 }

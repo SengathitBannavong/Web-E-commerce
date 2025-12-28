@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStoreContext } from '../contexts/StoreContext.jsx';
 
 function Login() {
   const navigate = useNavigate();
-  const { API, setAppToken, token } = useStoreContext();
+  const { API, setAppToken, token, setAdminName, setAdminEmail } = useStoreContext();
 
   useEffect(() => {
     if (token) navigate('/');
@@ -26,8 +26,22 @@ function Login() {
           Password: password,
         };
       const res = await axios.post(`${API}users/login`, body);
+      const checkAdmin = await axios.get(`${API}users/admin/check`, {
+        headers: {
+          Authorization: `Bearer ${res.data.token}`,
+        },
+      });
+      if (checkAdmin.status !== 200) {
+        setError('You do not have admin privileges');
+        setLoading(false);
+        return;
+      }
       // adjust token path according to your API
       const token = res?.data?.token || res?.data?.accessToken || null;
+      const adminName = res?.data?.user.Name || 'Admin';
+      const adminEmail = res?.data?.user.Email || email;
+      setAdminName(adminName);
+      setAdminEmail(adminEmail);
       if (token) {
         // store token in app memory only
         setAppToken(token);
@@ -38,7 +52,7 @@ function Login() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }

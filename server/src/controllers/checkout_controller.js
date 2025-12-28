@@ -1,45 +1,17 @@
 import { getDB, getModel } from "../config/database.js";
 
-/**
- * Checkout - Convert Cart to Order
- * POST /carts/:userId/checkout
- * 
- * This function:
- * 1. Validates that cart exists and has items
- * 2. Validates stock availability for all items
- * 3. Creates an Order with OrderItems
- * 4. Deducts stock for each item
- * 5. Clears the cart (marks as completed)
- * 6. Returns the created order
- */
-export const checkout = async (req, res) => {
+export const checkout_middle = async (req, res, next) => {
   const sequelize = getDB();
   const transaction = await sequelize.transaction();
 
   try {
-    const userId = req.params.userId;
+    const userId = req.userId;
+    const cart = req.cart; // Cart already fetched by getActiveCart middleware
 
     if (!userId) {
       await transaction.rollback();
       return res.status(400).json({ error: "User ID is required" });
     }
-
-    const { Cart, CartItem, Order, OrderItem, Product, Stock, User } = getModel();
-
-    // 1. Get user's active cart with items
-    const cart = await Cart.findOne({
-      where: { User_Id: userId, Status: 'active' },
-      include: [{
-        model: CartItem,
-        as: 'items',
-        include: [{
-          model: Product,
-          as: 'product',
-          attributes: ['Product_Id', 'Name', 'Price', 'Index']
-        }]
-      }],
-      transaction
-    });
 
     if (!cart) {
       await transaction.rollback();
@@ -50,6 +22,8 @@ export const checkout = async (req, res) => {
       await transaction.rollback();
       return res.status(400).json({ error: "Cart is empty" });
     }
+
+    const {  Order, OrderItem, Product, Stock, User, CartItem } = getModel();
 
     // 2. Validate stock for all items
     const stockErrors = [];
@@ -100,10 +74,10 @@ export const checkout = async (req, res) => {
       });
     }
 
-    // 3. Calculate total amount
+    // 3. Calculate total amount in VND
     let totalAmount = 0;
     for (const item of cart.items) {
-      const itemPrice = parseFloat(item.product?.Price || 0);
+      const itemPrice = Math.round(parseFloat(item.product?.Price || 0)); // Price in VND as integer
       totalAmount += itemPrice * item.Quantity;
     }
 
@@ -128,58 +102,57 @@ export const checkout = async (req, res) => {
       Shipping_Address: shippingAddress
     }, { transaction });
 
-    // 5. Create OrderItems
+    // 5. Create OrderItems - Bulk fetch all products first
+    const productIndexes = cart.items.map(item => item.Product_Index ?? item.product?.Index);
+    const products = await Product.findAll({
+      where: { Index: productIndexes },
+      attributes: ['Index', 'Price'],
+      transaction
+    });
+
+    // Create price map for quick lookup
+    const priceMap = new Map(products.map(p => [p.Index, Math.round(parseFloat(p.Price))]));
+
     const orderItems = [];
     for (const item of cart.items) {
-      const itemPrice = parseFloat(item.product?.Price || 0);
       const prodIndex = item.Product_Index ?? item.product?.Index;
+      const productPrice = priceMap.get(prodIndex);
+
+      if (productPrice === undefined) {
+        await transaction.rollback();
+        return res.status(400).json({
+          error: `Product with index ${prodIndex} not found`
+        });
+      }
+
       const orderItem = await OrderItem.create({
         Order_Id: order.Order_Id,
         Product_Index: prodIndex,
         Quantity: item.Quantity,
-        Amount: itemPrice * item.Quantity
+        Amount: productPrice // store as integer for VND
       }, { transaction });
       orderItems.push(orderItem);
     }
 
-    // 6. Deduct stock
-    for (const { stock, deductQuantity } of stockUpdates) {
-      await stock.update({
-        Quantity: stock.Quantity - deductQuantity,
-        Last_Updated: new Date()
-      }, { transaction });
-    }
+    // 6. Clear user's cart
+    await CartItem.destroy({ where: { Cart_Id: cart.Cart_Id } }, { transaction });
+    
 
-    // 7. Mark cart as completed and clear items
-    await cart.update({ Status: 'completed' }, { transaction });
+    // Set order data for next middleware
+    req.order = order;
+    req.orderItems = orderItems.map((item, index) => ({
+      Order_Id: item.Order_Id,
+      Product_Index: item.Product_Index,
+      Quantity: item.Quantity,
+      Amount: item.Amount,
+      productName: cart.items[index].product?.Name || 'Unknown'
+    }));
+    req.totalAmount = totalAmount;
+    req.userId = userId;
+    req.transaction = transaction;
 
-    // 8. Create a new active cart for the user
-    await Cart.create({
-      User_Id: userId,
-      Status: 'active'
-    }, { transaction });
-
-    // Commit transaction
-    await transaction.commit();
-
-    // 9. Return success response
-    res.status(201).json({
-      success: true,
-      message: "Checkout successful",
-      order: {
-        Order_Id: order.Order_Id,
-        User_Id: order.User_Id,
-        Date: order.Date,
-        Status: order.Status,
-        Amount: totalAmount,
-          items: orderItems.map(item => ({
-          Order_Item_Id: item.Order_Item_Id,
-          Product_Index: item.Product_Index,
-          Quantity: item.Quantity,
-          Amount: item.Amount
-        }))
-      }
-    });
+    // Call next middleware
+    next();
 
   } catch (err) {
     await transaction.rollback();
@@ -194,11 +167,7 @@ export const checkout = async (req, res) => {
  */
 export const validateCartStock = async (req, res) => {
   try {
-    const userId = req.params.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
-    }
+    const userId = req.userId;
 
     const { Cart, CartItem, Product, Stock } = getModel();
 
@@ -261,11 +230,7 @@ export const validateCartStock = async (req, res) => {
  */
 export const getCartSummary = async (req, res) => {
   try {
-    const userId = req.params.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
-    }
+    const userId = req.userId;
 
     const { Cart, CartItem, Product, Stock } = getModel();
 

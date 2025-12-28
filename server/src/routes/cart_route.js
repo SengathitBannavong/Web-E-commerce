@@ -1,43 +1,37 @@
 import express from "express";
 import {
-  // Cart functions
-  create_cart,
   // Cart Item functions
   create_cart_item,
-  delete_all_cart,
-  delete_cart,
+  delete_all_cart_items,
   delete_cart_item,
   get_all_details_cart_by_user_id,
-  get_cart,
-  get_cart_items_by_cart_id,
-  update_cart,
+  // Middleware
+  getActiveCart,
   update_cart_item
 } from "../controllers/cart_controller.js";
-import { checkout, getCartSummary, validateCartStock } from "../controllers/checkout_controller.js";
-import { authMiddleware, verifyUserOwnership } from "../middleware/auth.js";
+import { getCartSummary, validateCartStock } from "../controllers/checkout_controller.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const cart_router = express.Router();
 
 // All cart routes require authentication
 cart_router.use(authMiddleware);
+cart_router.use(getActiveCart);
 
 // ==================== CHECKOUT ROUTES ====================
-cart_router.post("/:userId/checkout", verifyUserOwnership('userId'), checkout);
-cart_router.post("/:userId/validate-stock", verifyUserOwnership('userId'), validateCartStock);
-cart_router.get("/:userId/summary", verifyUserOwnership('userId'), getCartSummary);
+cart_router.post("/validate-stock", validateCartStock);
+cart_router.get("/summary", getCartSummary);
 
 // ==================== CART ROUTES ====================
-cart_router.get("/:userId", verifyUserOwnership('userId'), get_cart);
-cart_router.post("/", create_cart);
-cart_router.put("/:userId", verifyUserOwnership('userId'), update_cart);
-cart_router.delete("/:id", delete_cart);
-cart_router.delete("/clear/:userId", verifyUserOwnership('userId'), delete_all_cart);
+// cart_router.get("/", get_cart);
+// cart_router.post("/", create_cart); This should created automatically registered user
+// cart_router.put("/", update_cart); Not needed for now
+// cart_router.delete("/clear", delete_all_cart); Not needed for now
+cart_router.delete("/clear", delete_all_cart_items);
 
 // ==================== CART ITEM ROUTES ====================
-cart_router.get("/items/:userId", verifyUserOwnership('userId'), get_all_details_cart_by_user_id);
-cart_router.get("/items/cart/:cartId", get_cart_items_by_cart_id);
-cart_router.post("/items/:cartId", create_cart_item); 
-cart_router.put("/items/:id", update_cart_item);
-cart_router.delete("/items/:id", delete_cart_item);
-
+cart_router.get("/items", get_all_details_cart_by_user_id);
+cart_router.post("/items/:productId", create_cart_item); 
+cart_router.put("/items/:productId", update_cart_item);
+cart_router.delete("/items/:productId", delete_cart_item);
 export { cart_router };

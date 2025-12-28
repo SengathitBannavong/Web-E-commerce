@@ -14,12 +14,12 @@ export const setupAssociations = (models) => {
     as: 'user'
   });
 
-  // User ↔ Cart (One-to-Many)
-  // One user can have many carts (active, archived, etc.)
-  User.hasMany(Cart, {
+  // User ↔ Cart (One-to-One)
+  // One user can have one cart (active, archived, etc.)
+  User.hasOne(Cart, {
     foreignKey: 'User_Id',
     sourceKey: 'User_Id',
-    as: 'carts'
+    as: 'cart'
   });
   Cart.belongsTo(User, {
     foreignKey: 'User_Id',
