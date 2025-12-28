@@ -35,6 +35,7 @@ CREATE TABLE "Product" (
   "Description" text,
   "Price" decimal(10,2) NOT NULL,
   "Photo_Id" varchar,
+  "Photo_URL" varchar,
   "Category_Id" integer,
   "Author" varchar(128),
   "created_at" timestamp

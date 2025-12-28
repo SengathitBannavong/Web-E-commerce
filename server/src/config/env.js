@@ -30,8 +30,12 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 export const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
+export const CLOUDINARY_NAME = process.env.CLOUDINARY_NAME;
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
 // Validate required environment variables
-const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET','STRIPE_SECRET_KEY'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET','STRIPE_SECRET_KEY','CLOUDINARY_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
