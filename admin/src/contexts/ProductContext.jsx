@@ -60,7 +60,8 @@ export const ProductContextProvider = (props) => {
         Description: formData.Description,
         Price: Number(formData.Price),
         Photo_Id: formData.Photo_Id,
-        Category_Id: formData.Category_Id,
+        Photo_URL: formData.Photo_URL,
+        Category_Id: formData.Category_Id === 0 ? null : formData.Category_Id,
       };
       
       let config = {
@@ -142,6 +143,61 @@ export const ProductContextProvider = (props) => {
     }
   };
 
+  // Upload image (if provided) and create/update product accordingly
+  const submitProductImage = async ({image_form, productId}) => {
+    if (image_form) {
+      const formData = new FormData();
+      formData.append('image', image_form);
+      formData.append('productId', productId);
+    
+
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${API}products/upload-image`,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Content-Type': 'multipart/form-data',
+        },
+        data : formData
+      };
+
+      try {
+        const response = await axios.request(config);
+        if (response.status === 200) {
+          return response.data;
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast.error('Failed to upload image. Please try again.');
+        return null;
+      }
+    }else {
+      // for deleting image case
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${API}products/delete-image`,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        data : JSON.stringify({ productId })
+      };
+
+      try {
+        const response = await axios.request(config);
+        if (response.status === 200) {
+          return { imageUrl: null };
+        }
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        toast.error('Failed to delete image. Please try again.');
+        return null;
+      }
+    }
+    return null;
+  };
 
   const contextValue = {
     products,
@@ -151,6 +207,7 @@ export const ProductContextProvider = (props) => {
     handleDeleteProduct,
     handleAddProduct,
     handleUpdateProduct,
+    submitProductImage,
     // pagination
     page,
     setPage,

@@ -24,6 +24,7 @@ function Stock() {
   const columns = [
     { key: 'Index', label: 'Index' },
     { key: 'Product_Id', label: 'Product ID' },
+    { key: 'Photo_URL', label: 'Photo' },
     { key: 'Product_Name', label: 'Product Name' },
     { key: 'Product_Price', label: 'Price' },
     { key: 'Quantity', label: 'Quantity' },

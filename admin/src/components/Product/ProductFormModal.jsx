@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HiTrash, HiXMark } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
+import { useProductContext } from '../../contexts/ProductContext.jsx';
 import ConfirmDialog from '../ConfirmDialog.jsx';
 
 function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode = 'add' }) {
@@ -9,9 +10,11 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     Author: '',
     Description: '',
     Price: '',
-    Photo_Id: '',
     Category_Id: '',
   });
+  const [photoImageForm, setPhotoImageForm] = useState(null);
+  const fileInputRef = useRef(null);
+  const { submitProductImage } = useProductContext();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -21,18 +24,22 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
         Author: product.Author || '',
         Description: product.Description || '',
         Price: product.Price || '',
-        Photo_Id: product.Photo_Id || '',
         Category_Id: product.Category_Id || '',
+        Photo_Id: '',
+        Photo_URL: '',
       });
+      setPhotoImageForm(product.Photo_URL || '');
     } else {
       setFormData({
         Name: '',
         Author: '',
         Description: '',
         Price: '',
-        Photo_Id: '',
         Category_Id: '',
+        Photo_Id: '',
+        Photo_URL: '',
       });
+      setPhotoImageForm(null);
     }
   }, [mode, product, isOpen]);
 
@@ -65,8 +72,9 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
       ...formData,
       Category_Id: formData.Category_Id === '' ? null : parseInt(formData.Category_Id),
       Price: parseFloat(formData.Price),
-      Photo_Id: formData.Photo_Id || null,
       Description: formData.Description || null,
+      Photo_Id: formData.Photo_Id || null,
+      Photo_URL: formData.Photo_URL || null,
     };
     
     if (mode === 'edit' && product) {
@@ -80,8 +88,9 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
       Author: '',
       Description: '',
       Price: '',
-      Photo_Id: '',
       Category_Id: '',
+      Photo_Id: '',
+      Photo_URL: '',
     });
     onClose();
   };
@@ -184,16 +193,77 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Photo ID
+                Photo
               </label>
               <input
-                type="text"
-                name="Photo_Id"
-                value={formData.Photo_Id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                placeholder="photo_example"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                name="image"
+                onChange={async (e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (file) {
+                    const url = URL.createObjectURL(file);
+                    setPhotoImageForm(url);
+                  }
+                  // Summit only the Photo data and product ID
+                  const ret = await submitProductImage({image_form: file, productId: product ? product.Product_Id : null});
+                  if (ret && ret.imageUrl) {
+                    setPhotoImageForm(ret.imageUrl);
+                  }
+
+                  if(ret && !product) {
+                    setFormData(prev => {
+                      return {
+                        ...prev,
+                        Photo_URL: ret.imageUrl,
+                        Photo_Id: ret.publicId
+                      }
+                    });
+                  }
+                  
+                }}
+                className="hidden"
               />
+
+              <div className="mt-2">
+                {photoImageForm ? (
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={photoImageForm instanceof File ? URL.createObjectURL(photoImageForm) : photoImageForm}
+                      alt="product"
+                      className="w-28 h-28 object-cover rounded-md cursor-pointer border"
+                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                        className="px-3 py-2 bg-slate-100 rounded-md text-sm text-slate-700"
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => { 
+                          setPhotoImageForm(null);
+                          await submitProductImage({image_form: null, productId: product ? product.Product_Id : null});
+                        }}
+                        className="px-3 py-2 bg-rose-50 text-rose-600 rounded-md text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    className="w-28 h-28 border border-dashed border-slate-300 rounded-md flex items-center justify-center text-slate-400 cursor-pointer"
+                  >
+                    Click to upload
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>

@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadImage } from "../controllers/cloudinary_controller.js";
+import { uploadImage, deleteImage } from "../controllers/cloudinary_controller.js";
 import {
   create_product,
   delete_product,
@@ -21,6 +21,7 @@ product_router.post("/", authMiddleware, adminMiddleware, create_product);
 product_router.put("/:id", authMiddleware, adminMiddleware, update_product);
 product_router.delete("/:id", authMiddleware, adminMiddleware, delete_product);
 
-product_router.post("/upload", authMiddleware, adminMiddleware, upload.single("image"), uploadImage);
+product_router.post("/upload-image", authMiddleware, adminMiddleware, upload.single("image"), uploadImage);
+product_router.post("/delete-image", authMiddleware, adminMiddleware, deleteImage);
 
 export { product_router };

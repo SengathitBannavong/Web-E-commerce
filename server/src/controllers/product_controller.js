@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import { getDB, getModel } from "../config/database.js";
+import { deleteImageHelper } from "./cloudinary_controller.js";
 
 // Validation helper function
 const validateProductFields = (fields, isUpdate = false) => {
@@ -180,7 +181,7 @@ const generateProductId = async (Product) => {
 
 const create_product = async (req, res) => {
   const { Product } = getModel();
-  const { Name, Author, Description, Price, Photo_Id, Category_Id } = req.body;
+  const { Name, Author, Description, Price, Photo_Id, Category_Id, Photo_URL } = req.body;
 
   // Validate fields using helper function
   const validation = validateProductFields(req.body, false);
@@ -209,16 +210,19 @@ const create_product = async (req, res) => {
       // Auto generate Product_Id
       const Product_Id = await generateProductId(Product);
 
-      const product = await Product.create({
+      const form = {
         Product_Id,
         Name,
         Author,
         Description,
         Price,
-        Photo_Id,
-        Category_Id,
+        Photo_Id: Photo_Id || null,
+        Photo_URL: Photo_URL || null,
+        Category_Id: Category_Id || null,
         created_at: new Date()
-      }, { transaction: t });
+      };
+
+      const product = await Product.create(form, { transaction: t });
 
       // create initial stock record with quantity 0
       const { Stock } = getModel();
@@ -236,7 +240,7 @@ const create_product = async (req, res) => {
   }
 };
 
-const delete_product = (req, res) => {
+const delete_product = async (req, res) => {
   const { Product } = getModel();
   const productId = req.params.id;
 
@@ -244,17 +248,24 @@ const delete_product = (req, res) => {
     return res.status(400).json({ error: "Product ID is required" });
   }
 
-  Product.destroy({ where: { Product_Id: productId } })
-    .then((deletedRows) => {
-      if (deletedRows === 0) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-      res.json({ message: "Product deleted successfully" });
-    })
-    .catch((err) => {
-      console.error("Error deleting product:", err);
-      res.status(500).json({ error: "Internal server error" });
-    });
+  const product = await Product.findOne({ where: { Product_Id: productId } });
+  if(!product) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  // delete Photo from Cloudinary if exists
+  await deleteImageHelper(product.Photo_Id);
+
+  try {
+    const deletedCount = await Product.destroy({ where: { Product_Id: productId } });
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting product:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 export { create_product, delete_product, get_products, update_product };

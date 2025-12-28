@@ -1,6 +1,6 @@
 import cloudinary from 'cloudinary';
-import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAME } from '../config/env.js';
 import { getModel } from '../config/database.js';
+import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAME } from '../config/env.js';
 
 cloudinary.v2.config({ 
     cloud_name: CLOUDINARY_NAME, 
@@ -12,19 +12,12 @@ const uploadImage = async (req, res) => {
     try {
         const { Product } = getModel();
         const productId = req.body.productId;
-
-        if(!productId) {
-            return res.status(400).json({ error: "Product ID is required" });
-        }
-        const product = await Product.findOne({ where: { Product_Id: productId } });
-
-        if(!product) {
-            return res.status(404).json({ error: "Product not found" });
-        }
-
-        // check frist if product already has an image, if so delete it from cloudinary
-        if(product.Photo_Id) {
-            await cloudinary.v2.uploader.destroy(product.Photo_Id);
+        let product;
+        if(productId !== "null" || productId !== null && !productId) {
+            product = await Product.findOne({ where: { Product_Id: productId } });
+            if(product && product.Photo_Id) {
+              await cloudinary.v2.uploader.destroy(product.Photo_Id);
+            }
         }
         
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -32,13 +25,16 @@ const uploadImage = async (req, res) => {
               const imageUrl = result.secure_url; 
               const publicId = result.public_id;
 
-              product.Photo_URL = imageUrl;
-              product.Photo_Id = publicId;
-              await product.save();
+              if(product) {
+                product.Photo_URL = imageUrl;
+                product.Photo_Id = publicId;
+                await product.save();
+              }
 
               res.status(200).json({ 
                 message: "Image uploaded successfully", 
                 imageUrl: imageUrl,
+                publicId: publicId
               });
           }
         );
@@ -51,4 +47,39 @@ const uploadImage = async (req, res) => {
     }
 };
 
-export { uploadImage };
+const deleteImage = async (req, res) => {
+    try {
+        const { Product } = getModel();
+        const { productId } = req.body;
+
+        if(!productId) {
+            return res.status(400).json({ error: "Product ID is required" });
+        }
+        const product = await Product.findOne({ where: { Product_Id: productId } });
+
+        if(!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        if(product.Photo_Id) {
+            await cloudinary.v2.uploader.destroy(product.Photo_Id);
+            product.Photo_URL = null;
+            product.Photo_Id = null;
+            await product.save();
+        }
+
+        res.status(200).json({ message: "Image deleted successfully" });
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).send("Server Error");
+        throw error;
+    }
+};
+
+const deleteImageHelper = async (publicId) => {
+    if(publicId) {
+        await cloudinary.v2.uploader.destroy(publicId);
+    }
+};
+
+export { deleteImage, uploadImage, deleteImageHelper };
