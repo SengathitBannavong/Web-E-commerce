@@ -67,6 +67,8 @@ export const CategoryContextProvider = (props) => {
         name: formData.Name,
         description: formData.Description,
         photoId: formData.Photo_Id || null,
+        Photo_URL: formData.Photo_URL || null,
+        Photo_Id: formData.Photo_Id || null,
       };
       const config = {
         method: 'post',
@@ -95,6 +97,8 @@ export const CategoryContextProvider = (props) => {
         name: formData.Name,
         description: formData.Description,
         photoId: formData.Photo_Id || null,
+        Photo_URL: formData.Photo_URL || null,
+        Photo_Id: formData.Photo_Id || null,
       };
       const id = formData.Category_Id || (selectedCategory && selectedCategory.Category_Id);
       if (!id) {
@@ -151,6 +155,61 @@ export const CategoryContextProvider = (props) => {
     }
   };
 
+  // Upload or delete category image
+  const submitCategoryImage = async ({ image_form, categoryId }) => {
+    if (image_form) {
+      const formData = new FormData();
+      formData.append('image', image_form);
+      formData.append('categoryId', categoryId);
+
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${API}categories/upload-image`,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Content-Type': 'multipart/form-data',
+        },
+        data: formData,
+      };
+
+      try {
+        const response = await axios.request(config);
+        if (response.status === 200) {
+          return response.data;
+        }
+      } catch (error) {
+        console.error('Error uploading category image:', error);
+        toast.error('Failed to upload image. Please try again.');
+        return null;
+      }
+    } else {
+      // delete image
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${API}categories/delete-image`,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        data: JSON.stringify({ categoryId }),
+      };
+
+      try {
+        const response = await axios.request(config);
+        if (response.status === 200) {
+          return { imageUrl: null };
+        }
+      } catch (error) {
+        console.error('Error deleting category image:', error);
+        toast.error('Failed to delete image. Please try again.');
+        return null;
+      }
+    }
+    return null;
+  };
+
   const contextValue = {
     categories,
     selectedCategory,
@@ -158,6 +217,7 @@ export const CategoryContextProvider = (props) => {
     handleAddCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    submitCategoryImage,
     searchName,
     setSearchName,
     sortOrder,

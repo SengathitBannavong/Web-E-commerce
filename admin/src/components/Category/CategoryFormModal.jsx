@@ -1,10 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HiTrash, HiXMark } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
+import { useCategoryContext } from '../../contexts/CategoryContext.jsx';
 import ConfirmDialog from '../ConfirmDialog.jsx';
 
 function CategoryFormModal({ isOpen, onClose, onSubmit, onDelete, category, mode = 'add' }) {
-  const [formData, setFormData] = useState({ Name: '', Description: '', Photo_Id: '' });
+  const [formData, setFormData] = useState({ Name: '', Description: '', Photo_Id: '', Photo_URL: '' });
+  const [photoImageForm, setPhotoImageForm] = useState(null);
+  const fileInputRef = useRef(null);
+  const { submitCategoryImage } = useCategoryContext();
+  const uploadPromiseRef = useRef(null);
+  const lastUploadResultRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -13,9 +20,12 @@ function CategoryFormModal({ isOpen, onClose, onSubmit, onDelete, category, mode
         Name: category.Name || '',
         Description: category.Description || '',
         Photo_Id: category.Photo_Id || '',
+        Photo_URL: category.Photo_URL || '',
       });
+      setPhotoImageForm(category.Photo_URL || '');
     } else {
-      setFormData({ Name: '', Description: '', Photo_Id: '' });
+      setFormData({ Name: '', Description: '', Photo_Id: '', Photo_URL: '' });
+      setPhotoImageForm(null);
     }
   }, [mode, category, isOpen]);
 
@@ -29,23 +39,48 @@ function CategoryFormModal({ isOpen, onClose, onSubmit, onDelete, category, mode
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.Name) {
       toast.error('Please provide a category name.');
       return;
     }
+
+    // If there is an ongoing upload, wait for it to finish
+    if (uploadPromiseRef.current) {
+      setIsUploading(true);
+      try {
+        const res = await uploadPromiseRef.current;
+        lastUploadResultRef.current = res;
+      } catch (err) {
+        // ignore, submit will proceed with existing data
+      } finally {
+        uploadPromiseRef.current = null;
+        setIsUploading(false);
+      }
+    }
+
+    // incorporate any final upload result into the payload
+    const finalPhotoId = lastUploadResultRef.current ? lastUploadResultRef.current.publicId : formData.Photo_Id || null;
+    const finalPhotoUrl = lastUploadResultRef.current ? lastUploadResultRef.current.imageUrl : formData.Photo_URL || null;
+
     const cleaned = {
       Name: formData.Name,
       Description: formData.Description || null,
-      Photo_Id: formData.Photo_Id || null,
+      Photo_Id: finalPhotoId,
+      Photo_URL: finalPhotoUrl,
     };
+
     if (mode === 'edit' && category) {
       onSubmit({ ...cleaned, Category_Id: category.Category_Id });
     } else {
       onSubmit(cleaned);
     }
-    setFormData({ Name: '', Description: '', Photo_Id: '' });
+
+    lastUploadResultRef.current = null;
+    uploadPromiseRef.current = null;
+    setFormData({ Name: '', Description: '', Photo_Id: '', Photo_URL: '' });
+    setPhotoImageForm(null);
     onClose();
   };
 
@@ -79,12 +114,80 @@ function CategoryFormModal({ isOpen, onClose, onSubmit, onDelete, category, mode
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Photo ID</label>
-            <input name="Photo_Id" value={formData.Photo_Id} onChange={handleChange} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Photo</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              name="image"
+              onChange={async (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                // show immediate preview
+                const url = URL.createObjectURL(file);
+                setPhotoImageForm(url);
+
+                // start upload and track promise/result
+                setIsUploading(true);
+                const promise = submitCategoryImage({ image_form: file, categoryId: category ? category.Category_Id : null });
+                uploadPromiseRef.current = promise;
+                try {
+                  const ret = await promise;
+                  lastUploadResultRef.current = ret;
+                  if (ret && ret.imageUrl) setPhotoImageForm(ret.imageUrl);
+                  // update formData with returned publicId/url
+                  if (ret) {
+                    setFormData(prev => ({ ...prev, Photo_URL: ret.imageUrl || null, Photo_Id: ret.publicId || null }));
+                  }
+                } catch (err) {
+                  console.error('Category image upload failed', err);
+                } finally {
+                  uploadPromiseRef.current = null;
+                  setIsUploading(false);
+                }
+              }}
+              className="hidden"
+            />
+
+            <div className="mt-2">
+              {photoImageForm ? (
+                <div className="flex items-start gap-3">
+                  <img
+                    src={photoImageForm instanceof File ? URL.createObjectURL(photoImageForm) : photoImageForm}
+                    alt="category"
+                    className="w-28 h-28 object-cover rounded-md cursor-pointer border"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()} className="px-3 py-2 bg-slate-100 rounded-md text-sm text-slate-700">Change</button>
+                    <button type="button" onClick={async () => {
+                      setPhotoImageForm(null);
+                      setFormData(prev => ({ ...prev, Photo_URL: null, Photo_Id: null }));
+                      setIsUploading(true);
+                      const p = submitCategoryImage({ image_form: null, categoryId: category ? category.Category_Id : null });
+                      uploadPromiseRef.current = p;
+                       try { 
+                        await p;
+                        lastUploadResultRef.current = null; 
+                      } catch (e) {
+                         console.error(e); 
+                      } finally {
+                        uploadPromiseRef.current = null;
+                        setIsUploading(false); 
+                      } 
+                    }} className="px-3 py-2 bg-rose-50 text-rose-600 rounded-md text-sm">Remove</button>
+                  </div>
+                </div>
+              ) : (
+                <div onClick={() => fileInputRef.current && fileInputRef.current.click()} className="w-28 h-28 border border-dashed border-slate-300 rounded-md flex items-center justify-center text-slate-400 cursor-pointer">Click to upload</div>
+              )}
+            </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button type="submit" className="flex-1 px-2 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg">{mode === 'edit' ? 'Update' : 'Add'}</button>
+            <div className="flex gap-3 pt-4">
+            <button disabled={isUploading} type="submit" className={`flex-1 px-2 py-2 ${isUploading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'} font-semibold rounded-lg`}>
+              {isUploading ? 'Uploading...' : (mode === 'edit' ? 'Update' : 'Add')}
+            </button>
             <button type="button" onClick={onClose} className="flex-1 px-2 py-2 border-2 border-slate-200 rounded-lg">Cancel</button>
             {mode === 'edit' && onDelete && (
               <button type="button" onClick={handleDelete} className="px-2 py-2 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-lg flex items-center gap-2">

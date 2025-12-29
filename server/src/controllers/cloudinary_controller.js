@@ -8,7 +8,7 @@ cloudinary.v2.config({
     api_secret: CLOUDINARY_API_SECRET
 });
 
-const uploadImage = async (req, res) => {
+const uploadImage_Product = async (req, res) => {
     try {
         const { Product } = getModel();
         const productId = req.body.productId;
@@ -47,7 +47,7 @@ const uploadImage = async (req, res) => {
     }
 };
 
-const deleteImage = async (req, res) => {
+const deleteImage_Product = async (req, res) => {
     try {
         const { Product } = getModel();
         const { productId } = req.body;
@@ -82,4 +82,72 @@ const deleteImageHelper = async (publicId) => {
     }
 };
 
-export { deleteImage, uploadImage, deleteImageHelper };
+const uploadImage_Category = async (req, res) => {
+    try {
+        const { Category } = getModel();
+        const categoryId = req.body.categoryId;
+        let category;
+        if(categoryId !== "null" || categoryId !== null && !categoryId) {
+            category = await Category.findOne({ where: { Category_Id: categoryId } });
+            if(category && category.Photo_Id) {
+              await cloudinary.v2.uploader.destroy(category.Photo_Id);
+            }
+        }
+        
+        const uploadStream = cloudinary.uploader.upload_stream(
+            async (result) => {
+              const imageUrl = result.secure_url; 
+              const publicId = result.public_id;
+
+              if(category) {
+                category.Photo_URL = imageUrl;
+                category.Photo_Id = publicId;
+                await category.save();
+              }
+
+              res.status(200).json({ 
+                message: "Image uploaded successfully", 
+                imageUrl: imageUrl,
+                publicId: publicId
+              });
+          }
+        );
+
+        uploadStream.end(req.file.buffer);
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).send("Server Error");
+        throw error;
+    }
+};
+
+const deleteImage_Category = async (req, res) => {
+  try {
+        const { Category } = getModel();
+        const { categoryId } = req.body;
+
+        if(!categoryId) {
+            return res.status(400).json({ error: "Category ID is required" });
+        }
+        const category = await Category.findOne({ where: { Category_Id: categoryId } });
+
+        if(!category) {
+            return res.status(404).json({ error: "Category not found" });
+        }
+
+        if(category.Photo_Id) {
+            await cloudinary.v2.uploader.destroy(category.Photo_Id);
+            category.Photo_URL = null;
+            category.Photo_Id = null;
+            await category.save();
+        }
+
+        res.status(200).json({ message: "Image deleted successfully" });
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).send("Server Error");
+        throw error;
+    }
+};
+
+export { deleteImage_Product, uploadImage_Product, deleteImageHelper, uploadImage_Category, deleteImage_Category };

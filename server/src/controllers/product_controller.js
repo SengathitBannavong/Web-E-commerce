@@ -114,7 +114,7 @@ const get_products = (req, res) => {
 };
 
 const update_product = async (req, res) => {
-  const { Product } = getModel();
+  const { Product, Category } = getModel();
   const productId = req.params.id;
 
   if (!productId) {
@@ -122,6 +122,9 @@ const update_product = async (req, res) => {
   }
 
   const { Name, Author, Description, Price, Photo_Id, Category_Id } = req.body;
+
+  const category = await Category.findOne({ where: { Category_Id: Category_Id }});
+  if (!category) return res.status(400).json({ error: 'Category not found' });
 
   // Validate fields using helper function (isUpdate = true)
   const validation = validateProductFields(req.body, true);

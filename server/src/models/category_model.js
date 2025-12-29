@@ -18,6 +18,12 @@ export function Category(sequelize) {
       Photo_Id: {
         type: DataTypes.STRING,
         allowNull: true,
+        field: "Photo_Id",
+      },
+      Photo_URL: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "Photo_URL",
       },
     },
     {

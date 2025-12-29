@@ -15,6 +15,9 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
   const [photoImageForm, setPhotoImageForm] = useState(null);
   const fileInputRef = useRef(null);
   const { submitProductImage } = useProductContext();
+  const uploadPromiseRef = useRef(null);
+  const lastUploadResultRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -60,12 +63,30 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.Name || !formData.Price || !formData.Author) {
       toast.error("Please fill in all required fields.");
       return;
     }
+
+    // wait for pending upload if present
+    if (uploadPromiseRef.current) {
+      setIsUploading(true);
+      try {
+        const res = await uploadPromiseRef.current;
+        lastUploadResultRef.current = res;
+      } catch (err) {
+        // ignore and continue with existing form data
+      } finally {
+        uploadPromiseRef.current = null;
+        setIsUploading(false);
+      }
+    }
+
+    const finalPhotoId = lastUploadResultRef.current ? lastUploadResultRef.current.publicId : formData.Photo_Id || null;
+    const finalPhotoUrl = lastUploadResultRef.current ? lastUploadResultRef.current.imageUrl : formData.Photo_URL || null;
+
     const cleanedData = {
       Name: formData.Name,
       Author: formData.Author,
@@ -73,16 +94,19 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
       Category_Id: formData.Category_Id === '' ? null : parseInt(formData.Category_Id),
       Price: parseFloat(formData.Price),
       Description: formData.Description || null,
-      Photo_Id: formData.Photo_Id || null,
-      Photo_URL: formData.Photo_URL || null,
+      Photo_Id: finalPhotoId,
+      Photo_URL: finalPhotoUrl,
     };
-    
+
     if (mode === 'edit' && product) {
       onSubmit({ ...cleanedData, Product_Id: product.Product_Id, Index: product.Index });
     } else {
       onSubmit(cleanedData);
     }
-    
+
+    lastUploadResultRef.current = null;
+    uploadPromiseRef.current = null;
+
     setFormData({
       Name: '',
       Author: '',
@@ -201,28 +225,30 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                 accept="image/*"
                 name="image"
                 onChange={async (e) => {
-                  const file = e.target.files && e.target.files[0];
-                  if (file) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    // show immediate preview
                     const url = URL.createObjectURL(file);
                     setPhotoImageForm(url);
-                  }
-                  // Summit only the Photo data and product ID
-                  const ret = await submitProductImage({image_form: file, productId: product ? product.Product_Id : null});
-                  if (ret && ret.imageUrl) {
-                    setPhotoImageForm(ret.imageUrl);
-                  }
 
-                  if(ret && !product) {
-                    setFormData(prev => {
-                      return {
-                        ...prev,
-                        Photo_URL: ret.imageUrl,
-                        Photo_Id: ret.publicId
+                    // start upload and track it
+                    setIsUploading(true);
+                    const promise = submitProductImage({image_form: file, productId: product ? product.Product_Id : null});
+                    uploadPromiseRef.current = promise;
+                    try {
+                      const ret = await promise;
+                      lastUploadResultRef.current = ret;
+                      if (ret && ret.imageUrl) setPhotoImageForm(ret.imageUrl);
+                      if (ret) {
+                        setFormData(prev => ({ ...prev, Photo_URL: ret.imageUrl || null, Photo_Id: ret.publicId || null }));
                       }
-                    });
-                  }
-                  
-                }}
+                    } catch (err) {
+                      console.error('Product image upload failed', err);
+                    } finally {
+                      uploadPromiseRef.current = null;
+                      setIsUploading(false);
+                    }
+                  }}
                 className="hidden"
               />
 
@@ -247,7 +273,19 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
                         type="button"
                         onClick={async () => { 
                           setPhotoImageForm(null);
-                          await submitProductImage({image_form: null, productId: product ? product.Product_Id : null});
+                          setFormData(prev => ({ ...prev, Photo_URL: null, Photo_Id: null }));
+                          setIsUploading(true);
+                          const p = submitProductImage({image_form: null, productId: product ? product.Product_Id : null});
+                          uploadPromiseRef.current = p;
+                          try { 
+                            await p;
+                            lastUploadResultRef.current = null;
+                          } catch (e) {
+                             console.error(e); 
+                          } finally {
+                            uploadPromiseRef.current = null;
+                            setIsUploading(false); 
+                          }
                         }}
                         className="px-3 py-2 bg-rose-50 text-rose-600 rounded-md text-sm"
                       >
@@ -284,10 +322,11 @@ function ProductFormModal({ isOpen, onClose, onSubmit, onDelete, product, mode =
             {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
+              disabled={isUploading}
               type="submit"
-              className="flex-1 px-2 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-md hover:shadow-indigo-500/30 transition-all"
+              className={`flex-1 px-2 py-2 ${isUploading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'} font-semibold rounded-lg hover:shadow-md hover:shadow-indigo-500/30 transition-all`}
             >
-              {mode === 'edit' ? 'Update' : 'Add'}
+              {isUploading ? 'Uploading...' : (mode === 'edit' ? 'Update' : 'Add')}
             </button>
             <button
               type="button"

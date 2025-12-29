@@ -116,7 +116,7 @@ export const ProductContextProvider = (props) => {
       }
     } catch (error) {
       console.error('Error updating product:', error);
-      toast.error('Failed to update product. Please try again.');
+      toast.error('Failed to update product: ' + (error.response?.data?.error || error.message));
     } finally {
       setSelectedProduct(null);
     }
