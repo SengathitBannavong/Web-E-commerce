@@ -6,7 +6,7 @@ import { useStoreContext } from '../contexts/StoreContext.jsx';
 
 function Login() {
   const navigate = useNavigate();
-  const { API, setAppToken, token, setAdminName, setAdminEmail } = useStoreContext();
+  const { API, setAppToken, token, setAdminName, setAdminEmail, setAdminProfileUrl } = useStoreContext();
 
   useEffect(() => {
     if (token) navigate('/');
@@ -40,8 +40,10 @@ function Login() {
       const token = res?.data?.token || res?.data?.accessToken || null;
       const adminName = res?.data?.user.Name || 'Admin';
       const adminEmail = res?.data?.user.Email || email;
+      const adminProfileUrl = res?.data?.user.Profile_URL || '';
       setAdminName(adminName);
       setAdminEmail(adminEmail);
+      setAdminProfileUrl(adminProfileUrl);
       if (token) {
         // store token in app memory only
         setAppToken(token);

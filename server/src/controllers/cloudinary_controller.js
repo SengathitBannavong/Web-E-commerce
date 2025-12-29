@@ -139,8 +139,8 @@ const uploadImage_User = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        if (user.Photo_Id) {
-            await cloudinary.v2.uploader.destroy(user.Photo_Id);
+        if (user.Profile_Id) {
+            await cloudinary.v2.uploader.destroy(user.Profile_Id);
         }
 
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -148,8 +148,8 @@ const uploadImage_User = async (req, res) => {
               const imageUrl = result.secure_url;
               const publicId = result.public_id;
 
-              user.Photo_URL = imageUrl;
-              user.Photo_Id = publicId;
+              user.Profile_URL = imageUrl;
+              user.Profile_Id = publicId;
               await user.save();
 
               res.status(200).json({
@@ -182,10 +182,10 @@ const deleteImage_User = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        if (user.Photo_Id) {
-            await cloudinary.v2.uploader.destroy(user.Photo_Id);
-            user.Photo_URL = null;
-            user.Photo_Id = null;
+        if (user.Profile_Id) {
+            await cloudinary.v2.uploader.destroy(user.Profile_Id);
+            user.Profile_URL = null;
+            user.Profile_Id = null;
             await user.save();
         }
 

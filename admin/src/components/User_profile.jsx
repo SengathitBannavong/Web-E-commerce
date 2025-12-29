@@ -6,7 +6,7 @@ function User_profile() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigate = useNavigate();
-  const { clearAppToken, adminName, adminEmail } = useStoreContext();
+  const { clearAppToken, adminName, adminEmail, adminProfileUrl } = useStoreContext();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -44,7 +44,7 @@ function User_profile() {
         <div className="w-10 h-10 flex items-center justify-center relative">
           <img
             className="rounded-full object-cover w-full h-full ring-2 ring-indigo-500/20"
-            src="https://avatars.steamstatic.com/8ca65718782d736967caa829fe58ee2a12a19dec_full.jpg"
+            src={adminProfileUrl || "https://avatars.steamstatic.com/8ca65718782d736967caa829fe58ee2a12a19dec_full.jpg"}
             alt="User avatar"
           />
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>

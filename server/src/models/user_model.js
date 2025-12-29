@@ -51,15 +51,15 @@ export const User = (sequelize) => {
       defaultValue: 0,
       field: "Role",
     },
-    Photo_Id: {
+    Profile_Id: {
       type: DataTypes.STRING,
       allowNull: true,
-      field: "Photo_Id",
+      field: "Profile_Id",
     },
-    Photo_URL: {
+    Profile_URL: {
       type: DataTypes.STRING,
       allowNull: true,
-      field: "Photo_URL",
+      field: "Profile_URL",
     },
     created_at: {
       type: DataTypes.DATE,

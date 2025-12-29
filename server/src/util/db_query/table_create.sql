@@ -8,8 +8,8 @@ CREATE TABLE "User" (
   "PhoneNumber" varchar(256) NOT NULL,
   "Gender" varchar(32) NOT NULL,
   "Role" INTEGER NOT NULL DEFAULT 0,
-  "Photo_Id" varchar,
-  "Photo_URL" varchar,
+  "Profile_Id" varchar,
+  "Profile_URL" varchar,
   "created_at" timestamp
 );
 
