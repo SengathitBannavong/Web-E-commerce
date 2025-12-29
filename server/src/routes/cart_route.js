@@ -30,7 +30,7 @@ cart_router.get("/summary", getCartSummary);
 cart_router.delete("/clear", delete_all_cart_items);
 
 // ==================== CART ITEM ROUTES ====================
-cart_router.get("/items", get_all_details_cart_by_user_id);
+cart_router.get("/details", get_all_details_cart_by_user_id);
 cart_router.post("/items/:productId", create_cart_item); 
 cart_router.put("/items/:productId", update_cart_item);
 cart_router.delete("/items/:productId", delete_cart_item);

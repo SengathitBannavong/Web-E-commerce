@@ -10,6 +10,7 @@ export const StoreContextProvider = (props) => {
   const [token, setToken] = useState(null);
   const [adminName, setAdminName] = useState('Admin');
   const [adminEmail, setAdminEmail] = useState('');
+  const [adminProfileUrl, setAdminProfileUrl] = useState('');
 
   const setAppToken = (t) => {
     setToken(t);
@@ -28,6 +29,8 @@ export const StoreContextProvider = (props) => {
     setAdminName,
     adminEmail,
     setAdminEmail,
+    adminProfileUrl,
+    setAdminProfileUrl,
   };
 
   return (

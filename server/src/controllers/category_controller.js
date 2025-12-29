@@ -48,14 +48,13 @@ const getCategories = async (req, res) => {
 
 const createCategory = async (req, res) => {
     const { Category } = getModel();
-    const { name, description } = req.body;
-
+    const { name, description, Photo_Id, Photo_URL } = req.body;
     if (!name) {
         return res.status(400).json({ error: "Category name is required" });
     }
 
     try {
-        const newCategory = await Category.create({ Name: name, Description: description });
+        const newCategory = await Category.create({ Name: name, Description: description, Photo_Id, Photo_URL });
         const res_ = {
           message: "Category created successfully",
           id: newCategory.Category_Id
@@ -73,7 +72,7 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
     const { Category } = getModel();
     const id = req.params.id || req.query.id;
-    const { name, description,photoId } = req.body;
+    const { name, description,Photo_Id, Photo_URL } = req.body;
 
     if (!id) {
         return res.status(400).json({ error: "Category ID is required" });
@@ -87,7 +86,8 @@ const updateCategory = async (req, res) => {
 
       category.Name = name || category.Name;
       category.Description = description ||  category.Description;
-      category.Photo_Id = photoId || category.Photo_Id;
+      category.Photo_Id = Photo_Id || category.Photo_Id;
+      category.Photo_URL = Photo_URL || category.Photo_URL;
       await category.save();
       res.json({ message: `Category with ID ${id} updated successfully` });
     } catch (e) {

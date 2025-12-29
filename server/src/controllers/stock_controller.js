@@ -22,7 +22,8 @@ const get_all_stocks = async (req, res) => {
             'updated_at',
             [Stock.sequelize.col('product.Product_Id'), 'Product_Id'],
             [Stock.sequelize.col('product.Name'), 'Product_Name'],
-            [Stock.sequelize.col('product.Price'), 'Product_Price']
+            [Stock.sequelize.col('product.Price'), 'Product_Price'],
+            [Stock.sequelize.col('product.Photo_URL'), 'Photo_URL']
           ],
           include: [{
             model: Product,
@@ -193,11 +194,16 @@ const update_stock_quantity = async (req, res) => {
  */
 const delete_stock = async (req, res) => {
     try {
-        const { Stock } = getModel();
+        const { Stock, Product } = getModel();
         const productId = req.params.productId;
         
         if (!productId) {
             return res.status(400).json({ error: "Product ID is required" });
+        }
+
+        const product = await Product.findOne({ where: { Product_Id: productId } });
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
         }
         
         const deletedCount = await Stock.destroy({ where: { Product_Index: product.Index } });

@@ -40,6 +40,11 @@ export const Product = (sequelize) => {
       allowNull: true,
       field: "Photo_Id",
     },
+    Photo_URL: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "Photo_URL",
+    },
     Category_Id: {
       type: DataTypes.INTEGER,
       allowNull: true,

@@ -15,6 +15,10 @@ function TableCell({ column, item, shouldHideColumn, rowIndex = 0, page = 1, lim
     if(col.key === 'Role') {
       return item[col.key] === "admin" ? <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">Admin</span> : <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">User</span>;
     }
+
+    if(col.key === 'Photo_URL') {
+      return item[col.key] ? <img src={item[col.key]} alt="Product" className="w-16 h-16 object-cover rounded-md" /> : <img src={"https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png"} alt="Simple Product" className="w-16 h-16 object-cover rounded-md"/>;
+    }
     return item[col.key];
   };
 

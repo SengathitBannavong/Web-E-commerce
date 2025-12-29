@@ -481,13 +481,13 @@ async function main() {
     await createStocks();
     await delay(500);
     
-    await createCarts();
-    await delay(500);
+    // await createCarts();
+    // await delay(500);
     
-    await createOrders();
-    await delay(500);
+    // await createOrders();
+    // await delay(500);
     
-    await createPayments();
+    // await createPayments();
     
     console.log('\n[DONE] Mock data initialization completed!');
     console.log('\nSummary:');

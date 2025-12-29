@@ -51,6 +51,16 @@ export const User = (sequelize) => {
       defaultValue: 0,
       field: "Role",
     },
+    Profile_Id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "Profile_Id",
+    },
+    Profile_URL: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "Profile_URL",
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

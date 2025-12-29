@@ -26,11 +26,11 @@ function Products() {
 
   const columns = [
     { key: 'Index', label: 'Index' },
+    { key: 'Photo_URL', label: 'Photo' },
     { key: 'Product_Id', label: 'Product ID' },
     { key: 'Name', label: 'Name' },
     { key: 'Description', label: 'Description' },
     { key: 'Price', label: 'Price' },
-    { key: 'Photo_Id', label: 'Photo ID' },
     { key: 'Category_Id', label: 'Category' },
     { key: 'created_at', label: 'Created At' },
   ];
