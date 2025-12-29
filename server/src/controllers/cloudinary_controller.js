@@ -13,10 +13,10 @@ const uploadImage_Product = async (req, res) => {
         const { Product } = getModel();
         const productId = req.body.productId;
         let product;
-        if(productId !== "null" || productId !== null && !productId) {
+        if (productId && productId !== "null") {
             product = await Product.findOne({ where: { Product_Id: productId } });
-            if(product && product.Photo_Id) {
-              await cloudinary.v2.uploader.destroy(product.Photo_Id);
+            if (product && product.Photo_Id) {
+                await cloudinary.v2.uploader.destroy(product.Photo_Id);
             }
         }
         
@@ -87,10 +87,10 @@ const uploadImage_Category = async (req, res) => {
         const { Category } = getModel();
         const categoryId = req.body.categoryId;
         let category;
-        if(categoryId !== "null" || categoryId !== null && !categoryId) {
+        if (categoryId && categoryId !== "null") {
             category = await Category.findOne({ where: { Category_Id: categoryId } });
-            if(category && category.Photo_Id) {
-              await cloudinary.v2.uploader.destroy(category.Photo_Id);
+            if (category && category.Photo_Id) {
+                await cloudinary.v2.uploader.destroy(category.Photo_Id);
             }
         }
         
@@ -114,6 +114,82 @@ const uploadImage_Category = async (req, res) => {
         );
 
         uploadStream.end(req.file.buffer);
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).send("Server Error");
+        throw error;
+    }
+};
+
+const uploadImage_User = async (req, res) => {
+    try {
+        const { User } = getModel();
+        const userId = req.body.userId || req.userId;
+
+        if (!userId || userId === "null") {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ error: "Image file is required" });
+        }
+
+        const user = await User.findOne({ where: { User_Id: userId } });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.Photo_Id) {
+            await cloudinary.v2.uploader.destroy(user.Photo_Id);
+        }
+
+        const uploadStream = cloudinary.uploader.upload_stream(
+            async (result) => {
+              const imageUrl = result.secure_url;
+              const publicId = result.public_id;
+
+              user.Photo_URL = imageUrl;
+              user.Photo_Id = publicId;
+              await user.save();
+
+              res.status(200).json({
+                message: "Image uploaded successfully",
+                imageUrl: imageUrl,
+                publicId: publicId
+              });
+          }
+        );
+
+        uploadStream.end(req.file.buffer);
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).send("Server Error");
+        throw error;
+    }
+};
+
+const deleteImage_User = async (req, res) => {
+    try {
+        const { User } = getModel();
+        const userId = req.body.userId || req.userId;
+
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+        const user = await User.findOne({ where: { User_Id: userId } });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.Photo_Id) {
+            await cloudinary.v2.uploader.destroy(user.Photo_Id);
+            user.Photo_URL = null;
+            user.Photo_Id = null;
+            await user.save();
+        }
+
+        res.status(200).json({ message: "Image deleted successfully" });
     } catch (error) {
         console.log("Error:", error);
         res.status(500).send("Server Error");
@@ -150,4 +226,5 @@ const deleteImage_Category = async (req, res) => {
     }
 };
 
-export { deleteImage_Product, uploadImage_Product, deleteImageHelper, uploadImage_Category, deleteImage_Category };
+export { deleteImage_Category, deleteImage_Product, deleteImage_User, deleteImageHelper, uploadImage_Category, uploadImage_Product, uploadImage_User };
+

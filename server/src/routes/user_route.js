@@ -1,4 +1,5 @@
 import express from "express";
+import { deleteImage_User, uploadImage_User } from "../controllers/cloudinary_controller.js";
 import {
   change_password_admin,
   change_password_self,
@@ -11,6 +12,7 @@ import {
 } from "../controllers/user_controller.js";
 import { adminMiddleware } from "../middleware/admin.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { upload } from '../middleware/photo_upload.js';
 
 const user_router = express.Router();
 
@@ -22,6 +24,8 @@ user_router.post("/login", login_user);
 user_router.get("/me", authMiddleware, get_current_user);
 user_router.put("/me", authMiddleware, update_user); // User can update own profile
 user_router.post("/change_password", authMiddleware, change_password_self); // User change own password
+user_router.post('/me/upload-profile', authMiddleware, upload.single('image'), uploadImage_User);
+user_router.post('/me/delete-profile', authMiddleware, deleteImage_User);
 
 // ==================== ADMIN ROUTES ====================
 user_router.get("/admin/check", authMiddleware, adminMiddleware, (req, res) => {
