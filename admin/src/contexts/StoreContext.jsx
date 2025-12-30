@@ -4,8 +4,7 @@ const StoreContext = createContext(null);
 
 export const StoreContextProvider = (props) => {
   // Define any global state and constants here
-  const API = 'http://localhost:3000/api/';
-
+  const API = import.meta.env.VITE_API_BASE || 'http://localhost:3000/api/';
   // Token stored only in memory (app state) per requirement
   const [token, setToken] = useState(null);
   const [adminName, setAdminName] = useState('Admin');
