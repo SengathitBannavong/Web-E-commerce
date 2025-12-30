@@ -47,6 +47,13 @@ function ProductHeader({ openAddModal }) {
         <ProductAction
           openAddModal={openAddModal}
         />
+
+        <button
+          onClick={() => fetchProducts()}
+          className="px-3 py-1 bg-white border rounded"
+        >
+          Refresh
+        </button>
       </div>
     </div>
   );

@@ -1,12 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useStockContext } from '../../contexts/StockContext.jsx';
 import StockAction from './StockAction';
 
 function StockHeader({ openAddModal }) {
-  const { setPage } = useStockContext();
+  const { setPage, filter, setFilter } = useStockContext();
 
-  const applyFilters = () => {
+  const refresh = () => {
     setPage(1);
+  };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const onFilterChange = (e) => {
+    const v = e.target.value || '';
+    setFilter(v);
+    setPage(1);
+
+    // remove filter param from URL and reset page to 1
+    const np = new URLSearchParams(searchParams.toString());
+    np.delete('filter');
+    np.set('filter', v);
+    setSearchParams(np, { replace: true });
   };
 
   return (
@@ -17,8 +29,14 @@ function StockHeader({ openAddModal }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button onClick={applyFilters} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-md transition-all">Filter</button>
+        <select value={filter || ''} onChange={onFilterChange} className="border rounded px-3 py-1 outline-none">
+          <option value="">All</option>
+          <option value="low">Low</option>
+          <option value="out">Out</option>
+        </select>
+
         <StockAction openAddModal={openAddModal} />
+        <button onClick={refresh} className="px-3 py-1 bg-white border rounded">Refresh</button>
       </div>
     </div>
   );

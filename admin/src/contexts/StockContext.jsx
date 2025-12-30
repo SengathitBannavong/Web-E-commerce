@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useStoreContext } from './StoreContext.jsx';
 
@@ -14,11 +14,15 @@ export const StockContextProvider = (props) => {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
-  const fetchStocks = async () => {
-    const q = new URLSearchParams({ limit: String(limit), page: String(page) });
-    if (filter) q.set('filter', filter);
+  const fetchStocks = async (overrides = {}) => {
+    const p = overrides.page ?? page;
+    const l = overrides.limit ?? limit;
+    const f = overrides.filter ?? filter;
+    const q = new URLSearchParams({ limit: String(l), page: String(p) });
+    if (f) q.set('filter', f);
     const url = `${API}stocks/?${q.toString()}`;
-    const config = { method: 'get', maxBodyLength: Infinity, url, headers: token ? { Authorization: `Bearer ${token}` } : {} };
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const config = { method: 'get', maxBodyLength: Infinity, url, headers };
     try {
       const response = await axios.request(config);
       const resData = response.data || {};
@@ -32,7 +36,14 @@ export const StockContextProvider = (props) => {
     }
   };
 
-  useEffect(() => { fetchStocks(); }, [page, limit, token, filter]);
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    fetchStocks();
+  }, [page, limit, filter]);
 
   useEffect(() => {
     const resData = allStocks || {};

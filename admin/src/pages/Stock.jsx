@@ -26,16 +26,15 @@ function Stock() {
   } = useStockContext();
 
   const [searchParams] = useSearchParams();
+
   useEffect(() => {
     const q = searchParams.get('filter') || '';
-    // apply query filter to context
     if (q !== filter) {
       setFilter(q);
       setPage(1);
-      // call fetch directly with override so first API call uses URL filter
-      try { fetchStocks({ filter: q }); } catch (e) { /* ignore */ }
+      try { fetchStocks({ filter: q, page: 1, limit }); } catch (e) { /* ignore */ }
     }
-  }, [searchParams, filter, setFilter, setPage]);
+  }, [searchParams, filter, limit]);
 
   const columns = [
     { key: 'Index', label: 'Index' },
