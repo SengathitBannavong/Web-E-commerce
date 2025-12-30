@@ -24,17 +24,12 @@ app.use(
 
 app.use(express.json());
 
-// Health check endpoint for Railway/monitoring
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
-});
-
-app.get("/", (req, res) => {
-  res.send("Hello, Server is running");
 });
 
 app.use("/api/users", user_router);
