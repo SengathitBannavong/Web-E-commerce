@@ -54,6 +54,7 @@ jobs:
             podman run -d \
             --name web-e-commerce-server \
             --restart always \
+            --network ecommerce-net \
             -p 3000:3000 \
             -m 512m \
             --memory-reservation 256m \
