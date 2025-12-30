@@ -1,18 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useStockContext } from '../../contexts/StockContext.jsx';
 import StockAction from './StockAction';
 
 function StockHeader({ openAddModal }) {
-  const { minQuantity, setMinQuantity, maxQuantity, setMaxQuantity, setPage } = useStockContext();
-  const [minVal, setMinVal] = useState(minQuantity || '');
-  const [maxVal, setMaxVal] = useState(maxQuantity || '');
+  const { setPage, filter, setFilter } = useStockContext();
 
-  useEffect(() => { setMinVal(minQuantity || ''); setMaxVal(maxQuantity || ''); }, [minQuantity, maxQuantity]);
-
-  const applyFilters = () => {
+  const refresh = () => {
     setPage(1);
-    setMinQuantity(minVal === '' ? '' : String(minVal));
-    setMaxQuantity(maxVal === '' ? '' : String(maxVal));
+  };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const onFilterChange = (e) => {
+    const v = e.target.value || '';
+    setFilter(v);
+    setPage(1);
+
+    // remove filter param from URL and reset page to 1
+    const np = new URLSearchParams(searchParams.toString());
+    np.delete('filter');
+    np.set('filter', v);
+    setSearchParams(np, { replace: true });
   };
 
   return (
@@ -23,11 +29,14 @@ function StockHeader({ openAddModal }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <input type="number" placeholder="Min qty" value={minVal} onChange={(e) => setMinVal(e.target.value)} className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200" />
-        <input type="number" placeholder="Max qty" value={maxVal} onChange={(e) => setMaxVal(e.target.value)} className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200" />
+        <select value={filter || ''} onChange={onFilterChange} className="border rounded px-3 py-1 outline-none">
+          <option value="">All</option>
+          <option value="low">Low</option>
+          <option value="out">Out</option>
+        </select>
 
-        <button onClick={applyFilters} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-md transition-all">Filter</button>
         <StockAction openAddModal={openAddModal} />
+        <button onClick={refresh} className="px-3 py-1 bg-white border rounded">Refresh</button>
       </div>
     </div>
   );

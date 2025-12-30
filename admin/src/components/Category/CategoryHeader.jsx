@@ -51,6 +51,13 @@ function CategoryHeader({ openAddModal }) {
         </button>
 
         <CategoryAction openAddModal={openAddModal} />
+
+        <button
+          onClick={() => fetchCategories()}
+          className="px-3 py-1 bg-white border rounded"
+        >
+          Refresh
+        </button>
       </div>
     </div>
   );

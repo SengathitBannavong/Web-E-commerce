@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import StockBody from '../components/Stock/StockBody';
 import StockFormModal from '../components/Stock/StockFormModal.jsx';
 import StockHeader from '../components/Stock/StockHeader';
@@ -19,7 +20,21 @@ function Stock() {
     setPage,
     limit,
     setLimit,
+    filter,
+    setFilter,
+    fetchStocks,
   } = useStockContext();
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const q = searchParams.get('filter') || '';
+    if (q !== filter) {
+      setFilter(q);
+      setPage(1);
+      try { fetchStocks({ filter: q, page: 1, limit }); } catch (e) { /* ignore */ }
+    }
+  }, [searchParams, filter, limit]);
 
   const columns = [
     { key: 'Index', label: 'Index' },

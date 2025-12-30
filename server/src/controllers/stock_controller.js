@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { getModel } from "../config/database.js";
 
 /**
@@ -10,9 +11,23 @@ const get_all_stocks = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
+        const filter = req.query.filter || null;
 
-        const total = await Stock.count();
-        
+        // build filter WHERE clause based on query param
+        const LOW_THRESHOLD = 5;
+        const where = {};
+        if (filter === 'low') {
+            where.Quantity = { [Op.lte]: LOW_THRESHOLD };
+        } else if (filter === 'out') {
+            where.Quantity = { [Op.lte]: 0 };
+        } else if (filter && /^\d+$/.test(filter)) {
+            // numeric filter: return items with quantity <= provided number
+            // example: ?filter=20
+            where.Quantity = { [Op.lte]: parseInt(filter, 10) };
+        }
+
+        const total = await Stock.count({ where });
+
         const result = await Stock.findAll({
           attributes: [
             'Stock_Id',
@@ -31,6 +46,7 @@ const get_all_stocks = async (req, res) => {
             attributes: [],
             required: false 
           }],
+          where,
           limit: parseInt(limit),
           offset: parseInt(offset),
           subQuery: false,
