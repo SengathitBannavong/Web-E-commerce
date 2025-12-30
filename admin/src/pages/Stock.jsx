@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import StockBody from '../components/Stock/StockBody';
 import StockFormModal from '../components/Stock/StockFormModal.jsx';
 import StockHeader from '../components/Stock/StockHeader';
@@ -19,7 +20,22 @@ function Stock() {
     setPage,
     limit,
     setLimit,
+    filter,
+    setFilter,
+    fetchStocks,
   } = useStockContext();
+
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get('filter') || '';
+    // apply query filter to context
+    if (q !== filter) {
+      setFilter(q);
+      setPage(1);
+      // call fetch directly with override so first API call uses URL filter
+      try { fetchStocks({ filter: q }); } catch (e) { /* ignore */ }
+    }
+  }, [searchParams, filter, setFilter, setPage]);
 
   const columns = [
     { key: 'Index', label: 'Index' },

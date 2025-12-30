@@ -3,16 +3,10 @@ import { useStockContext } from '../../contexts/StockContext.jsx';
 import StockAction from './StockAction';
 
 function StockHeader({ openAddModal }) {
-  const { minQuantity, setMinQuantity, maxQuantity, setMaxQuantity, setPage } = useStockContext();
-  const [minVal, setMinVal] = useState(minQuantity || '');
-  const [maxVal, setMaxVal] = useState(maxQuantity || '');
-
-  useEffect(() => { setMinVal(minQuantity || ''); setMaxVal(maxQuantity || ''); }, [minQuantity, maxQuantity]);
+  const { setPage } = useStockContext();
 
   const applyFilters = () => {
     setPage(1);
-    setMinQuantity(minVal === '' ? '' : String(minVal));
-    setMaxQuantity(maxVal === '' ? '' : String(maxVal));
   };
 
   return (
@@ -23,9 +17,6 @@ function StockHeader({ openAddModal }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <input type="number" placeholder="Min qty" value={minVal} onChange={(e) => setMinVal(e.target.value)} className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200" />
-        <input type="number" placeholder="Max qty" value={maxVal} onChange={(e) => setMaxVal(e.target.value)} className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200" />
-
         <button onClick={applyFilters} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-md transition-all">Filter</button>
         <StockAction openAddModal={openAddModal} />
       </div>

@@ -10,13 +10,14 @@ export const StockContextProvider = (props) => {
   const [stocks, setStocks] = useState([]);
   const [allStocks, setAllStocks] = useState(null);
   const [selectedStock, setSelectedStock] = useState(null);
-  const [minQuantity, setMinQuantity] = useState('');
-  const [maxQuantity, setMaxQuantity] = useState('');
+  const [filter, setFilter] = useState('');
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
   const fetchStocks = async () => {
-    const url = `${API}stocks/?limit=${limit}&page=${page}`;
+    const q = new URLSearchParams({ limit: String(limit), page: String(page) });
+    if (filter) q.set('filter', filter);
+    const url = `${API}stocks/?${q.toString()}`;
     const config = { method: 'get', maxBodyLength: Infinity, url, headers: token ? { Authorization: `Bearer ${token}` } : {} };
     try {
       const response = await axios.request(config);
@@ -31,26 +32,21 @@ export const StockContextProvider = (props) => {
     }
   };
 
-  useEffect(() => { fetchStocks(); }, [page, limit, token]);
+  useEffect(() => { fetchStocks(); }, [page, limit, token, filter]);
 
-  // compute client-side filtered/sorted stocks from allStocks
   useEffect(() => {
     const resData = allStocks || {};
-    let dataArray = Array.isArray(resData) ? resData : (resData.data && Array.isArray(resData.data) ? resData.data : []);
+    const dataArray = Array.isArray(resData) ? resData : (resData.data && Array.isArray(resData.data) ? resData.data : []);
 
-    // apply quantity filters (client-side only)
-    const minQ = minQuantity === '' ? null : Number(minQuantity);
-    const maxQ = maxQuantity === '' ? null : Number(maxQuantity);
-    if (minQ !== null) {
-      dataArray = dataArray.filter(item => (Number(item.Quantity) || 0) >= minQ);
-    }
-    if (maxQ !== null) {
-      dataArray = dataArray.filter(item => (Number(item.Quantity) || 0) <= maxQ);
-    }
-
-    const adjusted = { ...resData, data: dataArray, total: dataArray.length, totalPage: Math.max(1, Math.ceil((dataArray.length || 0) / (limit || 1))) };
+    const totalFromServer = typeof resData.total === 'number' ? resData.total : dataArray.length;
+    const adjusted = {
+      ...resData,
+      data: dataArray,
+      total: totalFromServer,
+      totalPage: resData.totalPage ?? Math.max(1, Math.ceil(totalFromServer / (limit || 1))),
+    };
     setStocks(adjusted);
-  }, [allStocks, minQuantity, maxQuantity, limit]);
+  }, [allStocks, limit]);
 
   const handleUpsertStock = async (formData) => {
     try {
@@ -100,14 +96,12 @@ export const StockContextProvider = (props) => {
     setSelectedStock,
     handleUpsertStock,
     handleDeleteStock,
-    minQuantity,
-    setMinQuantity,
-    maxQuantity,
-    setMaxQuantity,
     page,
     setPage,
     limit,
     setLimit,
+    filter,
+    setFilter,
     fetchStocks,
   };
 
