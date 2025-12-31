@@ -12,7 +12,7 @@ export const PORT = process.env.PORT || 3000;
 
 // CORS configuration - comma-separated list of allowed origins
 export const CORS_ORIGINS = process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
     : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 // JWT configuration
@@ -23,7 +23,7 @@ export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123456';
 export const ADMIN_NAME = process.env.ADMIN_NAME || 'System Admin';
-export const ADMIN_ROLE = 4012; // 0xFAC - Admin role bitwise value
+export const ADMIN_ROLE = process.env.ADMIN_ROLE ? parseInt(process.env.ADMIN_ROLE, 10) : 4012;
 
 // Stripe configuration
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
