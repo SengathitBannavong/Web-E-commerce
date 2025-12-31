@@ -14,9 +14,19 @@ import { user_router } from "./routes/user_route.js";
 
 const app = express();
 
+const allowedOrigins = Array.isArray(CORS_ORIGINS) ? CORS_ORIGINS : [CORS_ORIGINS];
+
 app.use(
   cors({
-    origin: CORS_ORIGINS,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn(`[WARN] CORS origin denied: ${origin}`);
+      return callback(new Error(`CORS policy: origin ${origin} not allowed`), false);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
