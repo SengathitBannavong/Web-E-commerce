@@ -51,11 +51,9 @@ jobs:
             podman pull docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/web-e-commerce-server:latest
             podman stop web-e-commerce-server || true
             podman rm web-e-commerce-server || true
-            podman run -d \
+            podman run -d --pod web-ecommerce-pod \
             --name web-e-commerce-server \
             --restart always \
-            --network ecommerce-net \
-            -p 3000:3000 \
             -m 512m \
             --memory-reservation 256m \
             --cpus 0.5 \
