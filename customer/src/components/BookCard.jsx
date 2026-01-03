@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaEye, FaShoppingCart } from "react-icons/fa";
+import { FaEye, FaShoppingCart, FaHeart, FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useToast } from "../contexts/ToastContext";
@@ -49,15 +49,22 @@ export default function BookCard({
   };
 
   return (
-    <article className="book-card">
+    <article className="book-card group">
       <div className="book-card-inner">
-        <div className="book-card-cover">
+        {/* --- Image Section --- */}
+        <div className="book-card-cover-wrapper">
+          
+          {/* Badge */}
+          {badge && <span className="book-card-badge">{badge}</span>}
+
+
           <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
-            <div className={`book-card-image-wrapper ${imageLoaded ? 'loaded' : ''} ${imageError ? 'error' : ''}`}>
+            <div className={`book-card-image-container ${imageLoaded ? 'loaded' : ''}`}>
+              
+              {/* Skeleton / Placeholder */}
               {!imageLoaded && !imageError && (
-                <div className="book-card-image-skeleton">
-                  <div className="skeleton-shimmer"></div>
-                  <div className="skeleton-book-icon">📚</div>
+                <div className="book-card-skeleton">
+                  <div className="skeleton-icon">📚</div>
                 </div>
               )}
               
@@ -70,57 +77,39 @@ export default function BookCard({
                   setImageError(true);
                   setImageLoaded(true);
                 }}
-                className={imageLoaded ? 'visible' : 'hidden'}
+                className={`book-card-img ${imageLoaded ? 'visible' : ''}`}
               />
               
-              {imageLoaded && !imageError && (
-                <div className="book-card-overlay">
-                  <div className="book-card-quick-view">
-                    <FaEye />
-                    <span>Quick View</span>
-                  </div>
-                </div>
-              )}
+              {/* Hover Overlay */}
+              <div className="book-card-overlay">
+                <span className="quick-view-btn">
+                  <FaEye /> Quick View
+                </span>
+              </div>
             </div>
           </Link>
-          
-          {badge && <span className="book-card-badge">{badge}</span>}
         </div>
 
+        {/* --- Content Section --- */}
         <div className="book-card-body">
           <div className="book-card-info">
+            <p className="book-card-author">{author}</p>
+            
             <h3 className="book-card-title">
-              <Link to={`/books/${id}`} className="book-card-title-link">
+              <Link to={`/books/${id}`}>
                 {title}
               </Link>
             </h3>
-            <p className="book-card-author">{author}</p>
-            
-            {rating > 0 && (
-              <div className="book-card-rating">
-                <div className="book-card-stars">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < rating ? 'filled' : ''}>
-                      ★
-                    </span>
-                  ))}
-                </div>
-                {reviewCount > 0 && (
-                  <span className="book-card-review-count">({reviewCount})</span>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="book-card-footer">
-            <div className="book-card-pricing">
+            <div className="price-container">
               <span className="book-price">{price}</span>
             </div>
             
             <button
               type="button"
-              className={`book-card-add-to-cart ${isAdding ? 'adding' : ''}`}
-              aria-label="Add to cart"
+              className={`add-to-cart-btn ${isAdding ? 'loading' : ''}`}
               onClick={handleAddToCart}
               disabled={isAdding}
             >

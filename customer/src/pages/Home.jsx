@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BookSection from "../components/BookSection";
 import HeroSlider from "../components/HeroSlider";
-import Newsletter from "../components/Newsletter";
 import { HERO_BANNERS } from "../data/heroBanners";
 import { getCategories } from "../services/categoryService";
 import { getProducts } from "../services/productService";
@@ -122,9 +121,32 @@ export default function Home() {
           </div>
         </section>
 
-        <BookSection title="Mới phát hành" books={data.newReleases} loading={loading} withCta />
-        <BookSection title="Sách bán chạy" books={data.bestsellers} loading={loading} withCta />
-        <Newsletter />
+        <BookSection title="New Releases" books={data.newReleases} loading={loading} withCta />
+        <BookSection title="Bestsellers" books={data.bestsellers} loading={loading} withCta />
+        
+        {/* See All Books CTA */}
+        <section className="see-all-books-section">
+          <div className="container">
+            <div className="see-all-books-card">
+              <div className="see-all-books-content">
+                <div className="see-all-books-icon">📖</div>
+                <h2 className="see-all-books-title">Discover More Books</h2>
+                <p className="see-all-books-description">
+                  Explore our complete collection of books across all categories
+                </p>
+                <Link to="/books" className="see-all-books-btn">
+                  Browse All Books
+                  <span className="see-all-books-arrow">→</span>
+                </Link>
+              </div>
+              <div className="see-all-books-decoration">
+                <div className="decoration-circle decoration-circle-1"></div>
+                <div className="decoration-circle decoration-circle-2"></div>
+                <div className="decoration-circle decoration-circle-3"></div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
