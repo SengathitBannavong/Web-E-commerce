@@ -80,24 +80,43 @@ export default function Home() {
       <main className="home-main-content">
         <section className="category-list-section">
           <div className="container">
-            <h3>Khám phá theo thể loại</h3>
+            <div className="section-header">
+              <h3>Popular Categories</h3>
+              <Link to="/categories" className="view-all-link">
+                Browse All Categories →
+              </Link>
+            </div>
             {loading ? (
-              <div className="category-grid">
-                {Array.from({ length: 6 }).map((_, i) => (
+              <div className="category-grid-home">
+                {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="skeleton category-skeleton"></div>
                 ))}
               </div>
             ) : (
-              <div className="category-grid">
-                {data.categories.slice(0, 6).map((cat) => (
+              <div className="category-grid-home">
+                {data.categories.slice(0, 4).map((cat) => (
                   <Link
                     to={`/books?category=${cat.Category_Id}`}
                     key={cat.Category_Id}
                     className="category-card"
                   >
-                    <span className="cat-name">{cat.Name}</span>
+                    <div className="category-content">
+                      <span className="cat-name">{cat.Name}</span>
+                      {cat.Description && (
+                        <span className="cat-description">{cat.Description}</span>
+                      )}
+                    </div>
                   </Link>
                 ))}
+                
+                {/* See All Card */}
+                <Link to="/categories" className="category-card see-all-card">
+                  <div className="see-all-content">
+                    <div className="see-all-icon">📚</div>
+                    <span className="see-all-text">View All Categories</span>
+                    <span className="see-all-count">{data.categories.length} total</span>
+                  </div>
+                </Link>
               </div>
             )}
           </div>

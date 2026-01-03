@@ -6,6 +6,7 @@ import Account from "./pages/Account";
 import BookDetailEnhanced from "./pages/BookDetailEnhanced";
 import BookList from "./pages/BookList";
 import CartEnhanced from "./pages/CartEnhanced";
+import Categories from "./pages/Categories";
 import CheckoutPage from "./pages/CheckoutPage";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -17,6 +18,7 @@ import Register from "./pages/Register";
       <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<Home />} />
+            <Route path="categories" element={<Categories />} />
             <Route path="books" element={<BookList />} />
             <Route path="books/:id" element={<BookDetailEnhanced />} />
             

@@ -44,9 +44,6 @@ export default function Footer() {
             <h3 className="footer-title">Hỗ Trợ Khách Hàng</h3>
             <ul className="footer-list">
               <li>
-                <span className="footer-text">Miễn phí vận chuyển</span>
-              </li>
-              <li>
                 <span className="footer-text">Thanh toán an toàn</span>
               </li>
               <li>
