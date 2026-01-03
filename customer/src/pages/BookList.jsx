@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getProducts } from "../services/productService";
-import { getCategories, getCategoryById } from "../services/categoryService";
-import BookCard from "../components/BookCard"; 
+import BookCard from "../components/BookCard";
+import EmptyState from "../components/EmptyState";
 import Pagination from "../components/Pagination";
+import { SkeletonGrid } from "../components/SkeletonLoader";
+import { getCategoryById } from "../services/categoryService";
+import { getProducts } from "../services/productService";
 import "./BookList.css";
 
 const BookList = () => {
@@ -12,16 +14,13 @@ const BookList = () => {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("Tất cả sách");
   
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 20;
 
-  // Lấy params từ URL
   const categoryId = searchParams.get("category");
   const searchTerm = searchParams.get("search");
 
-  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [categoryId, searchTerm]);
@@ -42,7 +41,6 @@ const BookList = () => {
         setBooks(productRes.data);
         setTotalPages(productRes.totalPage || productRes.totalPages || 1);
 
-        // Logic set tiêu đề
         if (categoryId) {
             try {
                 const catRes = await getCategoryById(categoryId);
@@ -74,45 +72,55 @@ const BookList = () => {
         title: book.Name,
         author: book.Author,
         price: formattedPrice, 
-        cover: `/images/books/${book.Photo_Id || "default.jpg"}`,
+        cover: book.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
         rawPrice: book.Price
     };
   };
 
   const handlePageChange = (page) => {
       setCurrentPage(page);
-      window.scrollTo(0, 0); // Scroll to top when changing page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  if (loading && books.length === 0) return <div className="book-list-page container" style={{paddingTop: '100px'}}>Đang tải...</div>;
 
   return (
     <div className="book-list-page">
       <div className="container">
         <h1 className="page-title">{title}</h1>
         
-        {books.length === 0 && !loading ? (
-            <p className="no-results">Không tìm thấy cuốn sách nào.</p>
+        {loading ? (
+          <SkeletonGrid count={12} />
+        ) : books.length === 0 ? (
+          <EmptyState 
+            type="search" 
+            title={searchTerm ? "No books found" : "No books available"}
+            message={searchTerm ? `We couldn't find any books matching "${searchTerm}"` : "Check back later for new arrivals"}
+          />
         ) : (
-            <>
-                <div className="book-grid">
-                {books.map((book) => {
-                    const formattedBook = formatBookData(book);
-                    return (
-                        <BookCard
-                            key={formattedBook.id}
-                            {...formattedBook} 
-                        />
-                    );
-                })}
-                </div>
-                
-                <Pagination 
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
-            </>
+          <>
+            <div className="book-grid">
+              {books.map((book) => {
+                const formattedBook = formatBookData(book);
+                return (
+                  <BookCard
+                    key={formattedBook.id}
+                    id={formattedBook.id}
+                    cover={formattedBook.cover}
+                    title={formattedBook.title}
+                    author={formattedBook.author}
+                    price={formattedBook.price}
+                  />
+                );
+              })}
+            </div>
+
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

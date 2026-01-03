@@ -1,13 +1,13 @@
 .account-page {
   display: flex;
   min-height: calc(100vh - 80px);
-  background-color: #f9fafb;
+  background-color: var(--color-background);
 }
 
 .account-content {
   flex-grow: 1;
-  padding: 32px 40px;
-  max-width: 900px;
+  padding: var(--space-2xl) var(--space-xl);
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -48,38 +48,41 @@
 }
 
 .content-header__title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .content-header__subtitle {
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 4px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
 }
 
 .card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 24px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .card__header {
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .card__title {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
+  color: var(--color-text-primary);
 }
 
 .card__body {
-  padding: 24px;
+  padding: var(--space-xl);
 }
 
 .avatar-section {

@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import HeroSlider from "../components/HeroSlider";
 import BookSection from "../components/BookSection";
+import HeroSlider from "../components/HeroSlider";
 import Newsletter from "../components/Newsletter";
 import { HERO_BANNERS } from "../data/heroBanners";
-import { getProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
+import { getProducts } from "../services/productService";
 import "./Home.css";
 
 const formatPrice = (price) =>
@@ -18,7 +18,7 @@ const adaptProductData = (product) => ({
   title: product.Name,
   author: product.Author,
   price: formatPrice(product.Price),
-  cover: `/images/books/${product.Photo_Id || "default.jpg"}`,
+  cover: product.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
   rawPrice: product.Price,
 });
 
@@ -60,9 +60,18 @@ export default function Home() {
     fetchHomeData();
   }, []);
 
-  if (loading)
-    return <div className="page-loading">Đang tải trải nghiệm đọc sách...</div>;
-  if (error) return <div className="page-error">{error}</div>;
+  if (error) {
+    return (
+      <div className="page home-page">
+        <div className="container">
+          <div className="error-state">
+            <p className="error-message">{error}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page home-page">
@@ -72,22 +81,30 @@ export default function Home() {
         <section className="category-list-section">
           <div className="container">
             <h3>Khám phá theo thể loại</h3>
-            <div className="category-grid">
-              {data.categories.slice(0, 6).map((cat) => (
-                <Link
-                  to={`/books?category=${cat.Category_Id}`}
-                  key={cat.Category_Id}
-                  className="category-card"
-                >
-                  <span className="cat-name">{cat.Name}</span>
-                </Link>
-              ))}
-            </div>
+            {loading ? (
+              <div className="category-grid">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="skeleton category-skeleton"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="category-grid">
+                {data.categories.slice(0, 6).map((cat) => (
+                  <Link
+                    to={`/books?category=${cat.Category_Id}`}
+                    key={cat.Category_Id}
+                    className="category-card"
+                  >
+                    <span className="cat-name">{cat.Name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
-        <BookSection title="Mới phát hành" books={data.newReleases} withCta />
-        <BookSection title="Sách bán chạy" books={data.bestsellers} withCta />
+        <BookSection title="Mới phát hành" books={data.newReleases} loading={loading} withCta />
+        <BookSection title="Sách bán chạy" books={data.bestsellers} loading={loading} withCta />
         <Newsletter />
       </main>
     </div>

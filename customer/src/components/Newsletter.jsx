@@ -1,9 +1,12 @@
+import { useToast } from "../contexts/ToastContext";
 import "./Newsletter.css";
 
 export default function Newsletter() {
+  const toast = useToast();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Cảm ơn bạn đã đăng ký!");
+    toast.success("Thanks for subscribing to our newsletter!");
     e.target.reset();
   };
 

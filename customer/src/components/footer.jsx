@@ -1,4 +1,4 @@
-import React from "react";
+import { Link } from "react-router-dom";
 import "./footer.css";
 
 export default function Footer() {
@@ -6,7 +6,6 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-grid">
-          {/* Về chúng tôi */}
           <div className="footer-column">
             <h3 className="footer-title">Về Chúng Tôi</h3>
             <p className="footer-text">
@@ -15,82 +14,57 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Liên kết nhanh */}
           <div className="footer-column">
             <h3 className="footer-title">Liên Kết Nhanh</h3>
             <ul className="footer-list">
               <li>
-                <a href="#" className="footer-link">
+                <Link to="/" className="footer-link">
                   Trang chủ
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="footer-link">
+                <Link to="/books" className="footer-link">
                   Sản phẩm
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Về chúng tôi
-                </a>
+                <Link to="/account" className="footer-link">
+                  Tài khoản
+                </Link>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Liên hệ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Chính sách bảo mật
-                </a>
+                <Link to="/cart" className="footer-link">
+                  Giỏ hàng
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Hỗ trợ khách hàng */}
           <div className="footer-column">
             <h3 className="footer-title">Hỗ Trợ Khách Hàng</h3>
             <ul className="footer-list">
               <li>
-                <a href="#" className="footer-link">
-                  Hướng dẫn mua hàng
-                </a>
+                <span className="footer-text">Miễn phí vận chuyển</span>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Chính sách đổi trả
-                </a>
+                <span className="footer-text">Thanh toán an toàn</span>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Phương thức thanh toán
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Vận chuyển
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Câu hỏi thường gặp
-                </a>
+                <span className="footer-text">Hỗ trợ 24/7</span>
               </li>
             </ul>
           </div>
 
-          {/* Liên hệ */}
           <div className="footer-column">
             <h3 className="footer-title">Liên Hệ</h3>
             <div className="footer-contact">
-              <p> Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
-              <p> Hotline: 1900 1009</p>
-              <p> Email: contact@gmail.com</p>
+              <p className="footer-text">📍 123 Đường ABC, Quận 1, TP.HCM</p>
+              <p className="footer-text">📞 Hotline: 1900 1009</p>
+              <p className="footer-text">✉️ contact@bookstore.com</p>
             </div>
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="footer-copyright">
           <p>© 2025 Bookstore. All rights reserved.</p>
         </div>

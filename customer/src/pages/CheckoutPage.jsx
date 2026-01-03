@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useCart } from "../contexts/CartContext";
-import { useAuth } from "../contexts/AuthContext";
-import { createOrder } from "../services/orderService";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCart } from "../contexts/CartContext";
+import { createCheckoutSession } from "../services/paymentService";
 
 const CheckoutPage = () => {
   const { cart, clearCart } = useCart();
@@ -60,25 +60,28 @@ const CheckoutPage = () => {
     setError("");
 
     try {
-      const orderPayload = {
-        Shipping_Address: `${formData.address}, ${formData.city}, ${formData.country}`,
-        Payment_Method: formData.paymentMethod, 
-        items: cart.map(item => ({
-            Product_Id: item.id,
-            Quantity: item.quantity
-        }))
-      };
-
-      const userId = user.User_Id || user.id; 
-      const response = await createOrder(userId, orderPayload);
-
-      if (response && (response.message === "Order created successfully" || response.message === "Order and items created successfully")) {
-          await clearCart();
-          alert("Order placed successfully!");
-          navigate("/account"); 
-      } else {
-          setError("Failed to place order. Please try again.");
+      // Prepare shipping address
+      const shippingAddress = `${formData.address}, ${formData.city}, ${formData.country}`.trim();
+      
+      // For Stripe payment, redirect to Stripe checkout
+      if (formData.paymentMethod === "stripe") {
+        const stripeSession = await createCheckoutSession(shippingAddress);
+        if (stripeSession && stripeSession.url) {
+          // Redirect to Stripe checkout page
+          window.location.href = stripeSession.url;
+          return;
+        } else {
+          setError("Failed to create payment session. Please try again.");
+          setLoading(false);
+          return;
+        }
       }
+
+      // COD payment is not currently supported by the server API
+      // The endpoint POST /orders/:userId does not exist
+      // Users must use Stripe payment method
+      setError("Cash on Delivery is not currently available. Please use Stripe payment.");
+      setLoading(false);
 
     } catch (err) {
       console.error("Checkout error:", err);
@@ -169,17 +172,32 @@ const CheckoutPage = () => {
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label htmlFor="city">City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      id="city"
-                      className="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
-                    />
+                  <div className="md:col-spflex-col gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="radio" 
+                            name="paymentMethod" 
+                            value="cod" 
+                            checked={formData.paymentMethod === "cod"}
+                            onChange={handleChange}
+                            className="cursor-pointer"
+                        />
+                        <span>Cash On Delivery (COD)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="stripe" 
+                          checked={formData.paymentMethod === "stripe"}
+                          onChange={handleChange}
+                          className="cursor-pointer"
+                      />
+                      <span className="flex items-center gap-2">
+                          Pay with Stripe
+                          <span className="text-xs text-gray-500">(Credit/Debit Card)</span>
+                      </span> 
+                    </label>
                   </div>
                   
                    <div className="md:col-span-5 mt-4">
@@ -207,7 +225,7 @@ const CheckoutPage = () => {
                         disabled={loading}
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
                       >
-                        {loading ? "Processing..." : "Place Order"}
+                        {loading ? "Processing..." : formData.paymentMethod === "stripe" ? "Proceed to Payment" : "Place Order"}
                       </button>
                     </div>
                   </div>

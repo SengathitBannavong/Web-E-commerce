@@ -1,6 +1,7 @@
 import { FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useToast } from "../contexts/ToastContext";
 import "./BookCard.css";
 
 export default function BookCard({
@@ -12,6 +13,7 @@ export default function BookCard({
   badge,
 }) {
   const { addToCart } = useCart();
+  const toast = useToast();
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -26,7 +28,9 @@ export default function BookCard({
     };
     const success = await addToCart(itemToAdd);
     if (success) {
-        alert(`Đã thêm sách "${title}" vào giỏ hàng!`);
+      toast.success(`Added "${title}" to cart`);
+    } else {
+      toast.error(`Failed to add "${title}" to cart`);
     }
   };
 

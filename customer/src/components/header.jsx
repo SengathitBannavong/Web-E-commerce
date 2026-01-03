@@ -1,15 +1,19 @@
-import { NavLink } from "react-router-dom";
 import { FaBook, FaShoppingCart, FaUser } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCart } from "../contexts/CartContext";
 import "./header.css";
 import SearchBox from "./search_box";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
+  const { cart } = useCart();
 
   const handleLogout = () => {
     logout();
   };
+
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <header className="site-header">
@@ -30,8 +34,13 @@ export default function Header() {
               <FaBook />
               <span>Books</span>
             </NavLink>
-            <NavLink to="/cart" className="icon-text-link">
-              <FaShoppingCart />
+            <NavLink to="/cart" className="icon-text-link cart-link">
+              <div className="cart-icon-wrapper">
+                <FaShoppingCart />
+                {cartItemCount > 0 && (
+                  <span className="cart-badge">{cartItemCount}</span>
+                )}
+              </div>
               <span>Cart</span>
             </NavLink>
             <div className="account-dropdown">

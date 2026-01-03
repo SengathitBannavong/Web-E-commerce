@@ -1,6 +1,7 @@
 import { useId } from "react";
 import BookCard from "./BookCard";
 import "./BookSection.css";
+import { SkeletonCard } from "./SkeletonLoader";
 
 export default function BookSection({
   title,
@@ -9,6 +10,7 @@ export default function BookSection({
   sectionId,
   className = "",
   withCta = false,
+  loading = false,
 }) {
   const generatedId = useId();
   const headingId = sectionId
@@ -27,21 +29,25 @@ export default function BookSection({
       </div>
 
       <div className="book-section__grid">
-        {displayedBooks.map((book) => (
-          <BookCard
-            key={book.id}
-            id={book.id}
-            cover={book.cover}
-            title={book.title}
-            author={book.author}
-            price={book.price}
-            badge={book.badge}
-            rawPrice={book.rawPrice}
-          />
-        ))}
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : (
+          displayedBooks.map((book) => (
+            <BookCard
+              key={book.id}
+              id={book.id}
+              cover={book.cover}
+              title={book.title}
+              author={book.author}
+              price={book.price}
+              badge={book.badge}
+              rawPrice={book.rawPrice}
+            />
+          ))
+        )}
       </div>
 
-      {withCta ? (
+      {withCta && !loading ? (
         <div className="book-section__footer">
           <button
             type="button"

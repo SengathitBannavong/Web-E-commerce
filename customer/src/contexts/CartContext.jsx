@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { getMyCart, addToCart as apiAddToCart, updateCartItem as apiUpdateCartItem, removeCartItem as apiRemoveCartItem, clearCart as apiClearCart } from "../services/cartService";
+import { createContext, useContext, useEffect, useState } from "react";
+import { addToCart as apiAddToCart, clearCart as apiClearCart, removeCartItem as apiRemoveCartItem, updateCartItem as apiUpdateCartItem, getMyCart } from "../services/cartService";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
@@ -25,7 +25,7 @@ export function CartProvider({ children }) {
                     id: item.product.Product_Id,
                     title: item.product.Name,
                     price: item.product.Price,
-                    cover: item.product.Photo_Id,
+                    cover: item.product.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
                     quantity: item.Quantity
                 }));
                 setCart(formattedItems);
