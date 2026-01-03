@@ -21,7 +21,7 @@ function OrderItemsSubtable({ orderId }) {
       {items.map(it => (
         <div key={it.Order_Item_Id} className="flex justify-between text-sm py-1 border-b last:border-b-0">
           <div>{it.product?.Name || it.Product_Id} x {it.Quantity}</div>
-          <div className="text-slate-600">${it.Amount?.toFixed ? it.Amount.toFixed(2) : it.Amount}</div>
+          <div className="text-slate-600">VND {it.Amount?.toFixed ? it.Amount.toFixed(2) : it.Amount}</div>
         </div>
       ))}
     </div>

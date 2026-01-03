@@ -117,8 +117,8 @@ const validateOrderItemFields = (fields, isUpdate = false) => {
 
 // ==================== ORDER GET ====================
 const get_all_details_order_by_user_id = async (req, res) => {
-  const userId = req.params.userId;
-  const status = req.query.status || 'pending';
+  const userId = req.userId; // From auth middleware
+  const status = req.query.status;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required" });
@@ -128,9 +128,13 @@ const get_all_details_order_by_user_id = async (req, res) => {
     const { Order, OrderItem, Product } = getModel();
 
     const whereClause = {
-      User_Id: userId,
-      Status: status
-    };  
+      User_Id: userId
+    };
+    
+    // Add status filter if provided
+    if (status) {
+      whereClause.Status = status;
+    }  
 
     // Pagination
     const page = parseInt(req.query.page) || 1;
@@ -216,8 +220,12 @@ const get_order_admin = async (req, res) => {
 
 const get_order_detail = async (req, res) => {
   const { Order, OrderItem } = getModel();
-  const orderId = req.params.orderId;
+  const orderId = parseInt(req.params.orderId, 10);
   const userId = req.userId;
+
+  if (isNaN(orderId)) {
+    return res.status(400).json({ error: "Invalid order ID" });
+  }
 
   const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
   if (!order) {
@@ -243,40 +251,27 @@ const get_order_detail = async (req, res) => {
 // ==================== ORDER ITEM CRUD ====================
 const get_order_items_by_order_id = async (req, res) => {
   const { OrderItem, Product } = getModel();
-  const orderId = req.params.orderId;
+  const orderId = parseInt(req.params.orderId, 10);
 
-  if (!orderId) {
-    return res.status(400).json({ error: "Order ID is required" });
+  if (!orderId || isNaN(orderId)) {
+    return res.status(400).json({ error: "Valid Order ID is required" });
   }
 
-  // Pagination
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-
   try {
-    const [total, orderItems] = await Promise.all([
-      OrderItem.count({ where: { Order_Id: orderId } }),
-      OrderItem.findAll({
-        where: { Order_Id: orderId },
-        include: [
-          {
-            model: Product,
-            as: 'product',
-            attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id']
-          }
-        ],
-        limit,
-        offset,
-        order: [['Order_Item_Id', 'ASC']]
-      })
-    ]);
-
-    const totalPage = Math.ceil(total / limit);
+    const orderItems = await OrderItem.findAll({
+      where: { Order_Id: orderId },
+      include: [
+        {
+          model: Product,
+          as: 'product',
+          attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id']
+        }
+      ],
+      order: [['Order_Item_Id', 'ASC']]
+    });
 
     return res.status(200).json({
-      totalPage,
-      total,
+      total: orderItems.length,
       data: orderItems
     });
   } catch (err) {
@@ -287,11 +282,11 @@ const get_order_items_by_order_id = async (req, res) => {
 
 const create_order_item = async (req, res) => {
   const { OrderItem, Order, Product } = getModel();
-  const orderId = req.params.orderId;
+  const orderId = parseInt(req.params.orderId, 10);
   const items = Array.isArray(req.body) ? req.body : [req.body];
 
-  if (!orderId) {
-    return res.status(400).json({ error: "Order ID is required" });
+  if (!orderId || isNaN(orderId)) {
+    return res.status(400).json({ error: "Valid Order ID is required" });
   }
 
   // Validate all items
@@ -682,8 +677,8 @@ const update_order = async (req, res) => {
   const { Order } = getModel();
   const orderId = req.params.id;
   const updatedData = {
-    Status: req.body.status,
-    User_Id: req.body.user_id
+    Status: req.body.Status,
+    User_Id: req.body.User_Id
   }
 
   if (!orderId) {
@@ -761,8 +756,12 @@ const update_order_by_user = async (req, res) => {
   try {
     const { Order } = getModel();
     const userId = req.userId;
-    const orderId = req.params.orderId;
+    const orderId = parseInt(req.params.orderId, 10);
     const newStatus = 'cancelled'; // Force to 'cancelled' for user updates
+
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid Order ID" });
+    }
 
     // Validate basic fields
     const validation = validateUpdateOrderByUser({ userId, orderId, newStatus });
@@ -804,7 +803,11 @@ const delete_order_by_user = async (req, res) => {
   try {
     const { Order, OrderItem } = getModel();
     const userId = req.userId;
-    const orderId = req.params.orderId;
+    const orderId = parseInt(req.params.orderId, 10);
+
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid Order ID" });
+    }
 
     // Validate using validation function
     const validation = validateDeleteOrderByUser({ userId, orderId });
@@ -846,11 +849,11 @@ const delete_order_by_user = async (req, res) => {
 const create_order_item_by_user = async (req, res) => {
   const { OrderItem, Order, Product } = getModel();
   const userId = req.userId;
-  const orderId = req.params.orderId;
+  const orderId = parseInt(req.params.orderId, 10);
   const items = Array.isArray(req.body) ? req.body : [req.body];
 
-  if (!orderId) {
-    return res.status(400).json({ error: "Order ID is required" });
+  if (!orderId || isNaN(orderId)) {
+    return res.status(400).json({ error: "Valid Order ID is required" });
   }
 
   try {

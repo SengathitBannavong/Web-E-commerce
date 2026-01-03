@@ -50,7 +50,7 @@ export const OrderContextProvider = (props) => {
       const config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `${API}orders/items/${orderId}?limit=${l}&page=${p}`,
+        url: `${API}orders/admin/items/${orderId}`,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       };
       const response = await axios.request(config);
@@ -74,6 +74,7 @@ export const OrderContextProvider = (props) => {
         },
         data: JSON.stringify(order),
       };
+      console.log("DATA ORDER UPDATE:", order);
       const response = await axios.request(config);
       if (response.status === 200) {
         toast.success('Order updated');
