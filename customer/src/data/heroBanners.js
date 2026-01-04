@@ -1,14 +1,14 @@
 export const HERO_BANNERS = [
   {
-    id: "teacher-day",
-    image: "/images/banners/banner1.jpg",
+    id: "elden-ring-show",
+    image: "https://res.cloudinary.com/dskodfe9c/image/upload/v1767503769/side-show1_qi40oy.jpg",
   },
   {
-    id: "november-deals",
-    image: "/images/banners/banner2.jpg",
+    id: "elden-ring-book-show",
+    image: "https://res.cloudinary.com/dskodfe9c/image/upload/v1767504840/side-show2_ypt7f1.png",
   },
   {
-    id: "book-club",
-    image: "/images/banners/banner3.jpg",
+    id: "book-logo-show",
+    image: "https://res.cloudinary.com/dskodfe9c/image/upload/v1767505257/side-show3_k8ravw.jpg",
   },
 ];

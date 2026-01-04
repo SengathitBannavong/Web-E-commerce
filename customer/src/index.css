@@ -161,9 +161,21 @@ button:disabled {
 
 /* Layout */
 #root {
+  width: 100%;
+  padding-top: 80px;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
   max-width: 1400px;
   margin: 0 auto;
-  padding-top: 80px;
+  width: 100%;
 }
 
 .container {
