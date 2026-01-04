@@ -2,23 +2,27 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on PR
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - release
 permissions:
   checks: write
   contents: read
   pull-requests: write
 jobs:
   build_and_preview:
+    name: Build and Deploy to Preview Channel for Admin and Customer
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install Dependencies
+      - name: Install Dependencies Admin
         run: npm ci
         working-directory: ./admin
 
-      - name: Build
+      - name: Build Admin
         run: npm run build
         working-directory: ./admin
         env:
@@ -27,6 +31,23 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ECOMMERCEADMINJ9 }}
-          projectId: ecommerceadminj9
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ECOMMERCEJ9 }}
+          projectId: EcommerceJ9
           entryPoint: ./admin
+      
+      - name: Install Dependencies Customer
+        run: npm ci
+        working-directory: ./customer
+
+      - name: Build Customer
+        run: npm run build
+        working-directory: ./customer
+        env:
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ECOMMERCEJ9 }}
+          projectId: EcommerceJ9
+          entryPoint: ./customer

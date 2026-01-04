@@ -40,3 +40,35 @@ export const getProductById = (productId) => {
   }
   return apiFetch(`/products/${productId}`);
 };
+
+/**
+ * Get bestselling products based on order data
+ * @param {object} params
+ * @param {number} [params.page=1]
+ * @param {number} [params.limit=10]
+ */
+export const getBestsellers = (params = {}) => {
+  const queryParams = {
+    page: params.page || 1,
+    limit: params.limit || 10,
+  };
+  
+  const query = new URLSearchParams(queryParams).toString();
+  return apiFetch(`/products/bestsellers?${query}`);
+};
+
+/**
+ * Get new release products based on creation date
+ * @param {object} params
+ * @param {number} [params.page=1]
+ * @param {number} [params.limit=10]
+ */
+export const getNewReleases = (params = {}) => {
+  const queryParams = {
+    page: params.page || 1,
+    limit: params.limit || 10,
+  };
+  
+  const query = new URLSearchParams(queryParams).toString();
+  return apiFetch(`/products/new-releases?${query}`);
+};

@@ -1,7 +1,11 @@
 import apiFetch from "./api";
 
+/**
+ * Get current user's cart with all items
+ * Fixed: Changed from /carts/items to /carts/details to match server route
+ */
 export const getMyCart = async () => {
-  return apiFetch("/carts/items");
+  return apiFetch("/carts/details");
 };
 
 /**

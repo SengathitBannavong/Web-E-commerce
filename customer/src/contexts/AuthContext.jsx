@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiFetch from "../services/api";
 
 const AuthContext = createContext(null);
@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, token, login, logout, register, refreshUser, loading }}
+      value={{ isAuthenticated, user, setUser, token, login, logout, register, refreshUser, loading }}
     >
       {!loading && children} 
     </AuthContext.Provider>
