@@ -4,7 +4,7 @@ import BookSection from "../components/BookSection";
 import HeroSlider from "../components/HeroSlider";
 import { HERO_BANNERS } from "../data/heroBanners";
 import { getCategories } from "../services/categoryService";
-import { getProducts } from "../services/productService";
+import { getBestsellers, getNewReleases } from "../services/productService";
 import "./Home.css";
 
 const formatPrice = (price) =>
@@ -36,8 +36,8 @@ export default function Home() {
         setLoading(true);
         const [newReleasesRes, bestsellersRes, categoriesRes] =
           await Promise.all([
-            getProducts({ page: 1, limit: 5 }),
-            getProducts({ page: 2, limit: 5 }),
+            getNewReleases({ page: 1, limit: 5 }),
+            getBestsellers({ page: 1, limit: 5 }),
             getCategories(),
           ]);
 

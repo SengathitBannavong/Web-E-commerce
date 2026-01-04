@@ -1,10 +1,12 @@
 import express from "express";
 import { deleteImage_Product, uploadImage_Product } from "../controllers/cloudinary_controller.js";
 import {
-  create_product,
-  delete_product,
-  get_products,
-  update_product
+    create_product,
+    delete_product,
+    get_bestsellers,
+    get_new_releases,
+    get_products,
+    update_product
 } from "../controllers/product_controller.js";
 import { adminMiddleware } from "../middleware/admin.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -14,6 +16,8 @@ const product_router = express.Router();
 
 // Public routes - anyone can view products
 product_router.get("/", get_products);
+product_router.get("/bestsellers", get_bestsellers);
+product_router.get("/new-releases", get_new_releases);
 product_router.get("/:id", get_products);
 
 // Admin only routes - create, update, delete products
