@@ -5,8 +5,8 @@
   "targets" : {
     "EcommerceJ9": {
       "hosting": {
-        "admin": [
-          "ecommerceadminj9"
+        "customer": [
+          "j9bookstores"
         ]
       }
     }

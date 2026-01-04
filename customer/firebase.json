@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "ecommerceadminj9",
+    "site": "j9bookstores",
     "public": "dist",
     "ignore": [
       "firebase.json",
