@@ -42,7 +42,6 @@ export const createCheckoutSession = async (req, res) => {
       },
     });
 
-    console.log("Stripe Session Created:", session);
 
     // send session url to client
     res.json({ url: session.url });
@@ -76,7 +75,7 @@ export const paymentConfirm = async (req, res) => {
     // use metadata/order data from session to find & update order
     const orderId = session.metadata?.orderId;
     const userId = session.metadata?.userId;
-    const { Order } = getModel();
+    const { Order, Cart, CartItem } = getModel();
 
     const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
     if (!order) return res.status(404).send('Order not found');
@@ -84,39 +83,13 @@ export const paymentConfirm = async (req, res) => {
     order.Status = 'paid';
     await order.save();
 
-    // <a class="btn" href="${CLIENT_URL}/orders/${order.Order_Id}">View Order Details</a>
-    const html = `<!doctype html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Payment Confirmed</title>
-        <style>
-        body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#f6f8fb; margin:0; display:flex; align-items:center; justify-content:center; height:100vh}
-        .card{background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.08); padding:28px 34px; max-width:520px; width:90%; text-align:center}
-        .check{font-size:48px; color:#16a34a; margin-bottom:6px}
-        h1{font-size:20px; margin:6px 0 4px}
-        p{color:#475569; margin:0 0 12px}
-        .meta{background:#f1f5f9; border-radius:8px; padding:12px; text-align:left; margin-top:14px; font-size:14px}
-        .row{display:flex; justify-content:space-between; padding:6px 0}
-        .btn{display:inline-block; margin-top:16px; padding:10px 16px; background:#2563eb; color:#fff; text-decoration:none; border-radius:8px}
-        </style>
-      </head>
-      <body>
-        <div class="card">
-        <div class="check">✔</div>
-        <h1>Payment Confirmed</h1>
-        <p>Your payment was successful. Thank you for your purchase.</p>
-        <div class="meta">
-          <div class="row"><span>Order ID</span><strong>${order.Order_Id}</strong></div>
-          <div class="row"><span>Status</span><strong>${order.Status}</strong></div>
-          <div class="row"><span>User</span><strong>${userId}</strong></div>
-        </div>
-        </div>
-      </body>
-      </html>`;
+    const cart = await Cart.findOne({ where: { User_Id: userId } });
+    if (cart) {
+      await CartItem.destroy({ where: { Cart_Id: cart.Cart_Id } });
+    }
 
-    return res.status(200).send(html);
+    // Redirect to customer frontend payment success page
+    return res.redirect(`${CLIENT_URL}/payment-success?order_id=${order.Order_Id}&session_id=${sessionId}`);
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error confirming payment');

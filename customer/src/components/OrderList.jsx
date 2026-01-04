@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { getMyOrders } from '../services/orderService';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { FaBox, FaCalendar, FaMapMarkerAlt, FaReceipt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { getMyOrders, getOrderById } from '../services/orderService';
+import OrderItem from './OrderItem';
+import './OrderList.css';
 import Pagination from './Pagination';
 
 const OrderList = () => {
@@ -9,6 +12,9 @@ const OrderList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user } = useAuth();
+    const [expandedOrder, setExpandedOrder] = useState(null);
+    const [orderDetails, setOrderDetails] = useState({});
+    const [loadingDetails, setLoadingDetails] = useState({});
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -46,49 +52,160 @@ const OrderList = () => {
         }
     };
 
-    if (loading && orders.length === 0) return <div className="text-gray-500 text-center py-4">Loading orders...</div>;
-    if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
+    const toggleOrderDetails = async (orderId) => {
+        if (expandedOrder === orderId) {
+            setExpandedOrder(null);
+            return;
+        }
+
+        setExpandedOrder(orderId);
+
+        // Fetch order details if not already loaded
+        if (!orderDetails[orderId]) {
+            setLoadingDetails((prev) => ({ ...prev, [orderId]: true }));
+            try {
+                const response = await getOrderById(orderId);
+                const details = response.data || response;
+                setOrderDetails((prev) => ({ ...prev, [orderId]: details }));
+            } catch (err) {
+                console.error('Failed to load order details:', err);
+            } finally {
+                setLoadingDetails((prev) => ({ ...prev, [orderId]: false }));
+            }
+        }
+    };
+
+    const getStatusColor = (status) => {
+        const normalizedStatus = status?.toLowerCase() || '';
+        if (normalizedStatus === 'completed' || normalizedStatus === 'delivered') return 'success';
+        if (normalizedStatus === 'cancelled') return 'danger';
+        if (normalizedStatus === 'pending') return 'warning';
+        return 'info';
+    };
+
+    if (loading && orders.length === 0) {
+        return (
+            <div className="order-list-loading">
+                <div className="spinner-large"></div>
+                <p>Loading orders...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="order-list-error">
+                <p>{error}</p>
+            </div>
+        );
+    }
 
     if (orders.length === 0 && !loading) {
         return (
-            <div className="text-center py-8">
-                <p className="text-gray-500">You have placed no orders.</p>
-                <Link to="/" className="text-blue-500 hover:underline mt-2 inline-block">Start Shopping</Link>
+            <div className="order-list-empty">
+                <FaBox className="empty-icon" />
+                <h3>No orders yet</h3>
+                <p>You haven't placed any orders yet.</p>
+                <Link to="/books" className="btn-primary">
+                    Start Shopping
+                </Link>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow p-4">
-             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="border-b bg-gray-50">
-                            <th className="p-4 font-semibold text-gray-700">Order ID</th>
-                            <th className="p-4 font-semibold text-gray-700">Date</th>
-                            <th className="p-4 font-semibold text-gray-700">Status</th>
-                            <th className="p-4 font-semibold text-gray-700">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order.Order_Id} className="border-b hover:bg-gray-50 transition">
-                                <td className="p-4 text-blue-600 font-medium">#{order.Order_Id}</td>
-                                <td className="p-4">{new Date(order.Date).toLocaleDateString('vi-VN')}</td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                                        ${order.Status === 'completed' || order.Status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                                        order.Status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                        {order.Status.charAt(0).toUpperCase() + order.Status.slice(1)}
-                                    </span>
-                                </td>
-                                <td className="p-4 font-medium">
+        <div className="order-list">
+            <div className="orders-container">
+                {orders.map((order) => (
+                    <div key={order.Order_Id} className="order-card">
+                        <div className="order-header" onClick={() => toggleOrderDetails(order.Order_Id)}>
+                            <div className="order-info">
+                                <div className="order-id">
+                                    <FaReceipt />
+                                    <span>Order #{order.Order_Id}</span>
+                                </div>
+                                <div className="order-date">
+                                    <FaCalendar />
+                                    <span>{new Date(order.Date).toLocaleDateString('en-EN', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</span>
+                                </div>
+                            </div>
+                            <div className="order-meta">
+                                <span className={`order-status status-${getStatusColor(order.Status)}`}>
+                                    {order.Status?.charAt(0).toUpperCase() + order.Status?.slice(1)}
+                                </span>
+                                <div className="order-total">
                                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.Amount || 0)}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                                <button className="toggle-btn">
+                                    {expandedOrder === order.Order_Id ? <span>Show less</span> : <span>Show more</span>}
+                                </button>
+                            </div>
+                        </div>
+
+                        {expandedOrder === order.Order_Id && (
+                            <div className="order-details">
+                                {loadingDetails[order.Order_Id] ? (
+                                    <div className="details-loading">
+                                        <div className="spinner-small"></div>
+                                        <p>Loading order details...</p>
+                                    </div>
+                                ) : orderDetails[order.Order_Id] ? (
+                                    <>
+                                        {/* Shipping Address */}
+                                        <div className="detail-section">
+                                            <h4 className="detail-title">
+                                                <FaMapMarkerAlt /> Shipping Address
+                                            </h4>
+                                            <p className="detail-text">
+                                                {orderDetails[order.Order_Id].Shipping_Address || 'N/A'}
+                                            </p>
+                                        </div>
+
+                                    {/* Order Items */}
+                                    {orderDetails[order.Order_Id].items && orderDetails[order.Order_Id].items.length > 0 && (
+                                      <div className="detail-section">
+                                        <h4 className="detail-title">
+                                          <FaBox /> Order Items
+                                        </h4>
+                                        <div className="order-items">
+                                          {orderDetails[order.Order_Id].items.map((item, index) => (
+                                            <OrderItem key={index} item={item} />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {/* Payment Info */}
+                                    {orderDetails[order.Order_Id].Payment && (
+                                        <div className="detail-section">
+                                            <h4 className="detail-title">Payment Information</h4>
+                                            <div className="payment-info">
+                                                <div className="info-row">
+                                                    <span>Method:</span>
+                                                    <span className="info-value">
+                                                        {orderDetails[order.Order_Id].Payment.Method || 'N/A'}
+                                                    </span>
+                                                </div>
+                                                <div className="info-row">
+                                                    <span>Status:</span>
+                                                    <span className={`payment-status status-${getStatusColor(orderDetails[order.Order_Id].Payment.Status)}`}>
+                                                        {orderDetails[order.Order_Id].Payment.Status || 'N/A'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                                ) : (
+                                    <p className="detail-text">No details available</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
             
             <Pagination 

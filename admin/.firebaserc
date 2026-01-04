@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "ecommerceadminj9"
+  },
+  "targets" : {
+    "ecommerceadminj9": {
+      "hosting": {
+        "admin": [
+          "ecommerceadminj9"
+        ]
+      }
+    }
   }
 }

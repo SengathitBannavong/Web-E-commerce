@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import HeroSlider from "../components/HeroSlider";
 import BookSection from "../components/BookSection";
-import Newsletter from "../components/Newsletter";
+import HeroSlider from "../components/HeroSlider";
 import { HERO_BANNERS } from "../data/heroBanners";
-import { getProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
+import { getBestsellers, getNewReleases } from "../services/productService";
 import "./Home.css";
 
 const formatPrice = (price) =>
@@ -18,7 +17,7 @@ const adaptProductData = (product) => ({
   title: product.Name,
   author: product.Author,
   price: formatPrice(product.Price),
-  cover: `/images/books/${product.Photo_Id || "default.jpg"}`,
+  cover: product.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
   rawPrice: product.Price,
 });
 
@@ -37,8 +36,8 @@ export default function Home() {
         setLoading(true);
         const [newReleasesRes, bestsellersRes, categoriesRes] =
           await Promise.all([
-            getProducts({ page: 1, limit: 5 }),
-            getProducts({ page: 2, limit: 5 }),
+            getNewReleases({ page: 1, limit: 5 }),
+            getBestsellers({ page: 1, limit: 5 }),
             getCategories(),
           ]);
 
@@ -60,9 +59,18 @@ export default function Home() {
     fetchHomeData();
   }, []);
 
-  if (loading)
-    return <div className="page-loading">Đang tải trải nghiệm đọc sách...</div>;
-  if (error) return <div className="page-error">{error}</div>;
+  if (error) {
+    return (
+      <div className="page home-page">
+        <div className="container">
+          <div className="error-state">
+            <p className="error-message">{error}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page home-page">
@@ -71,24 +79,74 @@ export default function Home() {
       <main className="home-main-content">
         <section className="category-list-section">
           <div className="container">
-            <h3>Khám phá theo thể loại</h3>
-            <div className="category-grid">
-              {data.categories.slice(0, 6).map((cat) => (
-                <Link
-                  to={`/books?category=${cat.Category_Id}`}
-                  key={cat.Category_Id}
-                  className="category-card"
-                >
-                  <span className="cat-name">{cat.Name}</span>
-                </Link>
-              ))}
+            <div className="section-header">
+              <h3>Popular Categories</h3>
+              <Link to="/categories" className="view-all-link">
+                Browse All Categories →
+              </Link>
             </div>
+            {loading ? (
+              <div className="category-grid-home">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="skeleton category-skeleton"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="category-grid-home">
+                {data.categories.slice(0, 4).map((cat) => (
+                  <Link
+                    to={`/books?category=${cat.Category_Id}`}
+                    key={cat.Category_Id}
+                    className="category-card"
+                  >
+                    <div className="category-content">
+                      <span className="cat-name">{cat.Name}</span>
+                      {cat.Description && (
+                        <span className="cat-description">{cat.Description}</span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+                
+                {/* See All Card */}
+                <Link to="/categories" className="category-card see-all-card">
+                  <div className="see-all-content">
+                    <div className="see-all-icon">📚</div>
+                    <span className="see-all-text">View All Categories</span>
+                    <span className="see-all-count">{data.categories.length} total</span>
+                  </div>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
 
-        <BookSection title="Mới phát hành" books={data.newReleases} withCta />
-        <BookSection title="Sách bán chạy" books={data.bestsellers} withCta />
-        <Newsletter />
+        <BookSection title="New Releases" books={data.newReleases} loading={loading} withCta />
+        <BookSection title="Bestsellers" books={data.bestsellers} loading={loading} withCta />
+        
+        {/* See All Books CTA */}
+        <section className="see-all-books-section">
+          <div className="container">
+            <div className="see-all-books-card">
+              <div className="see-all-books-content">
+                <div className="see-all-books-icon">📖</div>
+                <h2 className="see-all-books-title">Discover More Books</h2>
+                <p className="see-all-books-description">
+                  Explore our complete collection of books across all categories
+                </p>
+                <Link to="/books" className="see-all-books-btn">
+                  Browse All Books
+                  <span className="see-all-books-arrow">→</span>
+                </Link>
+              </div>
+              <div className="see-all-books-decoration">
+                <div className="decoration-circle decoration-circle-1"></div>
+                <div className="decoration-circle decoration-circle-2"></div>
+                <div className="decoration-circle decoration-circle-3"></div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );

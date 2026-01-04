@@ -36,6 +36,12 @@ function Stock() {
     }
   }, [searchParams, filter, limit]);
 
+  useEffect(() => {
+    if(!stocks) {
+      fetchStocks();
+    }
+  }, []);
+
   const columns = [
     { key: 'Index', label: 'Index' },
     { key: 'Product_Id', label: 'Product ID' },

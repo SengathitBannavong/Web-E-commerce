@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import { getDB, getModel } from "../config/database.js";
 import { deleteImageHelper } from "./cloudinary_controller.js";
 
@@ -271,4 +271,97 @@ const delete_product = async (req, res) => {
   }
 };
 
-export { create_product, delete_product, get_products, update_product };
+const get_bestsellers = async (req, res) => {
+  const { Product, OrderItem } = getModel();
+  
+  // Get pagination parameters
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const offset = (page - 1) * limit;
+  
+  try {
+    const sequelize = getDB();
+    
+    // Get bestsellers by aggregating order items
+    const bestsellers = await Product.findAll({
+      attributes: [
+        'Product_Id',
+        'Index',
+        'Name',
+        'Author',
+        'Description',
+        'Price',
+        'Photo_Id',
+        'Photo_URL',
+        'Category_Id',
+        [literal('COALESCE(SUM("orderItems"."Quantity"), 0)'), 'total_sold']
+      ],
+      include: [{
+        model: OrderItem,
+        as: 'orderItems',
+        attributes: [],
+        required: false
+      }],
+      group: ['Product.Index', 'Product.Product_Id'],
+      order: [[literal('total_sold'), 'DESC']],
+      limit: limit,
+      offset: offset,
+      subQuery: false
+    });
+    
+    // Get total count of products with sales
+    const totalCount = await Product.count({
+      distinct: true,
+      include: [{
+        model: OrderItem,
+        as: 'orderItems',
+        required: false
+      }]
+    });
+    
+    const totalPage = Math.ceil(totalCount / limit);
+    
+    res.json({
+      totalPage,
+      total: totalCount,
+      data: bestsellers
+    });
+  } catch (err) {
+    console.error("Error fetching bestsellers:", err);
+    res.status(500).json({ error: "Internal server error", details: err.message });
+  }
+};
+
+const get_new_releases = async (req, res) => {
+  const { Product } = getModel();
+  
+  // Get pagination parameters
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const offset = (page - 1) * limit;
+  
+  try {
+    // Get newest products by created_at date
+    const [total, products] = await Promise.all([
+      Product.count(),
+      Product.findAll({
+        order: [['created_at', 'DESC']],
+        limit: limit,
+        offset: offset
+      })
+    ]);
+    
+    const totalPage = Math.ceil(total / limit);
+    
+    res.json({
+      totalPage,
+      total,
+      data: products
+    });
+  } catch (err) {
+    console.error("Error fetching new releases:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { create_product, delete_product, get_bestsellers, get_new_releases, get_products, update_product };

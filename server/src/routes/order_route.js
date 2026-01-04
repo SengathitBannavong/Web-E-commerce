@@ -32,6 +32,7 @@ order_router.get("/admin/:userId", adminMiddleware, get_order_admin);
 order_router.put("/admin/:id", adminMiddleware, update_order);
 order_router.delete("/admin/:id", adminMiddleware, delete_order);
 
+order_router.get("/admin/items/:orderId", adminMiddleware, get_order_items_by_order_id);
 order_router.post("/admin/items/:orderId", adminMiddleware, create_order_item);
 order_router.put("/admin/items/:id", adminMiddleware, update_order_item);
 order_router.delete("/admin/items/:id", adminMiddleware, delete_order_item);

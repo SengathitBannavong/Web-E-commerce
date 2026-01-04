@@ -2,12 +2,13 @@ import apiFetch from "./api";
 
 /**
  * Get current user's orders
- * @param {string|number} userId
+ * @param {string|number} userId - Not used (kept for backwards compatibility)
  * @param {number} page
  * @param {number} limit
  */
 export const getMyOrders = async (userId, page = 1, limit = 5) => {
-    return apiFetch(`/orders/${userId}?page=${page}&limit=${limit}`);
+    // Use /orders/all - userId comes from auth token
+    return apiFetch(`/orders/all?page=${page}&limit=${limit}`);
 };
 
 /**

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "ecommerceadminj9"
+  },
+  "targets" : {
+    "ecommerceadminj9": {
+      "hosting": {
+        "customer": [
+          "j9bookstores"
+        ]
+      }
+    }
+  }
+}

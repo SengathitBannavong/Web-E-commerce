@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import "./search_box.css";
 
@@ -15,6 +16,7 @@ export default function SearchBox() {
 
   return (
     <form className="search-form" onSubmit={handleSearch}>
+      <FiSearch className="search-icon" />
       <input
         type="search"
         name="search"
@@ -23,7 +25,9 @@ export default function SearchBox() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <button type="submit">Search</button>
+      <button type="submit" aria-label="Search">
+        <FiSearch />
+      </button>
     </form>
   );
 }

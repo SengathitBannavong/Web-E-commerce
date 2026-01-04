@@ -113,7 +113,7 @@ const get_all_details_cart_by_user_id = async (req, res) => {
             {
               model: Product,
               as: 'product',
-              attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_Id'] // Price in VND
+              attributes: ['Product_Id', 'Index', 'Name', 'Description', 'Price', 'Photo_URL'] // Price in VND
             }
           ]
         }
