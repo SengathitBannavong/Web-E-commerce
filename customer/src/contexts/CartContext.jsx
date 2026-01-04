@@ -1,12 +1,16 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { addToCart as apiAddToCart, clearCart as apiClearCart, removeCartItem as apiRemoveCartItem, updateCartItem as apiUpdateCartItem, getMyCart } from "../services/cartService";
 import { useAuth } from "./AuthContext";
+import { useToast } from "../contexts/ToastContext";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
     const [cart, setCart] = useState([]);
     const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -43,11 +47,14 @@ export function CartProvider({ children }) {
                 return true;
             } catch (error) {
                 console.error("Failed to add to cart:", error);
-                alert(`Failed to add to cart: ${error.message}`);
+                toast.error(error.message || 'Failed to add to cart');
                 return false;
             }
         } else {
-            alert("Please login to add items to cart");
+            toast.info('Please login to add items to cart');
+            setTimeout(() => {
+                navigate('/login');
+            }, 1500);
             return false;
         }
     };
@@ -60,6 +67,7 @@ export function CartProvider({ children }) {
                 await fetchCart();
             } catch (error) {
                 console.error("Failed to remove from cart:", error);
+                toast.error('Failed to remove item from cart');
             }
         }
     };
@@ -68,9 +76,11 @@ export function CartProvider({ children }) {
         if (isAuthenticated) {
             try {
                 await apiUpdateCartItem(id, quantity);
-                 await fetchCart();
+                await fetchCart();
+                toast.success('Cart updated successfully');
             } catch (error) {
                 console.error("Failed to update quantity:", error);
+                toast.error('Failed to update cart');
             }
         }
     };
@@ -81,8 +91,10 @@ export function CartProvider({ children }) {
              try {
                 await apiClearCart();
                 setCart([]);
+                console.log("Cart cleared successfully");
             } catch (error) {
                 console.error("Failed to clear cart:", error);
+                toast.error('Failed to clear cart');
             }
         } else {
             setCart([]);

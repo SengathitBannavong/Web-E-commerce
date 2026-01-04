@@ -9,6 +9,6 @@ export const HERO_BANNERS = [
   },
   {
     id: "book-logo-show",
-    image: "https://res.cloudinary.com/dskodfe9c/image/upload/v1767505257/side-show3_k8ravw.jpg",
+    image: "https://res.cloudinary.com/dskodfe9c/image/upload/v1767521376/side-show3_mydrsj.png",
   },
 ];

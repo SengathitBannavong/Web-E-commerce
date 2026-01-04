@@ -11,17 +11,14 @@ export default function PaymentSuccess() {
   useEffect(() => {
     const handlePaymentSuccess = async () => {
       try {
-        // Clear cart after successful payment
-        await clearCart();
-        
-        // Show success message for 3 seconds then redirect
+        // Show success message for 2 seconds for processing simulation
         setTimeout(() => {
           setProcessing(false);
-        }, 1500);
+        }, 2000);
 
         setTimeout(() => {
-          navigate("/account");
-        }, 3000);
+          navigate("/account?tab=orders");
+        }, 2000);
       } catch (error) {
         console.error("Error processing payment success:", error);
         setProcessing(false);
@@ -80,7 +77,7 @@ export default function PaymentSuccess() {
               Your order has been placed successfully. You will be redirected to your account page.
             </p>
             <button
-              onClick={() => navigate("/account")}
+              onClick={() => navigate("/account?tab=orders")}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded"
             >
               View Orders

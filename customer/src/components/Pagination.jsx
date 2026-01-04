@@ -1,4 +1,4 @@
-import React from 'react';
+import './Pagination.css';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
@@ -22,30 +22,24 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     const pages = getPageNumbers();
 
     return (
-        <div className="flex justify-center items-center space-x-2 mt-8">
+        <div className="pagination">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 rounded border ${
-                    currentPage === 1 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
             >
-                Prev
+                Previous
             </button>
 
             {pages[0] > 1 && (
                 <>
                     <button
                         onClick={() => onPageChange(1)}
-                        className={`px-3 py-1 rounded border ${
-                            currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
                     >
                         1
                     </button>
-                    {pages[0] > 2 && <span className="text-gray-400">...</span>}
+                    {pages[0] > 2 && <span className="pagination-ellipsis">...</span>}
                 </>
             )}
 
@@ -53,11 +47,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 <button
                     key={page}
                     onClick={() => onPageChange(page)}
-                    className={`px-3 py-1 rounded border ${
-                        currentPage === page 
-                        ? 'bg-blue-500 text-white border-blue-500' 
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
                 >
                     {page}
                 </button>
@@ -65,12 +55,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
             {pages[pages.length - 1] < totalPages && (
                  <>
-                    {pages[pages.length - 1] < totalPages - 1 && <span className="text-gray-400">...</span>}
+                    {pages[pages.length - 1] < totalPages - 1 && <span className="pagination-ellipsis">...</span>}
                     <button
                         onClick={() => onPageChange(totalPages)}
-                         className={`px-3 py-1 rounded border ${
-                            currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`pagination-btn ${currentPage === totalPages ? 'active' : ''}`}
                     >
                         {totalPages}
                     </button>
@@ -80,11 +68,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded border ${
-                    currentPage === totalPages 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
             >
                 Next
             </button>

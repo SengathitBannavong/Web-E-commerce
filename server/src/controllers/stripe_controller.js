@@ -42,7 +42,6 @@ export const createCheckoutSession = async (req, res) => {
       },
     });
 
-    console.log("Stripe Session Created:", session);
 
     // send session url to client
     res.json({ url: session.url });
@@ -76,13 +75,18 @@ export const paymentConfirm = async (req, res) => {
     // use metadata/order data from session to find & update order
     const orderId = session.metadata?.orderId;
     const userId = session.metadata?.userId;
-    const { Order } = getModel();
+    const { Order, Cart, CartItem } = getModel();
 
     const order = await Order.findOne({ where: { Order_Id: orderId, User_Id: userId } });
     if (!order) return res.status(404).send('Order not found');
 
     order.Status = 'paid';
     await order.save();
+
+    const cart = await Cart.findOne({ where: { User_Id: userId } });
+    if (cart) {
+      await CartItem.destroy({ where: { Cart_Id: cart.Cart_Id } });
+    }
 
     // Redirect to customer frontend payment success page
     return res.redirect(`${CLIENT_URL}/payment-success?order_id=${order.Order_Id}&session_id=${sessionId}`);

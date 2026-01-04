@@ -5,7 +5,7 @@ import PublicRoute from "./components/PublicRoute";
 import Account from "./pages/Account";
 import BookDetailEnhanced from "./pages/BookDetailEnhanced";
 import BookList from "./pages/BookList";
-import CartEnhanced from "./pages/CartEnhanced";
+import CartEnhanced from "./pages/Cart";
 import Categories from "./pages/Categories";
 import CheckoutPage from "./pages/CheckoutPage";
 import Home from "./pages/Home";

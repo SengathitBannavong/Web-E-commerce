@@ -5,11 +5,13 @@ import { getCategoryById } from "../services/categoryService";
 import { getProductById } from "../services/productService";
 import { getStockByProductId } from "../services/stockService";
 import "./BookDetailEnhanced.css";
+import { useToast } from '../contexts/ToastContext';
 
 export default function BookDetailEnhanced() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const toast = useToast();
   
   const [product, setProduct] = useState(null);
   const [stock, setStock] = useState(null);

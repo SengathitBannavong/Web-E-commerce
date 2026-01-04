@@ -1,4 +1,4 @@
-import { FaBook, FaShoppingCart, FaUser } from "react-icons/fa";
+import { FaBook, FaShoppingCart, FaSignInAlt, FaSignOutAlt, FaUser, FaUserCircle, FaUserPlus } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
@@ -6,7 +6,7 @@ import "./header.css";
 import SearchBox from "./search_box";
 
 export default function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { cart } = useCart();
 
   const handleLogout = () => {
@@ -15,6 +15,7 @@ export default function Header() {
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
+  const avatarSrc = user?.Profile_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1767510418/temp_profile_selxqo.jpg";
   return (
     <header className="site-header">
       <div className="container">
@@ -44,20 +45,53 @@ export default function Header() {
               <span>Cart</span>
             </NavLink>
             <div className="account-dropdown">
-              <NavLink to="/account" className="icon-text-link">
-                <FaUser />
-                <span>Account</span>
-              </NavLink>
+              <button className="icon-text-link account-trigger">
+                {isAuthenticated && user ? (
+                  <div className="header-user-avatar">
+                    <img src={avatarSrc} alt="User" />
+                  </div>
+                ) : (
+                  <FaUser style={{ color: "#737373" }} />
+                )}
+                <span style={{ color: "#737373" }} >Account</span>
+              </button>
               <div className="dropdown-content">
                 {isAuthenticated ? (
                   <>
-                    <NavLink to="/account">Profile</NavLink>
-                    <button onClick={handleLogout}>Logout</button>
+                    <div className="dropdown-user-info">
+                      <div className="dropdown-avatar">
+                        <img src={avatarSrc} alt="User" />
+                      </div>
+                      <div className="dropdown-user-details">
+                        <p className="dropdown-user-name">{user?.name || 'User'}</p>
+                        <p className="dropdown-user-email">{user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="dropdown-divider"></div>
+                    <NavLink to="/account?tab=profile" className="dropdown-item">
+                      <FaUserCircle className="dropdown-icon" />
+                      <span>My Profile</span>
+                    </NavLink>
+                    <NavLink to="/account?tab=orders" className="dropdown-item">
+                      <FaBook className="dropdown-icon" />
+                      <span>My Orders</span>
+                    </NavLink>
+                    <div className="dropdown-divider"></div>
+                    <button onClick={handleLogout} className="dropdown-item logout-btn">
+                      <FaSignOutAlt className="dropdown-icon" />
+                      <span>Logout</span>
+                    </button>
                   </>
                 ) : (
                   <>
-                    <NavLink to="/login">Login</NavLink>
-                    <NavLink to="/register">Register</NavLink>
+                    <NavLink to="/login" className="dropdown-item">
+                      <FaSignInAlt className="dropdown-icon" />
+                      <span>Login</span>
+                    </NavLink>
+                    <NavLink to="/register" className="dropdown-item">
+                      <FaUserPlus className="dropdown-icon" />
+                      <span>Register</span>
+                    </NavLink>
                   </>
                 )}
               </div>

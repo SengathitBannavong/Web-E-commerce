@@ -130,15 +130,6 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Payment Methods */}
-            <div className="footer-payment">
-              <h4 className="footer-payment-title">Payment Methods</h4>
-              <div className="footer-payment-icons">
-                <span className="footer-payment-icon" title="Visa">💳</span>
-                <span className="footer-payment-icon" title="MasterCard">💳</span>
-                <span className="footer-payment-icon" title="Stripe">💸</span>
-              </div>
-            </div>
           </div>
         </div>
 

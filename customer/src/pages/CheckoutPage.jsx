@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { FaCity, FaEnvelope, FaLock, FaMapMarkerAlt, FaPhone, FaShoppingBag, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 import { createCheckoutSession } from "../services/paymentService";
+import "./CheckoutPage.css";
 
 const CheckoutPage = () => {
   const { cart, clearCart } = useCart();
@@ -17,7 +19,7 @@ const CheckoutPage = () => {
     city: "",
     country: "Vietnam",
     zipcode: "",
-    paymentMethod: "cod"
+    paymentMethod: "stripe"
   });
 
   const [loading, setLoading] = useState(false);
@@ -76,10 +78,6 @@ const CheckoutPage = () => {
           return;
         }
       }
-
-      // COD payment is not currently supported by the server API
-      // The endpoint POST /orders/:userId does not exist
-      // Users must use Stripe payment method
       setError("Cash on Delivery is not currently available. Please use Stripe payment.");
       setLoading(false);
 
@@ -92,146 +90,226 @@ const CheckoutPage = () => {
   };
 
   if (!cart.length) {
-      return (
-          <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
-                  <button onClick={() => navigate("/")} className="text-blue-500 hover:underline">Go back to shopping</button>
-              </div>
+    return (
+      <div className="checkout-page">
+        <div className="container">
+          <div className="empty-checkout">
+            <FaShoppingBag className="empty-icon" />
+            <h2>Your cart is empty</h2>
+            <p>Add some items to proceed with checkout</p>
+            <button onClick={() => navigate("/books")} className="btn-primary">
+              Continue Shopping
+            </button>
           </div>
-      )
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
-      <div className="container max-w-screen-lg mx-auto">
-        <div>
-          <div className="mb-6">
-            <h2 className="font-semibold text-xl text-gray-600 mb-2">Checkout</h2>
-            <p className="text-gray-500 mb-2">Total Price: {total.toLocaleString()}₫</p>
-            <p className="text-gray-500 mb-6">Items: {cart.length}</p>
+    <div className="checkout-page">
+      <div className="container">
+        <div className="checkout-header">
+          <div className="header-content">
+            <FaLock className="lock-icon" />
+            <div>
+              <h1 className="page-title">Secure Checkout</h1>
+              <p className="page-subtitle">Complete your order securely</p>
+            </div>
           </div>
+          <button onClick={() => navigate("/cart")} className="btn-back">
+            ← Back to Cart
+          </button>
+        </div>
 
-          <div className="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-6">
-            <form onSubmit={handleSubmit} className="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-3 my-8">
-              <div className="text-gray-600">
-                <p className="font-medium text-lg">Personal Details</p>
-                <p>Please fill out all the fields.</p>
-              </div>
+        <div className="checkout-grid">
+          {/* Checkout Form */}
+          <div className="checkout-form-section">
+            <form onSubmit={handleSubmit} className="checkout-form">
+              {/* Personal Information */}
+              <div className="form-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Personal Information</h2>
+                    <p className="section-subtitle">We'll use this to contact you about your order</p>
+                  </div>
+                </div>
 
-              <div className="lg:col-span-2">
-                <div className="grid gap-4 gap-y-2 text-sm grid-cols-1 md:grid-cols-5">
-                  <div className="md:col-span-5">
-                    <label htmlFor="name">Full Name</label>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="name" className="form-label">
+                      <FaUser /> Full Name
+                    </label>
                     <input
                       type="text"
                       name="name"
                       id="name"
-                      className="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
+                      className="form-input"
+                      placeholder="John Doe"
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
                   </div>
 
-                  <div className="md:col-span-5">
-                    <label htmlFor="email">Email Address</label>
+                  <div className="form-group">
+                    <label htmlFor="email" className="form-label">
+                      <FaEnvelope /> Email Address
+                    </label>
                     <input
                       type="email"
                       name="email"
                       id="email"
-                      className="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
+                      className="form-input"
+                      placeholder="john@example.com"
                       value={formData.email}
                       onChange={handleChange}
                       readOnly
                     />
                   </div>
-                  <div className="md:col-span-5">
-                    <label htmlFor="phone">Phone Number</label>
+
+                  <div className="form-group">
+                    <label htmlFor="phone" className="form-label">
+                      <FaPhone /> Phone Number
+                    </label>
                     <input
                       type="tel"
                       name="phone"
                       id="phone"
-                      className="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
+                      className="form-input"
+                      placeholder="+84 123 456 789"
                       value={formData.phone}
                       onChange={handleChange}
                       required
                     />
                   </div>
+                </div>
+              </div>
 
-                  <div className="md:col-span-3">
-                    <label htmlFor="address">Address</label>
+              {/* Shipping Address */}
+              <div className="form-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Shipping Address</h2>
+                    <p className="section-subtitle">Where should we deliver your order?</p>
+                  </div>
+                </div>
+
+                <div className="form-grid">
+                  <div className="form-group form-group-full">
+                    <label htmlFor="address" className="form-label">
+                      <FaMapMarkerAlt /> Street Address
+                    </label>
                     <input
                       type="text"
                       name="address"
                       id="address"
-                      className="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
+                      className="form-input"
+                      placeholder="123 Main Street"
                       value={formData.address}
                       onChange={handleChange}
                       required
                     />
                   </div>
 
-                  <div className="md:col-spflex-col gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                            type="radio" 
-                            name="paymentMethod" 
-                            value="cod" 
-                            checked={formData.paymentMethod === "cod"}
-                            onChange={handleChange}
-                            className="cursor-pointer"
-                        />
-                        <span>Cash On Delivery (COD)</span>
+                  <div className="form-group">
+                    <label htmlFor="city" className="form-label">
+                      <FaCity /> City
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="stripe" 
-                          checked={formData.paymentMethod === "stripe"}
-                          onChange={handleChange}
-                          className="cursor-pointer"
-                      />
-                      <span className="flex items-center gap-2">
-                          Pay with Stripe
-                          <span className="text-xs text-gray-500">(Credit/Debit Card)</span>
-                      </span> 
-                    </label>
-                  </div>
-                  
-                   <div className="md:col-span-5 mt-4">
-                      <label className="font-semibold block mb-2">Payment Method</label>
-                      <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2">
-                              <input 
-                                  type="radio" 
-                                  name="paymentMethod" 
-                                  value="cod" 
-                                  checked={formData.paymentMethod === "cod"}
-                                  onChange={handleChange}
-                              />
-                              Cash On Delivery (COD)
-                          </label>
-                      </div>
+                    <input
+                      type="text"
+                      name="city"
+                      id="city"
+                      className="form-input"
+                      placeholder="Ho Chi Minh City"
+                      value={formData.city}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
 
-
-                  <div className="md:col-span-5 text-right mt-6">
-                    <div className="inline-flex items-end">
-                      {error && <p className="text-red-500 mr-4 mb-2">{error}</p>}
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                      >
-                        {loading ? "Processing..." : formData.paymentMethod === "stripe" ? "Proceed to Payment" : "Place Order"}
-                      </button>
-                    </div>
+                  <div className="form-group">
+                    <label htmlFor="country" className="form-label">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      id="country"
+                      className="form-input"
+                      value={formData.country}
+                      onChange={handleChange}
+                      readOnly
+                    />
                   </div>
                 </div>
               </div>
+
+
+              {error && (
+                <div className="error-message">
+                  <span className="error-icon">⚠</span>
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-submit"
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <FaLock />
+                    Proceed to Payment
+                  </>
+                )}
+              </button>
             </form>
+          </div>
+
+          {/* Order Summary */}
+          <div className="order-summary">
+            <div className="summary-card">
+              <h2 className="summary-title">Order Summary</h2>
+              
+              <div className="summary-items">
+                {cart.map((item) => (
+                  <div key={item.id} className="summary-item">
+                    <img src={item.cover} alt={item.name} className="item-image" />
+                    <div className="item-details">
+                      <h4 className="item-name">{item.name}</h4>
+                      <p className="item-quantity">Qty: {item.quantity}</p>
+                    </div>
+                    <div className="item-price">
+                      {(Number(item.price) * Number(item.quantity)).toLocaleString()}₫
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="summary-divider"></div>
+
+              <div className="summary-totals">
+                <div className="summary-row">
+                  <span>Subtotal ({cart.length} items)</span>
+                  <span>{total.toLocaleString()}₫</span>
+                </div>
+                <div className="summary-row">
+                  <span>Shipping</span>
+                  <span className="free-badge">Free</span>
+                </div>
+                <div className="summary-row summary-total">
+                  <span>Total</span>
+                  <span className="total-amount">{total.toLocaleString()}₫</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

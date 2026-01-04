@@ -219,7 +219,7 @@ const get_order_admin = async (req, res) => {
 };
 
 const get_order_detail = async (req, res) => {
-  const { Order, OrderItem } = getModel();
+  const { Order, OrderItem, Product } = getModel();
   const orderId = parseInt(req.params.orderId, 10);
   const userId = req.userId;
 
@@ -232,13 +232,20 @@ const get_order_detail = async (req, res) => {
     return res.status(404).json({ error: "Order not found for this user" });
   }
 
-  // get all details of the order including items
+  // get all details of the order including items and product details
   const orderDetails = await Order.findOne({
     where: { Order_Id: orderId, User_Id: userId },
     include: [
       {
         model: OrderItem,
-        as: 'items'
+        as: 'items',
+        include: [
+          {
+            model: Product,
+            as: 'product',
+            attributes: ['Product_Id', 'Name']
+          }
+        ]
       }
     ]
   });

@@ -2,7 +2,6 @@
 .footer {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: var(--space-xl) var(--space-md) 0;
-  margin-top: var(--space-xl);
   border-top: 2px solid var(--color-accent);
   position: relative;
   overflow: hidden;

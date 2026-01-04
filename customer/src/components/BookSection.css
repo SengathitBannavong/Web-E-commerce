@@ -8,6 +8,8 @@
   border: 1px solid #e5e7eb;
   padding: 2rem;
   position: relative;
+  margin: 0 2rem;
+  max-height: 90vh;
 }
 
 .book-section__header {
@@ -91,6 +93,7 @@
   scrollbar-color: #d1d5db transparent;
   padding: 0.5rem;
   margin: -0.5rem;
+  max-height: 75vh;
 }
 
 .book-section__grid::-webkit-scrollbar {
