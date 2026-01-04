@@ -30,7 +30,7 @@ function App() {
       <AppContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
     </Router>
   );
-}
+};
 
 function AppContent({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
@@ -130,6 +130,6 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
       />
     </>
   );
-}
+};
 
-export default App
+export default App;
