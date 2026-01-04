@@ -6,7 +6,7 @@ import axios from 'axios';
 
 // Get API base URL from environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:3000/api";
-const HEALTH_CHECK_ENDPOINT = "/health";
+const HEALTH_CHECK_ENDPOINT = "health";
 const CHECK_INTERVAL = 30000; // 30 seconds
 
 class APIHealthMonitor {
