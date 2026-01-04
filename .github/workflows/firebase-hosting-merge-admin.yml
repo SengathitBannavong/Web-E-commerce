@@ -29,5 +29,5 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ECOMMERCEJ9 }}
           channelId: live
-          projectId: EcommerceJ9
+          projectId: ecommerceadminj9
           entryPoint: ./admin
