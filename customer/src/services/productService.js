@@ -72,3 +72,14 @@ export const getNewReleases = (params = {}) => {
   const query = new URLSearchParams(queryParams).toString();
   return apiFetch(`/products/new-releases?${query}`);
 };
+
+export const getLastCategoryProducts = (params = {}) => {
+  const queryParams = {
+    page: params.page || 1,
+    limit: params.limit || 10,
+  };
+  
+
+  const query = new URLSearchParams(queryParams).toString();
+  return apiFetch(`/products/last-category?${query}`);
+}

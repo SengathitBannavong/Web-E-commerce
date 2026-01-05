@@ -364,4 +364,48 @@ const get_new_releases = async (req, res) => {
   }
 };
 
-export { create_product, delete_product, get_bestsellers, get_new_releases, get_products, update_product };
+const get_last_category_products = async (req, res) => {
+  const { Product, Category } = getModel();
+
+  try {
+    // Find the last category based on Category_Id
+    const lastCategory = await Category.findOne({
+      order: [['Category_Id', 'DESC']]
+    });
+
+    if (!lastCategory) {
+      return res.status(404).json({ error: "No categories found" });
+    }
+
+    const lastCategoryId = lastCategory.Category_Id;
+
+    // Get pagination parameters
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * limit;
+
+    // Fetch products in the last category
+    const [total, products] = await Promise.all([
+      Product.count({ where: { Category_Id: lastCategoryId } }),
+      Product.findAll({
+        where: { Category_Id: lastCategoryId },
+        limit: limit,
+        offset: offset,
+        order: [['Index', 'ASC']]
+      })
+    ]);
+
+    const totalPage = Math.ceil(total / limit);
+
+    res.json({
+      totalPage,
+      total,
+      data: products
+    });
+  } catch (err) {
+    console.error("Error fetching products from last category:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { create_product, delete_product, get_bestsellers, get_new_releases, get_last_category_products, get_products, update_product };
