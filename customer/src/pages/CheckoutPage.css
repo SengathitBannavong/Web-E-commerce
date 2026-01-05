@@ -52,12 +52,12 @@
 
 .btn-back {
   padding: 0.75rem 1.5rem;
-  background: transparent;
+  background: #475569;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #64748b;
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

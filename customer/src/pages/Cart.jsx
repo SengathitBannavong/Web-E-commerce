@@ -48,12 +48,14 @@ export default function CartEnhanced() {
   return (
     <div className="cart-enhanced">
       <div className="container">
-        <div className="cart-header">
+        <div className="container-header">
+          <div className="cart-header">
+            <h1 className="cart-title">Shopping Cart</h1>
+            <div className="cart-item-count">{cart.length} {cart.length === 1 ? 'item' : 'items'}</div>
+          </div>
           <button onClick={() => navigate(-1)} className="btn-back">
             <FaArrowLeft /> Back
           </button>
-          <h1 className="cart-title">Shopping Cart</h1>
-          <div className="cart-item-count">{cart.length} {cart.length === 1 ? 'item' : 'items'}</div>
         </div>
 
         <div className="cart-content-grid">
@@ -152,15 +154,6 @@ export default function CartEnhanced() {
               </button>
             </div>
 
-            {/* Additional Info */}
-            <div className="cart-info-box">
-              <h4>✓ Free Shipping</h4>
-              <p>On all orders</p>
-            </div>
-            <div className="cart-info-box">
-              <h4>✓ Secure Payment</h4>
-              <p>Multiple payment options</p>
-            </div>
           </div>
         </div>
       </div>

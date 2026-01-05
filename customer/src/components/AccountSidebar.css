@@ -254,3 +254,154 @@
   background: rgba(255, 255, 255, 0.8);
   border-radius: 2px;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .account-sidebar {
+    width: 100%;
+    flex-direction: column;
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+  }
+
+  .sidebar-user-info {
+    padding: 24px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .sidebar-avatar-wrapper {
+    margin-bottom: 12px;
+  }
+
+  .sidebar-user-info__avatar {
+    width: 72px;
+    height: 72px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+  }
+
+  .sidebar-avatar-camera {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sidebar-avatar-text {
+    font-size: 11px;
+  }
+
+  .sidebar-avatar-delete {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #fff;
+  }
+
+  .sidebar-avatar-delete svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .sidebar-avatar-status {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+  }
+
+  .sidebar-user-info__name {
+    font-size: 16px;
+  }
+
+  .sidebar-user-info__email {
+    font-size: 13px;
+  }
+
+  .sidebar-nav {
+    padding: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-nav__list {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    min-width: min-content;
+  }
+
+  .sidebar-nav__item {
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav__link {
+    padding: 10px 16px;
+    margin: 0;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-size: 14px;
+    min-height: 44px;
+    display: inline-flex;
+  }
+
+  .sidebar-nav__icon {
+    font-size: 18px;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+
+  .sidebar-nav__text {
+    display: inline;
+  }
+
+  .sidebar-nav__item--active .sidebar-nav__link {
+    padding: 10px 16px;
+  }
+
+  .sidebar-nav__item--active .sidebar-nav__link::before {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-user-info {
+    padding: 20px 12px;
+  }
+
+  .sidebar-user-info__avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .sidebar-avatar-camera {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sidebar-user-info__name {
+    font-size: 15px;
+  }
+
+  .sidebar-user-info__email {
+    font-size: 12px;
+  }
+
+  .sidebar-nav__list {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .sidebar-nav__link {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  .sidebar-nav__icon {
+    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+  }
+
+  .sidebar-nav__item--active .sidebar-nav__link {
+    padding: 8px 14px;
+  }
+}

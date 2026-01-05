@@ -40,7 +40,7 @@ export default function BookDetailEnhanced() {
           const stockData = await getStockByProductId(id);
           setStock(stockData);
         } catch (err) {
-          console.warn("Stock information not available:", err);
+          toast.error("Stock information not available:", err);
           setStock(null);
         }
 
@@ -50,11 +50,11 @@ export default function BookDetailEnhanced() {
             const categoryData = await getCategoryById(productData.Category_Id);
             setCategory(categoryData);
           } catch (err) {
-            console.warn("Category information not available:", err);
+            toast.error("Category information not available:", err);
           }
         }
       } catch (err) {
-        console.error("Error fetching product:", err);
+        toast.error("Error fetching product:", err);
         setError(err.message || "Failed to load product details");
       } finally {
         setLoading(false);
@@ -69,12 +69,12 @@ export default function BookDetailEnhanced() {
 
     // Check stock availability
     if (stock && stock.Quantity <= 0) {
-      alert("This product is currently out of stock!");
+      toast.error("This product is currently out of stock!");
       return;
     }
 
     if (stock && quantity > stock.Quantity) {
-      alert(`Only ${stock.Quantity} items available in stock!`);
+      toast.error(`Only ${stock.Quantity} items available in stock!`);
       return;
     }
 
@@ -90,11 +90,11 @@ export default function BookDetailEnhanced() {
 
       const success = await addToCart(itemToAdd);
       if (success) {
-        alert(`Added "${product.Name}" to cart successfully!`);
+        toast.success(`Added "${product.Name}" to cart successfully!`);
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert("Failed to add item to cart");
+      toast.error("Failed to add item to cart");
     } finally {
       setAddingToCart(false);
     }
@@ -175,6 +175,9 @@ export default function BookDetailEnhanced() {
           <div className="product-info-section">
             <div className="product-header">
               <h1 className="product-title">{product.Name}</h1>
+              <div className="description-content">
+                {product.Description || "No description available for this product."}
+              </div>
               {category && (
                 <span className="product-category-badge">
                   {category.Name}
@@ -191,38 +194,32 @@ export default function BookDetailEnhanced() {
                 <span className="meta-label">Product ID:</span>
                 <span className="meta-value">{product.Product_Id}</span>
               </div>
-              {category && (
-                <div className="meta-item">
-                  <span className="meta-label">Category:</span>
-                  <span className="meta-value">{category.Name}</span>
-                </div>
-              )}
             </div>
 
             <div className="product-price-section">
               <div className="price-main">{formatPrice(product.Price)}</div>
+              {/* Stock Information */}
+              {stock && (
+                <div className={`stock-status ${isOutOfStock ? 'out-of-stock' : isLowStock ? 'low-stock' : 'in-stock'}`}>
+                  <div className="stock-indicator"></div>
+                  <div className="stock-info">
+                    {isOutOfStock ? (
+                      <span className="stock-text">Out of Stock</span>
+                    ) : (
+                      <>
+                        <span className="stock-text">
+                          {isLowStock ? 'Low Stock' : 'In Stock'}
+                        </span>
+                        <span className="stock-quantity">
+                          ({stock.Quantity} available)
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Stock Information */}
-            {stock && (
-              <div className={`stock-status ${isOutOfStock ? 'out-of-stock' : isLowStock ? 'low-stock' : 'in-stock'}`}>
-                <div className="stock-indicator"></div>
-                <div className="stock-info">
-                  {isOutOfStock ? (
-                    <span className="stock-text">Out of Stock</span>
-                  ) : (
-                    <>
-                      <span className="stock-text">
-                        {isLowStock ? 'Low Stock' : 'In Stock'}
-                      </span>
-                      <span className="stock-quantity">
-                        ({stock.Quantity} available)
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Quantity Selector and Add to Cart */}
             <div className="product-actions">
@@ -275,39 +272,6 @@ export default function BookDetailEnhanced() {
                   "Add to Cart"
                 )}
               </button>
-            </div>
-
-            {/* Product Description */}
-            <div className="product-description-section">
-              <h3 className="section-title">Product Description</h3>
-              <div className="description-content">
-                {product.Description || "No description available for this product."}
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="product-details-section">
-              <h3 className="section-title">Additional Details</h3>
-              <div className="details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Price</span>
-                  <span className="detail-value">{formatPrice(product.Price)}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Availability</span>
-                  <span className="detail-value">
-                    {isOutOfStock ? 'Out of Stock' : stock ? `${stock.Quantity} in stock` : 'Check availability'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Category</span>
-                  <span className="detail-value">{category?.Name || 'Uncategorized'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Author</span>
-                  <span className="detail-value">{product.Author}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
