@@ -21,32 +21,6 @@ export default function BookCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (isAdding) return;
-    setIsAdding(true);
-
-    const itemToAdd = {
-      id,
-      name: title,
-      price,
-      cover,
-      quantity: 1,
-    };
-    
-    try {
-      const success = await addToCart(itemToAdd);
-      if (success) {
-        toast.success(`Added "${title}" to cart`);
-      } else {
-        toast.error(`Failed to add "${title}" to cart`);
-      }
-    } finally {
-      setIsAdding(false);
-    }
-  };
 
   return (
     <article className="book-card group">
@@ -107,18 +81,19 @@ export default function BookCard({
               <span className="book-price">{price}</span>
             </div>
             
-            <button
-              type="button"
-              className={`add-to-cart-btn ${isAdding ? 'loading' : ''}`}
-              onClick={handleAddToCart}
-              disabled={isAdding}
-            >
-              {isAdding ? (
-                <div className="spinner"></div>
-              ) : (
-                <FaShoppingCart />
-              )}
-            </button>
+            <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
+              <button
+                type="button"
+                className={`add-to-cart-btn ${isAdding ? 'loading' : ''}`}
+                disabled={isAdding}
+              >
+                {isAdding ? (
+                  <div className="spinner"></div>
+                ) : (
+                  <FaShoppingCart />
+                )}
+              </button>
+            </Link>
           </div>
         </div>
       </div>

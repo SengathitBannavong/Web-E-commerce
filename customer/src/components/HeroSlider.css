@@ -4,6 +4,7 @@
   border-radius: 32px;
   overflow: hidden;
   box-shadow: 0 14px 28px rgba(31, 41, 51, 0.08);
+  z-index: 0;
 }
 
 .hero-slide-track {

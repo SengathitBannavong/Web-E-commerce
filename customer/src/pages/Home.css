@@ -4,6 +4,8 @@
   gap: var(--space-3xl);
   padding-bottom: var(--space-3xl);
   padding-top: var(--space-xl);
+  position: relative;
+  z-index: 1;
 }
 
 .home-main-content {

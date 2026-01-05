@@ -79,6 +79,7 @@ const Account = () => {
     { 
       icon: <FaSignOutAlt />, 
       text: "Logout", 
+      active: false,
       onClick: logout 
     }, 
   ];
