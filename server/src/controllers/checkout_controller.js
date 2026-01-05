@@ -23,7 +23,7 @@ export const checkout_middle = async (req, res, next) => {
       return res.status(400).json({ error: "Cart is empty" });
     }
 
-    const {  Order, OrderItem, Product, Stock, User, CartItem } = getModel();
+    const {  Order, OrderItem, Product, Stock, User, CartItem, Payment } = getModel();
 
     // 2. Validate stock for all items
     const stockErrors = [];
@@ -136,7 +136,21 @@ export const checkout_middle = async (req, res, next) => {
 
     // 6. Clear user's cart
     await CartItem.destroy({ where: { Cart_Id: cart.Cart_Id } }, { transaction });
-    
+
+    // 7. Update stock quantities
+    for (const update of stockUpdates) {
+      const newQty = update.stock.Quantity - update.deductQuantity;
+      await update.stock.update({ Quantity: newQty }, { transaction });
+    }
+
+    // 8. create Payment in my database for logs
+    await Payment.create({
+      Order_Id: order.Order_Id,
+      User_Id: userId,
+      Amount: totalAmount,
+      Status: 'pending',
+      Type: 'stripe'
+    }, { transaction });
 
     // Set order data for next middleware
     req.order = order;
