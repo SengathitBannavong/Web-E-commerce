@@ -8,11 +8,11 @@ export const AccountSidebar = ({ user, menuItems }) => {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const { setUser } = useAuth();
-  const { showToast } = useToast();
+  const toast = useToast();
 
   if (!user) return null;
-  const tempAvata = "https://res.cloudinary.com/dskodfe9c/image/upload/v1767510418/temp_profile_selxqo.jpg";
-  const [avatarSrc] = useState(user.Profile_URL || tempAvata);
+  const tempAvatar = "https://res.cloudinary.com/dskodfe9c/image/upload/v1767510418/temp_profile_selxqo.jpg";
+  const [avatarSrc] = useState(user.Profile_URL || tempAvatar);
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
@@ -23,13 +23,13 @@ export const AccountSidebar = ({ user, menuItems }) => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      showToast('Please select an image file', 'error');
+      toast.warning('Please select an image file');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showToast('Image size must be less than 5MB', 'error');
+      toast.warning('Image size must be less than 5MB');
       return;
     }
 
@@ -43,10 +43,10 @@ export const AccountSidebar = ({ user, menuItems }) => {
         Photo_URL: response.imageUrl
       }));
 
-      showToast('Profile picture updated successfully!', 'success');
+      toast.success('Profile picture updated successfully!');
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      showToast('Failed to upload image. Please try again.', 'error');
+      toast.warning('Failed to upload image. Please try again.');
     } finally {
       setIsUploading(false);
       // Reset input
@@ -60,7 +60,7 @@ export const AccountSidebar = ({ user, menuItems }) => {
     e.stopPropagation();
     
     if (!user.Photo_URL || user.Photo_URL === tempAvatar) {
-      showToast('No custom avatar to delete', 'info');
+      toast.info('No custom avatar to delete');
       return;
     }
 
@@ -78,10 +78,10 @@ export const AccountSidebar = ({ user, menuItems }) => {
         Photo_URL: null
       }));
 
-      showToast('Profile picture removed successfully!', 'success');
+      toast.success('Profile picture removed successfully!');
     } catch (error) {
       console.error('Error deleting avatar:', error);
-      showToast('Failed to delete image. Please try again.', 'error');
+      toast.warning('Failed to delete image. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -139,7 +139,10 @@ export const AccountSidebar = ({ user, menuItems }) => {
       <nav className="sidebar-nav">
         <ul className="sidebar-nav__list">
           {menuItems.map((item, index) => (
-            <li key={index} className={`sidebar-nav__item ${item.active ? 'sidebar-nav__item--active' : ''}`}>
+            <li 
+              key={index} 
+              className={`sidebar-nav__item ${item.active === true ? 'sidebar-nav__item--active' : ''}`}
+            >
               <a 
                 href="#" 
                 className="sidebar-nav__link"

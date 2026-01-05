@@ -58,3 +58,8 @@
   background: var(--color-accent-hover);
   transform: scale(1.05);
 }
+
+.search-box {
+  display: flex;
+  width: 100%;
+}
