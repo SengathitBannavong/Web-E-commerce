@@ -150,3 +150,44 @@
 .button--danger-outline:hover {
   background-color: #fef2f2;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .account-page {
+    flex-direction: column;
+  }
+
+  .account-content {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .content-header {
+    display: none;
+  }
+
+  .card__header {
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .card__body {
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .account-content {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .card__header {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .card__body {
+    padding: var(--space-md);
+  }
+
+  .card__title {
+    font-size: 1rem;
+  }
+}

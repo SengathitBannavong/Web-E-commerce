@@ -94,6 +94,7 @@
   padding: 0.5rem;
   margin: -0.5rem;
   max-height: 75vh;
+  align-items: stretch;
 }
 
 .book-section__grid::-webkit-scrollbar {
@@ -116,8 +117,9 @@
 }
 
 .book-section__grid > * {
-  flex: 0 0 calc(25% - 1.125rem);
-  min-width: 220px;
+  flex: 0 0 auto;
+  width: 260px;
+  min-width: 240px;
   max-width: 280px;
 }
 
@@ -226,9 +228,20 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1440px) {
   .book-section__grid > * {
-    flex: 0 0 calc(33.333% - 1rem);
+    width: 240px;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .book-section {
+    margin: 0 1rem;
+  }
+
+  .book-section__grid > * {
+    width: 220px;
     min-width: 200px;
   }
 
@@ -245,6 +258,8 @@
   .book-section {
     padding: 1.5rem;
     gap: 1.25rem;
+    margin: 0 0.75rem;
+    border-radius: 16px;
   }
 
   .book-section__header {
@@ -255,16 +270,19 @@
   .book-section__view-all {
     width: 100%;
     justify-content: center;
+    padding: 0.75rem 1.5rem;
   }
 
   .book-section__grid {
     gap: 1rem;
+    padding: 0.25rem;
+    margin: -0.25rem;
   }
 
   .book-section__grid > * {
-    flex: 0 0 calc(50% - 0.5rem);
-    min-width: 160px;
-    max-width: none;
+    width: 190px;
+    min-width: 170px;
+    max-width: 210px;
   }
 
   .book-section__nav {
@@ -284,12 +302,14 @@
   .book-section__more {
     width: 100%;
     justify-content: center;
+    padding: 0.75rem 2rem;
   }
 }
 
 @media (max-width: 640px) {
   .book-section {
     padding: 1.25rem;
+    margin: 0 0.5rem;
   }
 
   .book-section__header h3 {
@@ -302,8 +322,9 @@
   }
 
   .book-section__grid > * {
-    flex: 0 0 calc(50% - 0.5rem);
-    min-width: 140px;
+    width: 160px;
+    min-width: 150px;
+    max-width: 180px;
   }
 
   .book-section__nav {
@@ -318,5 +339,32 @@
   
   .book-section__nav--right {
     right: -8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-section {
+    padding: 1rem;
+    margin: 0 0.25rem;
+    border-radius: 12px;
+  }
+
+  .book-section__header h3 {
+    font-size: 1.125rem;
+  }
+
+  .book-section__grid {
+    gap: 0.75rem;
+  }
+
+  .book-section__grid > * {
+    width: 145px;
+    min-width: 135px;
+    max-width: 160px;
+  }
+
+  .book-section__more {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.9375rem;
   }
 }
