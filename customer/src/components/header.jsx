@@ -26,6 +26,10 @@ export default function Header() {
     setIsMobileSearchOpen(!isMobileSearchOpen);
   };
 
+  const closeMobileSearch = () => {
+    setIsMobileSearchOpen(false);
+  };
+
   // Close mobile menu on window resize to desktop
   useEffect(() => {
     const handleResize = () => {
@@ -74,7 +78,7 @@ export default function Header() {
 
         {/* Desktop Search - Hidden on Mobile */}
         <div className="header-center desktop-search">
-          <SearchBox />
+          <SearchBox/>
         </div>
 
         {/* Mobile Search Icon */}
@@ -173,7 +177,7 @@ export default function Header() {
       {/* Mobile Search Expandable - Shown when toggled */}
       <div className={`mobile-search-bar ${isMobileSearchOpen ? 'open' : ''}`}>
         <div className="container">
-          <SearchBox />
+          <SearchBox onClose={closeMobileSearch} />
         </div>
       </div>
 
