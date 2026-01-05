@@ -9,12 +9,6 @@ function Header({onMenuClick}) {
             <HiOutlineBars3 className="w-6 h-6 text-slate-700" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative">
-            <HiOutlineBell className="w-6 h-6 text-slate-600" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-        </div>
       </div>
     </header>
   );
