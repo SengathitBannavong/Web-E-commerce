@@ -80,17 +80,11 @@ export default function BookDetailEnhanced() {
 
     setAddingToCart(true);
     try {
-      const itemToAdd = {
-        id: product.Product_Id,
-        name: product.Name,
-        price: product.Price,
-        cover: product.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
-        quantity: quantity,
-      };
-
-      const success = await addToCart(itemToAdd);
+      
+      const success = await addToCart(product.Product_Id, quantity);
       if (success) {
         toast.success(`Added "${product.Name}" to cart successfully!`);
+        navigate('/cart');
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
