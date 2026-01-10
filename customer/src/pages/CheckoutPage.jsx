@@ -3,7 +3,7 @@ import { FaCity, FaEnvelope, FaLock, FaMapMarkerAlt, FaPhone, FaShoppingBag, FaU
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
-import { createCheckoutSession, apiFetch } from "../services/paymentService";
+import { createCheckoutSession, createCODCheckout } from "../services/paymentService";
 import "./CheckoutPage.css";
 
 const CheckoutPage = () => {
@@ -80,21 +80,11 @@ const CheckoutPage = () => {
       }
 
       if (formData.paymentMethod === "cod") {
-        const response = await apiFetch("/payment-gateway/cod-checkout", {
-            method: "POST",
-            body: JSON.stringify({
-                paymentMethod: 'cod',
-                Shipping_Address: shippingAddress
-            })
-        });
+        const response = await createCODCheckout(shippingAddress);
         
         if (response && response.success) {
-            // clearCart(); // Cart is cleared in backend
-             // Force clear frontend cart
             clearCart();
-            
-            // Redirect
-            window.location.href = response.url;
+            navigate("/account?tab=orders");
             return;
         } else {
              throw new Error(response.error || "Failed to place COD order");

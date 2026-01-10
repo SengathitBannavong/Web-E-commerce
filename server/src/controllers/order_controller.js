@@ -795,6 +795,28 @@ const update_order_by_user = async (req, res) => {
     // Perform update
     const updatedOrder = await order.update({ Status: 'cancelled' });
 
+    // return order items to stock
+    const { OrderItem, Stock } = getModel();
+    const orderItems = await OrderItem.findAll({ where: { Order_Id: orderId } });
+    
+    if (orderItems.length > 0) {
+      // Group quantities by Product_Index to handle multiple items of same product
+      const stockUpdates = new Map();
+      orderItems.forEach(item => {
+        const currentQty = stockUpdates.get(item.Product_Index) || 0;
+        stockUpdates.set(item.Product_Index, currentQty + item.Quantity);
+      });
+
+      await Promise.all(
+        Array.from(stockUpdates.entries()).map(([productIndex, quantity]) =>
+          Stock.increment(
+            { Quantity: quantity },
+            { where: { Product_Index: productIndex } }
+          )
+        )
+      );
+    }
+
     return res.status(200).json({
       message: "Order status updated to 'cancelled' successfully",
       data: updatedOrder
