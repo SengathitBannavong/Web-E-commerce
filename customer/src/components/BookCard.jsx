@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaEye, FaShoppingCart, FaHeart, FaStar } from "react-icons/fa";
+import { FaShoppingCart, FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useToast } from "../contexts/ToastContext";
@@ -12,90 +12,83 @@ export default function BookCard({
   author,
   price,
   badge,
-  rating = 0,
-  reviewCount = 0,
 }) {
   const { addToCart } = useCart();
   const toast = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsAdding(true);
+    
+    setTimeout(() => {
+      addToCart({ id, title, price, cover, author });
+      toast.success(`"${title}" added to cart`);
+      setIsAdding(false);
+    }, 600);
+  };
 
   return (
-    <article className="book-card group">
-      <div className="book-card-inner">
-        {/* --- Image Section --- */}
-        <div className="book-card-cover-wrapper">
-          
-          {/* Badge */}
-          {badge && <span className="book-card-badge">{badge}</span>}
-
-
-          <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
-            <div className={`book-card-image-container ${imageLoaded ? 'loaded' : ''}`}>
-              
-              {/* Skeleton / Placeholder */}
-              {!imageLoaded && !imageError && (
-                <div className="book-card-skeleton">
-                  <div className="skeleton-icon">📚</div>
-                </div>
-              )}
-              
-              <img 
-                src={imageError ? '/images/books/placeholder.jpg' : cover} 
-                alt={title} 
-                loading="lazy"
-                onLoad={() => setImageLoaded(true)}
-                onError={() => {
-                  setImageError(true);
-                  setImageLoaded(true);
-                }}
-                className={`book-card-img ${imageLoaded ? 'visible' : ''}`}
-              />
-              
-              {/* Hover Overlay */}
-              <div className="book-card-overlay">
-                <span className="quick-view-btn">
-                  <FaEye /> Quick View
-                </span>
-              </div>
-            </div>
+    <article className="book-card">
+      {/* Image Container */}
+      <div className="book-card__image">
+        {badge && <span className="book-card__badge">{badge}</span>}
+        
+        {!imageLoaded && (
+          <div className="book-card__skeleton">
+            <div>📚</div>
+          </div>
+        )}
+        
+        <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
+          <img
+            src={cover}
+            alt={title}
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            className={imageLoaded ? 'loaded' : ''}
+          />
+        </Link>
+        
+        <div className="book-card__overlay">
+           <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
+            <button className="book-card__quick-view">
+                <FaEye size={16} />
+                <span>Quick View</span>
+            </button>
           </Link>
         </div>
+      </div>
 
-        {/* --- Content Section --- */}
-        <div className="book-card-body">
-          <div className="book-card-info">
-            <p className="book-card-author">{author}</p>
-            
-            <h3 className="book-card-title">
-              <Link to={`/books/${id}`}>
+      {/* Content */}
+      <div className="book-card__content">
+        <p className="book-card__author">{author}</p>
+        <h3 className="book-card__title">
+            <Link to={`/books/${id}`} title={title}>
                 {title}
-              </Link>
-            </h3>
-          </div>
-
-          <div className="book-card-footer">
-            <div className="price-container">
-              <span className="book-price">{price}</span>
-            </div>
-            
-            <Link to={`/books/${id}`} aria-label={`View details for ${title}`}>
-              <button
-                type="button"
-                className={`add-to-cart-btn ${isAdding ? 'loading' : ''}`}
-                disabled={isAdding}
-              >
-                {isAdding ? (
-                  <div className="spinner"></div>
-                ) : (
-                  <FaShoppingCart />
-                )}
-              </button>
             </Link>
-          </div>
-        </div>
+        </h3>
+      </div>
+
+      {/* Footer */}
+      <div className="book-card__footer">
+        <span className="book-card__price">
+            {price}
+        </span>
+        <button
+          className="book-card__cart-btn"
+          onClick={handleAddToCart}
+          disabled={isAdding}
+          aria-label="Add to cart"
+        >
+          {isAdding ? (
+            <div className="spinner" />
+          ) : (
+            <FaShoppingCart size={20} />
+          )}
+        </button>
       </div>
     </article>
   );

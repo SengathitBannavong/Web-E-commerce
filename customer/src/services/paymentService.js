@@ -1,4 +1,5 @@
 import apiFetch from "./api";
+export { apiFetch };
 
 /**
  * Create a Stripe checkout session

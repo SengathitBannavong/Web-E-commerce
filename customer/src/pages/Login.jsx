@@ -36,7 +36,9 @@ export default function Login() {
     <div className="page login-page">
       <div className="container">
         <div className="login-form-container">
-          <h2>Login to Your Account</h2>
+          <h2>Welcome Back</h2>
+          <p className="login-subtitle">Please login to your account</p>
+          
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
@@ -47,6 +49,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                placeholder="e.g. john@example.com"
               />
             </div>
             <div className="form-group">
@@ -58,15 +61,13 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                placeholder="Enter your password"
               />
             </div>
             {error && (
-              <p
-                className="error-message"
-                style={{ color: "red", marginBottom: "1rem" }}
-              >
-                {error}
-              </p>
+              <div className="error-message">
+                <span>⚠️</span> {error}
+              </div>
             )}
             <button type="submit" className="btn" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
@@ -80,3 +81,4 @@ export default function Login() {
     </div>
   );
 }
+
