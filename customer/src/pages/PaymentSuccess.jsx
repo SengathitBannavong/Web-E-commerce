@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import "./PaymentSuccess.css";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -18,7 +19,7 @@ export default function PaymentSuccess() {
 
         setTimeout(() => {
           navigate("/account?tab=orders");
-        }, 2000);
+        }, 4000); // Increased to 4s to let user read the success message
       } catch (error) {
         console.error("Error processing payment success:", error);
         setProcessing(false);
@@ -29,14 +30,14 @@ export default function PaymentSuccess() {
   }, [clearCart, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+    <div className="payment-success-page">
+      <div className="success-card">
         {processing ? (
           <>
-            <div className="mb-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 animate-pulse">
+            <div className="status-icon-wrapper">
+              <div className="status-icon status-icon--processing">
                 <svg
-                  className="w-8 h-8 text-blue-500"
+                  className="icon-processing"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -50,15 +51,15 @@ export default function PaymentSuccess() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Processing Payment...</h2>
-            <p className="text-gray-600">Please wait while we confirm your payment.</p>
+            <h2 className="success-title">Processing Payment...</h2>
+            <p className="success-message">Please wait while we confirm your payment.</p>
           </>
         ) : (
           <>
-            <div className="mb-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
+            <div className="status-icon-wrapper">
+              <div className="status-icon status-icon--success">
                 <svg
-                  className="w-8 h-8 text-green-500"
+                  className="icon-success"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -72,13 +73,13 @@ export default function PaymentSuccess() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="success-title">Payment Successful!</h2>
+            <p className="success-message">
               Your order has been placed successfully. You will be redirected to your account page.
             </p>
             <button
               onClick={() => navigate("/account?tab=orders")}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded"
+              className="btn btn-success"
             >
               View Orders
             </button>
@@ -88,3 +89,4 @@ export default function PaymentSuccess() {
     </div>
   );
 }
+

@@ -30,3 +30,12 @@ export const createOrder = async (userId, orderData) => {
         body: JSON.stringify(orderData),
     });
 };
+/**
+ * Cancel an order
+ * @param {string|number} orderId 
+ */
+export const cancelOrder = async (orderId) => {
+    return apiFetch(`/orders/cancel/${orderId}`, {
+        method: "PUT"
+    });
+};
