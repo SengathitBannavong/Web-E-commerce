@@ -1,16 +1,18 @@
+/* Clean Hero Slider */
 .hero-slider {
   position: relative;
   width: 100%;
-  border-radius: 32px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 14px 28px rgba(31, 41, 51, 0.08);
+  box-shadow: var(--shadow-sm); /* Simplified shadow */
   z-index: 0;
+  border: 1px solid var(--color-border);
 }
 
 .hero-slide-track {
   position: relative;
   width: 100%;
-  height: clamp(200px, 40vw, 350px);
+  height: clamp(200px, 40vw, 400px); /* Slightly taller max */
 }
 
 .hero-slide {
@@ -18,16 +20,14 @@
   inset: 0;
   display: flex;
   align-items: stretch;
-  color: #ffffff;
+  color: white;
   opacity: 0;
-  transform: translateX(5%);
   pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.4s ease; /* Faster transition, remove transform */
 }
 
 .hero-slide.is-active {
   opacity: 1;
-  transform: translateX(0);
   pointer-events: auto;
 }
 
@@ -43,163 +43,102 @@
   display: block;
 }
 
+/* Nav Buttons - Simplified */
 .hero-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3); /* Simple semi-transparent dark */
+  color: white;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   z-index: 2;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  font-size: 40px;
-  font-weight: 300;
-  line-height: 1;
   padding: 0;
+  backdrop-filter: none; /* Removed blur */
+  box-shadow: none;
 }
 
 .hero-nav:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-50%); /* Removed scale effect */
 }
 
 .hero-nav:active {
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%);
 }
 
 .hero-nav svg {
-  width: 32px;
-  height: 32px;
-  transition: transform 0.3s ease;
+  width: 24px;
+  height: 24px;
 }
 
-.hero-nav:hover svg {
-  transform: translateX(0);
-}
-
-.hero-nav-prev:hover svg {
-  transform: translateX(-2px);
-}
-
-.hero-nav-next:hover svg {
-  transform: translateX(2px);
-}
+/* Removed specific styling for prev/next hover transforms */
 
 .hero-nav-prev {
-  left: 2rem;
+  left: var(--space-lg);
 }
 
 .hero-nav-next {
-  right: 2rem;
+  right: var(--space-lg);
 }
 
-.hero-nav.style-accent {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-  font-size: 42px;
-}
-
-.hero-nav.style-accent:hover {
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.hero-nav.style-dark {
-  width: 52px;
-  height: 52px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  font-size: 38px;
-}
-
-.hero-nav.style-dark:hover {
-  background: rgba(0, 0, 0, 0.85);
-  border-color: #ffd166;
-  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2);
-}
-
+/* Pagination Dots */
 .hero-dots {
   position: absolute;
-  bottom: 2rem;
+  bottom: var(--space-lg);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 0.5rem;
   z-index: 2;
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  background: none; /* Removed background container */
+  border: none;
+  backdrop-filter: none;
 }
 
 .hero-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .hero-dot:hover {
-  background: rgba(255, 255, 255, 0.6);
-  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.8);
+  transform: none; /* Removed scale */
 }
 
 .hero-dot.is-active {
-  background: #ffd166;
-  width: 28px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(255, 209, 102, 0.4);
+  background: white;
+  border-color: white;
+  width: 10px; /* Kept round, removed elongation */
+  box-shadow: none;
 }
 
 @media (max-width: 768px) {
   .hero-nav {
-    width: 44px;
-    height: 44px;
-    font-size: 32px;
+    display: none; /* Hide arrows on mobile for cleaner look */
   }
 
-  .hero-nav svg {
-    width: 28px;
-    height: 28px;
-  }
-
-  .hero-nav-prev {
-    left: 1rem;
-  }
-
-  .hero-nav-next {
-    right: 1rem;
+  .hero-slide-track {
+    height: clamp(180px, 50vw, 300px);
   }
 
   .hero-dots {
-    bottom: 1.5rem;
-    padding: 0.5rem 1rem;
-  }
-
-  .hero-dot {
-    width: 8px;
-    height: 8px;
-  }
-
-  .hero-dot.is-active {
-    width: 24px;
+    bottom: var(--space-md);
   }
 }
+

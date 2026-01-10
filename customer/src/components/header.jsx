@@ -55,11 +55,39 @@ export default function Header() {
     };
   }, [isMobileMenuOpen]);
 
+  // Smart Header Logic
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        const currentScrollY = window.scrollY;
+        
+        // Show if scrolling up or at the top
+        if (currentScrollY < lastScrollY || currentScrollY < 10) {
+          setIsVisible(true);
+        } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+          // Hide if scrolling down and past header height
+          setIsVisible(false);
+        }
+
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    window.addEventListener('scroll', controlNavbar);
+
+    return () => {
+      window.removeEventListener('scroll', controlNavbar);
+    };
+  }, [lastScrollY]);
+
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const avatarSrc = user?.Profile_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1767510418/temp_profile_selxqo.jpg";
   return (
-    <header className="site-header">
+    <header className={`site-header ${isVisible ? 'visible' : 'hidden'}`}>
       <div className="container">
         <div className="header-left">
           {/* Hamburger Menu Button - Mobile Only */}

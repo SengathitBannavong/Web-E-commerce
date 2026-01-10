@@ -129,7 +129,7 @@ export default function Register() {
               {errors.email && <span className="error-text">{errors.email}</span>}
             </div>
 
-            <div className="grid-2-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2-cols">
                 <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <input
@@ -152,7 +152,7 @@ export default function Register() {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={onChange}
-                    placeholder="Confirm password"
+                    placeholder="Confirm"
                     className={errors.confirmPassword ? "input-error" : ""}
                 />
                 {errors.confirmPassword && (
@@ -219,3 +219,4 @@ export default function Register() {
     </div>
   );
 }
+
