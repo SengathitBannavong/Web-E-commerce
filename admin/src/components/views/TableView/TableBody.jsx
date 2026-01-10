@@ -1,6 +1,6 @@
 import TableRow from './TableRow';
 
-function TableBody({ data, cols, onEdit, shouldHideColumn, page = 1, limit = 10 }) {
+function TableBody({ data, cols, onEdit, onConfirmOrder, onRejectOrder, shouldHideColumn, page = 1, limit = 10 }) {
   const row = Array.isArray(data) ? data : [];
   return (
     <tbody className="bg-white divide-y divide-slate-200">
@@ -10,6 +10,8 @@ function TableBody({ data, cols, onEdit, shouldHideColumn, page = 1, limit = 10 
           item={item}
           cols={cols}
           onEdit={onEdit}
+          onConfirmOrder={onConfirmOrder}
+          onRejectOrder={onRejectOrder}
           shouldHideColumn={shouldHideColumn}
           rowIndex={index}
           page={page}

@@ -1,4 +1,5 @@
 import apiFetch from "./api";
+export { apiFetch };
 
 /**
  * Create a Stripe checkout session
@@ -14,6 +15,21 @@ export const createCheckoutSession = async (shippingAddress = null) => {
   return apiFetch("/payment-gateway/create-checkout-session", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Create a COD (Cash on Delivery) checkout
+ * This will create an order with pending payment status
+ * @param {string} shippingAddress - Shipping address for the order
+ */
+export const createCODCheckout = async (shippingAddress) => {
+  return apiFetch("/payment-gateway/cod-checkout", {
+    method: "POST",
+    body: JSON.stringify({
+      paymentMethod: 'cod',
+      Shipping_Address: shippingAddress
+    }),
   });
 };
 

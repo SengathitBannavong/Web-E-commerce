@@ -1,0 +1,151 @@
+.category-showcase {
+  background: white;
+  padding: var(--space-xl) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.showcase-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.showcase-header h3 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  
+  /* Full Width Soft Highlight */
+  background: linear-gradient(to bottom, #ffffff, #F5F3FF);
+  padding: 0.75rem 0;
+  width: 100%;
+  text-align: center;
+  border-radius: var(--radius-md);
+}
+
+.showcase-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+  border-bottom: 2px solid var(--color-border-light);
+  padding-bottom: var(--space-sm);
+  width: 100%;
+  max-width: 800px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm); /* Changed from full to small (square-ish) */
+  transition: all 0.2s ease;
+  position: relative;
+  border-bottom: 2px solid transparent; /* Prepare for bottom border effect */
+}
+
+.tab-btn:hover {
+  color: var(--color-accent);
+  background: #F8FAFC; /* Very subtle grey on hover */
+}
+
+.tab-btn.active {
+  color: var(--color-accent);
+  background: transparent;
+  border-bottom-color: var(--color-accent); /* Bottom border only for clean look */
+  border-radius: 0;
+}
+
+.tab-view-all {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  border: 1px solid var(--color-border); /* Solid border */
+  border-radius: var(--radius-sm); /* Square-ish */
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.tab-view-all:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: #F8FAFC;
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.showcase-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  border: 1px solid var(--color-border);
+  background: white;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border-radius: var(--radius-md); /* Standard radius */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Response */
+@media (max-width: 1024px) {
+  .showcase-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .showcase-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+  }
+  
+  .showcase-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 8px; /* Space for scrollbar */
+    padding-left: 4px;
+    padding-right: 4px;
+    border-bottom: none;
+  }
+  
+  .tab-btn {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

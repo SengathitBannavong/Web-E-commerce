@@ -1,5 +1,5 @@
 export const setupAssociations = (models) => {
-  const { User, Product, Category, Order, OrderItem, Cart, CartItem, Payment, Stock } = models;
+  const { User, Product, Category, Order, OrderItem, Cart, CartItem, Payment, Stock, Review } = models;
 
   // User ↔ Order (One-to-Many)
   // One user can have many orders
@@ -150,6 +150,32 @@ export const setupAssociations = (models) => {
   Stock.belongsTo(Product, {
     foreignKey: 'Product_Index',
     targetKey: 'Index',
+    as: 'product'
+  });
+
+  // User ↔ Review (One-to-Many)
+  // One user can have many reviews
+  User.hasMany(Review, {
+    foreignKey: 'User_Id',
+    sourceKey: 'User_Id',
+    as: 'reviews'
+  });
+  Review.belongsTo(User, {
+    foreignKey: 'User_Id',
+    targetKey: 'User_Id',
+    as: 'user'
+  });
+
+  // Product ↔ Review (One-to-Many)
+  // One product can have many reviews
+  Product.hasMany(Review, {
+    foreignKey: 'Product_Id',
+    sourceKey: 'Product_Id',
+    as: 'reviews'
+  });
+  Review.belongsTo(Product, {
+    foreignKey: 'Product_Id',
+    targetKey: 'Product_Id',
     as: 'product'
   });
 

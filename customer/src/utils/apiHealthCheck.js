@@ -6,7 +6,7 @@ import axios from 'axios';
 
 // Get API base URL from environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:3000/api";
-const HEALTH_CHECK_ENDPOINT = "health";
+const HEALTH_CHECK_ENDPOINT = "/health";
 const CHECK_INTERVAL = 30000; // 30 seconds
 
 class APIHealthMonitor {
@@ -39,7 +39,8 @@ class APIHealthMonitor {
    */
   async checkHealth() {
     try {
-      const response = await axios.get(`${API_BASE_URL}${HEALTH_CHECK_ENDPOINT}`, {
+      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+      const response = await axios.get(`${baseUrl}${HEALTH_CHECK_ENDPOINT}`, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 5000,
       });

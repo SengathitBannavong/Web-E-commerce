@@ -1,9 +1,9 @@
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--color-border-light) 0%,
-    #F0F0F0 50%,
-    var(--color-border-light) 100%
+    var(--color-border) 0%,
+    #F9FAFB 50%,
+    var(--color-border) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -67,8 +67,8 @@
 
 /* Skeleton Card */
 .skeleton-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
+  background: white;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -87,7 +87,7 @@
 .skeleton-detail {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: var(--space-3xl);
+  gap: var(--space-2xl);
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-xl);
@@ -107,3 +107,4 @@
     grid-template-columns: 1fr;
   }
 }
+

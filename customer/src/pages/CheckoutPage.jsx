@@ -3,7 +3,7 @@ import { FaCity, FaEnvelope, FaLock, FaMapMarkerAlt, FaPhone, FaShoppingBag, FaU
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
-import { createCheckoutSession } from "../services/paymentService";
+import { createCheckoutSession, createCODCheckout } from "../services/paymentService";
 import "./CheckoutPage.css";
 
 const CheckoutPage = () => {
@@ -78,7 +78,20 @@ const CheckoutPage = () => {
           return;
         }
       }
-      setError("Cash on Delivery is not currently available. Please use Stripe payment.");
+
+      if (formData.paymentMethod === "cod") {
+        const response = await createCODCheckout(shippingAddress);
+        
+        if (response && response.success) {
+            clearCart();
+            navigate("/account?tab=orders");
+            return;
+        } else {
+             throw new Error(response.error || "Failed to place COD order");
+        }
+      }
+
+      setError("Please select a valid payment method.");
       setLoading(false);
 
     } catch (err) {
@@ -242,6 +255,48 @@ const CheckoutPage = () => {
                       readOnly
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="form-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Payment Method</h2>
+                    <p className="section-subtitle">Select how you want to pay</p>
+                  </div>
+                </div>
+
+                <div className="payment-methods">
+                  <label className={`payment-method-card ${formData.paymentMethod === 'stripe' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="stripe"
+                      checked={formData.paymentMethod === 'stripe'}
+                      onChange={handleChange}
+                      className="payment-radio"
+                    />
+                    <div className="payment-details">
+                      <span className="payment-name">Credit Card (Stripe)</span>
+                      <span className="payment-desc">Pay securely with Visa, Mastercard</span>
+                    </div>
+                  </label>
+
+                  <label className={`payment-method-card ${formData.paymentMethod === 'cod' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cod"
+                      checked={formData.paymentMethod === 'cod'}
+                      onChange={handleChange}
+                      className="payment-radio"
+                    />
+                    <div className="payment-details">
+                      <span className="payment-name">Cash on Delivery (COD)</span>
+                      <span className="payment-desc">Pay when you receive your order</span>
+                    </div>
+                  </label>
                 </div>
               </div>
 

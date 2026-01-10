@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BookSection from "../components/BookSection";
 import HeroSlider from "../components/HeroSlider";
+import ServiceFeatures from "../components/ServiceFeatures"; 
+import CategoryShowcase from "../components/CategoryShowcase"; // New Import
 import { HERO_BANNERS } from "../data/heroBanners";
 import { getCategories } from "../services/categoryService";
 import { getBestsellers, getLastCategoryProducts, getNewReleases, getProducts } from "../services/productService";
@@ -39,18 +41,11 @@ export default function Home() {
         setLoading(true);
         const [newReleasesRes, bestsellersRes, categoriesRes] =
           await Promise.all([
-            getNewReleases({ page: 1, limit: 5 }),
-            getBestsellers({ page: 1, limit: 5 }),
+            getNewReleases({ page: 1, limit: 10 }), // Fetched more for slider
+            getBestsellers({ page: 1, limit: 10 }),
             getCategories(),
           ]);
         
-        const [first_category, second_category, last_category] = 
-          await Promise.all([
-            getProducts({ page: 1, limit: 5, category: 1 }),
-            getProducts({ page: 1, limit: 5, category: 2 }),
-            getLastCategoryProducts({ limit: 5 }),
-          ]);
-
         setData({
           newReleases: newReleasesRes.data.map(adaptProductData),
           bestsellers: bestsellersRes.data.map(adaptProductData),
@@ -87,7 +82,18 @@ export default function Home() {
 
   return (
     <div className="page home-page">
-      <HeroSlider slides={HERO_BANNERS} />
+      <div className="hero-section">
+        <div className="container">
+           <div className="hero-grid">
+              <div className="hero-slider-wrapper">
+                <HeroSlider slides={HERO_BANNERS} />
+              </div>
+              <div className="hero-services-wrapper">
+                <ServiceFeatures />
+              </div>
+           </div>
+        </div>
+      </div>
 
       <main className="home-main-content">
         <section className="category-list-section">
@@ -121,7 +127,6 @@ export default function Home() {
                   </Link>
                 ))}
                 
-                {/* See All Card */}
                 <Link to="/categories" className="category-card see-all-card">
                   <div className="see-all-content">
                     <div className="see-all-icon">📚</div>
@@ -134,6 +139,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Regular Sections */}
         <BookSection title="New Releases" books={data.newReleases} loading={loading} withCta />
         <BookSection title="Bestsellers" books={data.bestsellers} loading={loading} withCta />
         {data.first_category.length > 0 && (
@@ -146,7 +152,12 @@ export default function Home() {
           <BookSection title={data.categories[data.categories.length -1]?.Name || "Category"} books={data.last_category} loading={loading} viewAllLink={`/books?category=${data.categories[data.categories.length -1]?.Category_Id}`} withCta />
         )}
         
-        {/* See All Books CTA */}
+        {/* Dynamic Tabbed Section */}
+        {!loading && data.categories.length > 0 && (
+           <CategoryShowcase categories={data.categories} />
+        )}
+        
+        {/* Banner / CTA Section */}
         <section className="see-all-books-section">
           <div className="container">
             <div className="see-all-books-card">
@@ -160,11 +171,6 @@ export default function Home() {
                   Browse All Books
                   <span className="see-all-books-arrow">→</span>
                 </Link>
-              </div>
-              <div className="see-all-books-decoration">
-                <div className="decoration-circle decoration-circle-1"></div>
-                <div className="decoration-circle decoration-circle-2"></div>
-                <div className="decoration-circle decoration-circle-3"></div>
               </div>
             </div>
             <div className="see-all-books-card">
