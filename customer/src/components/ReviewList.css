@@ -1,0 +1,162 @@
+.review-list {
+  margin: 2rem 0;
+}
+
+.review-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.review-list-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.review-sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sort-label {
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.sort-btn.active {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.sort-btn.active:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.review-list-content {
+  position: relative;
+}
+
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.no-reviews-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.no-reviews-content p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .review-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .review-sort-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .sort-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .sort-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .no-reviews {
+    padding: 2rem 1rem;
+  }
+  
+  .review-list-header h3 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sort-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .sort-btn {
+    text-align: center;
+  }
+}

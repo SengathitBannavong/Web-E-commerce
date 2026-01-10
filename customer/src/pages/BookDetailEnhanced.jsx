@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useToast } from '../contexts/ToastContext';
 import { getCategoryById } from "../services/categoryService";
 import { getProductById } from "../services/productService";
 import { getStockByProductId } from "../services/stockService";
+import ProductReviews from "../components/ProductReviews";
 import "./BookDetailEnhanced.css";
-import { useToast } from '../contexts/ToastContext';
 
 export default function BookDetailEnhanced() {
   const { id } = useParams();
@@ -269,6 +270,9 @@ export default function BookDetailEnhanced() {
             </div>
           </div>
         </div>
+
+        {/* Product Reviews Section */}
+        <ProductReviews productId={product.Product_Id} />
       </div>
     </div>
   );
