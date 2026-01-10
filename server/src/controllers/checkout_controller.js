@@ -309,3 +309,45 @@ export const getCartSummary = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const createCODCheckout = async (req, res) => {
+  try {
+    const { userId } = req;
+    const { Order_Id: orderId } = req.order;
+    const { Payment, Cart, CartItem } = getModel();
+    
+    await Payment.update(
+      { Type: 'cod' }, // Change from 'stripe' to 'cod'
+      { 
+        where: { Order_Id: orderId, User_Id: userId },
+        transaction: req.transaction
+      }
+    );
+
+    // Clear user's cart
+    const cart = await Cart.findOne({ where: { User_Id: userId }, transaction: req.transaction });
+    if (cart) {
+      await CartItem.destroy({ where: { Cart_Id: cart.Cart_Id } }, { transaction: req.transaction });
+    }
+
+    await req.transaction.commit();
+
+    // Respond with success but no redirect URL for COD
+    res.json({ 
+      success: true,
+      orderId: orderId,
+      paymentMethod: 'cod',
+      message: 'COD order placed successfully'
+    });
+
+  } catch (error) {
+    console.error("COD Checkout Error:", error);
+    if (req.transaction) {
+      await req.transaction.rollback();
+    }
+    res.status(500).json({ 
+      success: false,
+      error: error.message || "Failed to process COD order"
+    });
+  }
+};

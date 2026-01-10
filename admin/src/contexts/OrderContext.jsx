@@ -134,6 +134,54 @@ export const OrderContextProvider = (props) => {
     }
   };
 
+  const handleConfirmOrder = async (orderId) => {
+    try {
+      const config = {
+        method: 'put',
+        maxBodyLength: Infinity,
+        url: `${API}orders/admin/${orderId}`,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        data: JSON.stringify({ Status: 'processing' }),
+      };
+      const response = await axios.request(config);
+      if (response.status === 200) {
+        toast.success('Order confirmed successfully');
+        await fetchOrders();
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error confirming order:', error);
+      toast.error('Failed to confirm order');
+    }
+  };
+
+  const handleRejectOrder = async (orderId) => {
+    try {
+      const config = {
+        method: 'put',
+        maxBodyLength: Infinity,
+        url: `${API}orders/admin/${orderId}`,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        data: JSON.stringify({ Status: 'cancelled' }),
+      };
+      const response = await axios.request(config);
+      if (response.status === 200) {
+        toast.success('Order cancelled successfully');
+        await fetchOrders();
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast.error('Failed to cancel order');
+    }
+  };
+
   const contextValue = {
     orders,
     selectedOrder,
@@ -143,6 +191,8 @@ export const OrderContextProvider = (props) => {
     handleUpdateOrder,
     handleDeleteOrder,
     handleAddOrderItem,
+    handleConfirmOrder,
+    handleRejectOrder,
     // pagination
     page,
     setPage,

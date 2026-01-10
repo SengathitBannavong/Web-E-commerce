@@ -39,7 +39,8 @@ class APIHealthMonitor {
    */
   async checkHealth() {
     try {
-      const response = await axios.get(`${API_BASE_URL}${HEALTH_CHECK_ENDPOINT}`, {
+      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+      const response = await axios.get(`${baseUrl}${HEALTH_CHECK_ENDPOINT}`, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 5000,
       });

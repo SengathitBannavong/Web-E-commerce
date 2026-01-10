@@ -16,12 +16,6 @@ const features = [
     color: "#10B981", // Green
   },
   {
-    icon: <FaUndo />,
-    title: "Easy Returns",
-    desc: "30 Days Policy",
-    color: "#F59E0B", // Amber
-  },
-  {
     icon: <FaHeadset />,
     title: "24/7 Support",
     desc: "Dedicated Support",
