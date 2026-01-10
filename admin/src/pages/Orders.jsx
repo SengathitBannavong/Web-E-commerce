@@ -16,6 +16,8 @@ function Orders() {
     handleDeleteOrder,
     handleUpdateOrder,
     handleAddOrderItem,
+    handleConfirmOrder,
+    handleRejectOrder,
     page,
     setPage,
     limit,
@@ -43,6 +45,18 @@ function Orders() {
     setModalMode('edit');
     setSelectedOrder(order);
     setIsModalOpen(true);
+  };
+
+  const handleConfirmOrderWithModal = (order) => {
+    if (window.confirm(`Are you sure you want to confirm order #${order.Order_Id}? This will change the status to "paid".`)) {
+      handleConfirmOrder(order.Order_Id);
+    }
+  };
+
+  const handleRejectOrderWithModal = (order) => {
+    if (window.confirm(`Are you sure you want to reject order #${order.Order_Id}? This will change the status to "cancelled".`)) {
+      handleRejectOrder(order.Order_Id);
+    }
   };
 
   const data = Array.isArray(orders) ? orders : (orders && orders.data) ? orders.data : [];
@@ -90,6 +104,8 @@ function Orders() {
       orders={data}
       columns={columns}
       openEditModal={openEditModal}
+      onConfirmOrder={handleConfirmOrderWithModal}
+      onRejectOrder={handleRejectOrderWithModal}
       page={page}
       limit={limit}
       />

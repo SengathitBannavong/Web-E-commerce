@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { FaBox, FaCalendar, FaMapMarkerAlt, FaReceipt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getMyOrders, getOrderById } from '../services/orderService';
+import { getMyOrders, getOrderById, cancelOrder } from '../services/orderService';
+import { useToast } from '../contexts/ToastContext';
 import OrderItem from './OrderItem';
 import './OrderList.css';
 import Pagination from './Pagination';
@@ -19,6 +20,7 @@ const OrderList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 5;
+    const toast = useToast();
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -143,6 +145,27 @@ const OrderList = () => {
                                 <button className="toggle-btn">
                                     {expandedOrder === order.Order_Id ? <span>Show less</span> : <span>Show more</span>}
                                 </button>
+                                {order.Status === 'pending' && (
+                                    <button 
+                                        className="btn-cancel-order"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCancelOrder(order.Order_Id);
+                                        }}
+                                        style={{
+                                            marginLeft: '10px',
+                                            padding: '4px 8px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.9em'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -215,6 +238,23 @@ const OrderList = () => {
             />
         </div>
     );
+
+    async function handleCancelOrder(orderId) {
+        if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+        try {
+            await cancelOrder(orderId);
+            toast.success("Order cancelled successfully");
+            // Refresh orders
+            const userId = user.User_Id || user.id;
+            const res = await getMyOrders(userId, currentPage, limit);
+            const orderData = res && res.data ? res.data : [];
+            setOrders(orderData);
+        } catch (err) {
+            console.error("Failed to cancel order:", err);
+            toast.error(err.message || "Failed to cancel order");
+        }
+    }
 };
 
 export default OrderList;

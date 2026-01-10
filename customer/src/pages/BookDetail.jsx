@@ -98,19 +98,9 @@ export default function BookDetail() {
       toast.warning(`Only ${stock.Quantity} items available in stock!`);
       return;
     }
-
-    const itemToAdd = {
-      id: book.id,
-      name: book.name,
-      price: book.rawPrice,
-      cover: book.cover,
-      quantity: quantity,
-    };
     
-    const success = await addToCart(itemToAdd);
-    if (success) {
-      toast.success(`Added "${book.name}" to cart`);
-    } else {
+    const success = await addToCart(book.id, quantity);
+    if (!success) {
       toast.error("Failed to add item to cart");
     }
   };

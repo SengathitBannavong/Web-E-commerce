@@ -20,6 +20,7 @@ import Orders from './pages/Orders.jsx';
 import Payments from './pages/Payments.jsx';
 import Products from './pages/Products.jsx';
 import Stock from './pages/Stock.jsx';
+import Reviews from './pages/Reviews.jsx';
 import './toast-custom.css';
 
 function App() {
@@ -109,6 +110,11 @@ function AppContent({ sidebarOpen, setSidebarOpen }) {
                       <Payments />
                     </PaymentContextProvider>
                   }
+                />
+
+                <Route
+                  path="/reviews"
+                  element={<Reviews />}
                 />
               </Route>
             </Routes>

@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../contexts/ToastContext";
 import { addToCart as apiAddToCart, clearCart as apiClearCart, removeCartItem as apiRemoveCartItem, updateCartItem as apiUpdateCartItem, getMyCart } from "../services/cartService";
 import { useAuth } from "./AuthContext";
-import { useToast } from "../contexts/ToastContext";
 
 const CartContext = createContext();
 
@@ -39,10 +39,15 @@ export function CartProvider({ children }) {
         }
     };
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, quantity = 1) => {
+        if(product == null || product === undefined) {
+            toast.error('Invalid product');
+            return false;
+        }
+
         if (isAuthenticated) {
             try {
-                await apiAddToCart(product.id, 1);
+                await apiAddToCart(product, quantity);
                 await fetchCart();
                 return true;
             } catch (error) {

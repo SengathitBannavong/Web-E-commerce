@@ -47,6 +47,40 @@ function TableCell({ column, item, shouldHideColumn, rowIndex = 0, page = 1, lim
       );
     }
 
+    if (col.key === 'Status') {
+      const status = item[col.key];
+      let statusClass = '';
+      
+      switch (status) {
+        case 'pending':
+          statusClass = 'bg-orange-100 text-orange-800';
+          break;
+        case 'paid':
+          statusClass = 'bg-green-100 text-green-800';
+          break;
+        case 'processing':
+          statusClass = 'bg-blue-100 text-blue-800';
+          break;
+        case 'shipped':
+          statusClass = 'bg-purple-100 text-purple-800';
+          break;
+        case 'delivered':
+          statusClass = 'bg-emerald-100 text-emerald-800';
+          break;
+        case 'cancelled':
+          statusClass = 'bg-red-100 text-red-800';
+          break;
+        default:
+          statusClass = 'bg-gray-100 text-gray-800';
+      }
+
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusClass}`}>
+          {status}
+        </span>
+      );
+    }
+
     return item[col.key];
   };
 

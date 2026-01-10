@@ -1,7 +1,8 @@
-  import { Route, Routes } from "react-router-dom";
+  import { Route, Routes, Navigate } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import ScrollToTop from "./components/ScrollToTop";
 import Account from "./pages/Account";
 import BookDetailEnhanced from "./pages/BookDetailEnhanced";
 import BookList from "./pages/BookList";
@@ -15,9 +16,12 @@ import Register from "./pages/Register";
 
   function App() {
     return (
-      <Routes>
+      <>
+        <ScrollToTop />
+        <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<Home />} />
+            <Route path="home" element={<Navigate to="/" replace />} />
             <Route path="categories" element={<Categories />} />
             <Route path="books" element={<BookList />} />
             <Route path="books/:id" element={<BookDetailEnhanced />} />
@@ -35,8 +39,12 @@ import Register from "./pages/Register";
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="payment-success" element={<PaymentSuccess />} />
             </Route>
+
+            {/* Catch-all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+      </>
     );
   }
 

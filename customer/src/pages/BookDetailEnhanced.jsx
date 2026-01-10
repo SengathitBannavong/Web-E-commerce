@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useToast } from '../contexts/ToastContext';
 import { getCategoryById } from "../services/categoryService";
 import { getProductById } from "../services/productService";
 import { getStockByProductId } from "../services/stockService";
+import ProductReviews from "../components/ProductReviews";
 import "./BookDetailEnhanced.css";
-import { useToast } from '../contexts/ToastContext';
 
 export default function BookDetailEnhanced() {
   const { id } = useParams();
@@ -80,17 +81,11 @@ export default function BookDetailEnhanced() {
 
     setAddingToCart(true);
     try {
-      const itemToAdd = {
-        id: product.Product_Id,
-        name: product.Name,
-        price: product.Price,
-        cover: product.Photo_URL || "https://res.cloudinary.com/dskodfe9c/image/upload/v1766921014/zyjjrcl1qjwatmhiza7b.png",
-        quantity: quantity,
-      };
-
-      const success = await addToCart(itemToAdd);
+      
+      const success = await addToCart(product.Product_Id, quantity);
       if (success) {
         toast.success(`Added "${product.Name}" to cart successfully!`);
+        navigate('/cart');
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -275,6 +270,9 @@ export default function BookDetailEnhanced() {
             </div>
           </div>
         </div>
+
+        {/* Product Reviews Section */}
+        <ProductReviews productId={product.Product_Id} />
       </div>
     </div>
   );
