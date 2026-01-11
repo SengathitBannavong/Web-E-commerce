@@ -1,5 +1,26 @@
 import { getModel } from "../config/database.js";
+import { cacheHelper } from "../config/redis.js";
 import { generateReviewId } from "../util/idGenerator.js";
+
+// Cache key generators
+const getCacheKey = {
+  productReviews: (productId, page, limit, sortBy, sortOrder) => 
+    `reviews:product:${productId}:page:${page}:limit:${limit}:sort:${sortBy}:${sortOrder}`,
+  reviewStats: (productId) => `reviews:stats:${productId}`,
+  productReviewsPattern: (productId) => `reviews:product:${productId}:*`
+};
+
+// Cache invalidation helper
+const invalidateProductReviewsCaches = async (productId) => {
+  try {
+    // Delete all product review caches (all pages and sorting combinations)
+    await cacheHelper.delPattern(getCacheKey.productReviewsPattern(productId));
+    // Delete product stats cache
+    await cacheHelper.del(getCacheKey.reviewStats(productId));
+  } catch (error) {
+    console.error('Cache invalidation error:', error);
+  }
+};
 
 // Validation helper for reviews
 const validateReviewFields = (fields, isUpdate = false) => {
@@ -50,6 +71,14 @@ const getProductReviews = async (req, res) => {
       return res.status(400).json({ error: "Invalid sort field" });
     }
 
+    // Check cache first
+    const cacheKey = getCacheKey.productReviews(productId, page, limit, sortBy, sortOrder);
+    const cachedData = await cacheHelper.get(cacheKey);
+    
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
     const { count, rows: reviews } = await Review.findAndCountAll({
       where: { 
         Product_Id: productId,
@@ -67,11 +96,16 @@ const getProductReviews = async (req, res) => {
 
     const totalPages = Math.ceil(count / limit);
 
-    res.json({
+    const responseData = {
       totalPage: totalPages,
       total: count,
       data: reviews
-    });
+    };
+
+    // Cache the result for 5 minutes
+    await cacheHelper.set(cacheKey, responseData, 300);
+
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ error: "Failed to fetch reviews" });
@@ -127,6 +161,9 @@ const createReview = async (req, res) => {
       }]
     });
 
+    // Invalidate caches for this product
+    await invalidateProductReviewsCaches(Product_Id);
+
     res.status(201).json({
       message: "Review created successfully",
       data: createdReview
@@ -167,6 +204,9 @@ const updateReview = async (req, res) => {
       updated_at: new Date()
     });
 
+    // Invalidate caches for this product
+    await invalidateProductReviewsCaches(review.Product_Id);
+
     res.json({
       message: "Review updated successfully",
       data: review
@@ -192,8 +232,14 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ error: "Review not found or unauthorized" });
     }
 
+    // Store product ID before deletion
+    const productId = review.Product_Id;
+    
     // Delete review
     await review.destroy();
+
+    // Invalidate caches for this product
+    await invalidateProductReviewsCaches(productId);
 
     res.json({ message: "Review deleted successfully" });
   } catch (error) {
@@ -207,6 +253,14 @@ const getReviewStats = async (req, res) => {
   try {
     const { Review } = getModel();
     const { productId } = req.params;
+
+    // Check cache first
+    const cacheKey = getCacheKey.reviewStats(productId);
+    const cachedStats = await cacheHelper.get(cacheKey);
+    
+    if (cachedStats) {
+      return res.json({ data: cachedStats });
+    }
 
     const stats = await Review.findAll({
       where: { 
@@ -229,6 +283,9 @@ const getReviewStats = async (req, res) => {
     result.averageRating = parseFloat(result.averageRating) || 0;
     result.totalReviews = parseInt(result.totalReviews) || 0;
 
+    // Cache the result for 10 minutes (stats change less frequently)
+    await cacheHelper.set(cacheKey, result, 600);
+
     res.json({ data: result });
   } catch (error) {
     console.error("Error fetching review stats:", error);
@@ -248,6 +305,9 @@ const markReviewHelpful = async (req, res) => {
     }
 
     await review.increment('Helpful_Count');
+
+    // Invalidate caches for this product (helpful count affects sorting)
+    await invalidateProductReviewsCaches(review.Product_Id);
 
     res.json({ message: "Review marked as helpful" });
   } catch (error) {
