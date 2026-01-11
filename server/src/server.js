@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { connectDB } from "./config/database.js";
 import { CORS_ORIGINS, DATABASE_URL, PORT } from "./config/env.js"; // Load env first!
+import { testRedisConnection } from "./config/redis.js";
 import { admin_review_router } from "./routes/admin_review_route.js";
 import { cart_router } from "./routes/cart_route.js";
 import { category_router } from "./routes/category_route.js";
@@ -57,5 +58,8 @@ app.use("/api/admin/dashboard", dashboard_router);
 app.use("/api/admin/reviews", admin_review_router);
 
 connectDB(DATABASE_URL).then(async() => {
+    // Test Redis connection on startup
+    console.log('[INFO] Testing Redis connection...');
+    await testRedisConnection();
     app.listen(PORT, () => console.log(`[INFO] Server running on port ${PORT}`));
 });

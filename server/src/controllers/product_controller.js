@@ -1,6 +1,6 @@
 import { Op, literal } from "sequelize";
 import { getDB, getModel } from "../config/database.js";
-import { deleteImageHelper } from "./cloudinary_controller.js";
+import { cacheHelper } from "../config/redis.js";
 
 // Validation helper function
 const validateProductFields = (fields, isUpdate = false) => {
@@ -55,6 +55,12 @@ const get_product_normal = async (req, res) => {
     ...(search ? { Name: { [Op.iLike]: `%${search}%` } } : {}),
     ...(category ? { Category_Id: category } : {})
   };
+
+  const cacheKey = `products:page:${page}:limit:${limit}:search:${search}:category:${category}`;
+  const cachedData = await cacheHelper.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
   
   try {
     // Execute count and findAll in parallel
@@ -69,12 +75,18 @@ const get_product_normal = async (req, res) => {
     ]);
     
     const totalPage = Math.ceil(total / limit);
-    
-    res.json({
+
+    const responseData = {
       totalPage,
       total,
       data: products
-    });
+    };
+
+    // Cache the response data with 1-hour TTL
+    await cacheHelper.set(cacheKey, responseData, 3600);
+    console.log(`[INFO] Cached products data for 1 hour`);
+    
+    res.json(responseData);
   } catch (err) {
     console.error("Error fetching products:", err);
     res.status(500).json({ error: "Internal server error"});
@@ -158,6 +170,11 @@ const update_product = async (req, res) => {
       returning: true
     });
 
+    // Invalidate cache after successful product update
+    await cacheHelper.delPattern('bestsellers:*');
+    await cacheHelper.delPattern('new_releases:*');
+    await cacheHelper.delPattern('products:*');
+
     res.json({
       message: "Product updated successfully",
       data: affectedRows[0]
@@ -232,6 +249,12 @@ const create_product = async (req, res) => {
       await Stock.create({ Product_Index: product.Index, Quantity: 0, Last_Updated: new Date() }, { transaction: t });
 
       await t.commit();
+      
+      // Invalidate cache after successful product creation
+      await cacheHelper.delPattern('bestsellers:*');
+      await cacheHelper.delPattern('new_releases:*');
+      await cacheHelper.delPattern('products:*');
+      
       res.status(201).json(product);
     } catch (err) {
       await t.rollback();
@@ -264,6 +287,12 @@ const delete_product = async (req, res) => {
     if (deletedCount === 0) {
       return res.status(404).json({ error: "Product not found" });
     }
+    
+    // Invalidate cache after successful product deletion
+    await cacheHelper.delPattern('bestsellers:*');
+    await cacheHelper.delPattern('new_releases:*');
+    await cacheHelper.delPattern('products:*');
+    
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
     console.error("Error deleting product:", err);
@@ -279,8 +308,15 @@ const get_bestsellers = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const offset = (page - 1) * limit;
   
+  // Create cache key based on pagination parameters
+  const cacheKey = `bestsellers:page:${page}:limit:${limit}`;
+  
   try {
-    const sequelize = getDB();
+    // Try to get data from cache first (Cache-Aside pattern)
+    const cachedData = await cacheHelper.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
     
     // Get bestsellers by aggregating order items
     const bestsellers = await Product.findAll({
@@ -321,11 +357,16 @@ const get_bestsellers = async (req, res) => {
     
     const totalPage = Math.ceil(totalCount / limit);
     
-    res.json({
+    const responseData = {
       totalPage,
       total: totalCount,
       data: bestsellers
-    });
+    };
+    
+    // Cache the response data with 1-hour TTL
+    await cacheHelper.set(cacheKey, responseData, 3600);
+    
+    res.json(responseData);
   } catch (err) {
     console.error("Error fetching bestsellers:", err);
     res.status(500).json({ error: "Internal server error", details: err.message });
@@ -340,7 +381,16 @@ const get_new_releases = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const offset = (page - 1) * limit;
   
+  // Create cache key based on pagination parameters
+  const cacheKey = `new_releases:page:${page}:limit:${limit}`;
+  
   try {
+    // Try to get data from cache first (Cache-Aside pattern)
+    const cachedData = await cacheHelper.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+    
     // Get newest products by created_at date
     const [total, products] = await Promise.all([
       Product.count(),
@@ -353,11 +403,17 @@ const get_new_releases = async (req, res) => {
     
     const totalPage = Math.ceil(total / limit);
     
-    res.json({
+    const responseData = {
       totalPage,
       total,
       data: products
-    });
+    };
+    
+    // Cache the response data with 1-hour TTL
+    await cacheHelper.set(cacheKey, responseData, 3600);
+    console.log(`[INFO] Cached new releases data for 1 hour`);
+    
+    res.json(responseData);
   } catch (err) {
     console.error("Error fetching new releases:", err);
     res.status(500).json({ error: "Internal server error" });
@@ -408,4 +464,4 @@ const get_last_category_products = async (req, res) => {
   }
 };
 
-export { create_product, delete_product, get_bestsellers, get_new_releases, get_last_category_products, get_products, update_product };
+export { create_product, delete_product, get_bestsellers, get_last_category_products, get_new_releases, get_products, update_product };
