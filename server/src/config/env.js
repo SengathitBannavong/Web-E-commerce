@@ -34,6 +34,11 @@ export const CLOUDINARY_NAME = process.env.CLOUDINARY_NAME;
 export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
+// Redis configuration
+export const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+export const REDIS_PORT = process.env.REDIS_PORT || '6379';
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
 // Validate required environment variables
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET','STRIPE_SECRET_KEY','CLOUDINARY_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
