@@ -239,111 +239,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--space-lg);
-  padding: var(--space-3xl);
-  text-align: center;
-}
-
-.error-message {
-  color: var(--color-error);
-  font-size: 1rem;
-  margin: 0;
-}
-
-.error-state button {
-  padding: 0.75rem 1.5rem;
-  background: var(--color-accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.see-all-books-section > .container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-
-@media (max-width: 1024px) {
-  .home-page {
-    padding: 2rem 1.25rem 3.5rem; 
-  }
-  .home-main-content {
-    gap: 3rem;
-  }
-
-  .category-grid-home {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .home-page {
-    padding: 1rem 1rem 3rem;
-    gap: 2rem;
-  }
-  
-  .home-main-content {
-    gap: 2rem;
-  }
-
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .view-all-link {
-    font-size: 0.9375rem;
-  }
-
-  .category-list-section h3 {
-    font-size: 1.25rem;
-  }
-
-  .category-grid-home {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
-  }
-
-  .category-image {
-    height: 80px;
-  }
-
-  .category-content {
-    padding: 0.75rem;
-  }
-
-  .cat-name {
-    font-size: 0.8125rem;
-  }
-
-  .cat-description {
-    font-size: 0.6875rem;
-  }
-
-  .see-all-icon {
-    font-size: 2rem;
-  }
-
-  .see-all-text {
-    font-size: 0.8125rem;
-  }
-
-  .see-all-count {
-    font-size: 0.6875rem;
-  }
-
-  .see-all-text {
-    font-size: 1rem;
-  }
-}/* See All Books Section */
-.see-all-books-section {
-  width: 100%;
-  margin: 2rem 0;
 }
 
 .see-all-books-card {
@@ -393,16 +288,10 @@
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.02em;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.35;
-  height: 2.7em;
+  letter-spacing: -0.01em;
+  text-shadow: none;
+  height: auto;
+  line-height: 1.2;
 }
 
 .see-all-books-description {
@@ -478,6 +367,10 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+  .category-grid-home {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .category-grid-home {
     grid-template-columns: repeat(3, 1fr);
   }
