@@ -6,6 +6,8 @@ import FooterQuickLinks from "./footer/FooterQuickLinks";
 import FooterSupport from "./footer/FooterSupport";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer">
       <div className="footer-container">

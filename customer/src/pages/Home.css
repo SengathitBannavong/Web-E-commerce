@@ -370,6 +370,10 @@
   .category-grid-home {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .category-grid-home {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
