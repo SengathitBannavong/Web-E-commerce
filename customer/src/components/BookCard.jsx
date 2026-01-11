@@ -77,18 +77,9 @@ export default function BookCard({
         <span className="book-card__price">
             {price}
         </span>
-        <button
-          className="book-card__cart-btn"
-          onClick={handleAddToCart}
-          disabled={isAdding}
-          aria-label="Add to cart"
-        >
-          {isAdding ? (
-            <div className="spinner" />
-          ) : (
-            <FaShoppingCart size={20} />
-          )}
-        </button>
+        <Link to={`/books/${id}`} aria-label={`Add "${title}" to cart`}>
+          <FaShoppingCart/>
+        </Link>
       </div>
     </article>
   );
