@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaShoppingCart, FaEye } from "react-icons/fa";
+import { FaEye, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useToast } from "../contexts/ToastContext";
@@ -24,10 +24,13 @@ export default function BookCard({
     setIsAdding(true);
     
     setTimeout(() => {
-      addToCart({ id, title, price, cover, author });
-      toast.success(`"${title}" added to cart`);
+      // check id is string
+      const productId = typeof id === 'string' ? id : String(id);
+      addToCart(productId);
       setIsAdding(false);
     }, 600);
+
+    toast.success(`Added "${title}" to cart`);
   };
 
   return (
@@ -77,9 +80,14 @@ export default function BookCard({
         <span className="book-card__price">
             {price}
         </span>
-        <Link to={`/books/${id}`} aria-label={`Add "${title}" to cart`}>
-          <FaShoppingCart/>
-        </Link>
+        <button
+          className="book-card__add-to-cart"
+          onClick={handleAddToCart}
+          disabled={isAdding}
+          aria-label={`Add "${title}" to cart`}
+        >
+          <FaShoppingCart />
+        </button>
       </div>
     </article>
   );

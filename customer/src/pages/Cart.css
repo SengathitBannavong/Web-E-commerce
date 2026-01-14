@@ -189,7 +189,7 @@
   height: 36px;
   border: 1px solid transparent; 
   background: transparent;
-  color: var(--color-text-secondary);
+  color: #f95050;
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
