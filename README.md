@@ -3,7 +3,8 @@ This is repo to build Web E-commerce for subject web technologies and e-Services
 
 ## Server Run
 ### Require
-- Node JS and Docker or Podman
+- Node JS
+- Docker or Podman
 ### Build
 to build and install module and library
 ```bash
